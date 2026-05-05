@@ -1,0 +1,30 @@
+{
+  "name": "ごきげん姫の自分軸",
+  "short_name": "ごきげん姫",
+  "description": "ごきげん姫の自分軸 — 自分の機嫌を自分でとる、お姫様気分の自己ケアダイアリー",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#fce7f3",
+  "background_color": "#fdf2f8",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
