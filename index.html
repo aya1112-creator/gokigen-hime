@@ -54,7 +54,7 @@
   <div id="root"></div>
 
   <script type="text/babel" data-presets="react">
-    const { useState, useRef } = React;
+    const { useState, useRef, useEffect } = React;
 
     /* --- Inline SVG Icons (lucide代替) --- */
     const Icon = ({ d, className = "w-4 h-4", stroke = 2, fill = "none" }) => (
@@ -3568,6 +3568,53 @@
         {k:"ふくらはぎ", cur:34.6, goal:32.5, unit:"cm", emoji:"🌷"},
         {k:"足首",       cur:21.2, goal:20.0, unit:"cm", emoji:"✨"},
       ]);
+      // 歩数（手入力）
+      const [todaySteps,setTodaySteps] = useState(0);
+      // 編集モード（インライン）
+      const [editingBody,setEditingBody] = useState(false);
+      const [editingSize,setEditingSize] = useState(false);
+      const [lastUpdated,setLastUpdated] = useState("");
+      // localStorageから初期値ロード
+      useEffect(function(){
+        try{
+          var raw = localStorage.getItem("gokigen_body_v1");
+          if(raw){
+            var d = JSON.parse(raw);
+            if(d.bodyStats)    setBodyStats(d.bodyStats);
+            if(d.measurements) setMeasurements(d.measurements);
+            if(typeof d.todaySteps === "number") setTodaySteps(d.todaySteps);
+            if(d.lastUpdated)  setLastUpdated(d.lastUpdated);
+          }
+        }catch(e){}
+      },[]);
+      // 保存ヘルパー
+      const persistBody = function(nextStats, nextMeas, nextSteps){
+        var now = new Date().toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+        var data = {
+          bodyStats:    nextStats || bodyStats,
+          measurements: nextMeas  || measurements,
+          todaySteps:   typeof nextSteps === "number" ? nextSteps : todaySteps,
+          lastUpdated:  now,
+        };
+        try{ localStorage.setItem("gokigen_body_v1", JSON.stringify(data)); }catch(e){}
+        setLastUpdated(now);
+      };
+      const updateBodyStat = function(k, v){
+        var next = Object.assign({}, bodyStats, {[k]: v===""?0:Number(v)});
+        setBodyStats(next);
+        persistBody(next, null, null);
+      };
+      const updateMeasurement = function(idx, v){
+        var next = measurements.slice();
+        next[idx] = Object.assign({}, next[idx], {cur: v===""?0:Number(v)});
+        setMeasurements(next);
+        persistBody(null, next, null);
+      };
+      const updateSteps = function(v){
+        var n = v===""?0:parseInt(v,10);
+        setTodaySteps(n);
+        persistBody(null, null, n);
+      };
       const beautyIdx = [
         {k:"肌のうるおい", v:72, hue:"from-rose-200 to-pink-300"},
         {k:"むくみケア",   v:58, hue:"from-sky-200 to-blue-300"},
@@ -4109,10 +4156,13 @@
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="text-[9px] text-rose-400" style={{letterSpacing:"0.18em"}}>TODAY'S RECORD</div>
-                      <div className="text-[11px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>2026.04.25 / 朝の計測</div>
+                      <div className="text-[11px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                        {lastUpdated ? lastUpdated : "まだ記録がありません"}
+                      </div>
                     </div>
-                    <button className="text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-pink-300 to-rose-300 text-white" style={{boxShadow:"0 3px 8px rgba(244,114,182,0.3)"}}>
-                      ＋ 記録する
+                    <button onClick={function(){ setEditingBody(!editingBody); }}
+                      className="text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-pink-300 to-rose-300 text-white active:scale-95 transition" style={{boxShadow:"0 3px 8px rgba(244,114,182,0.3)"}}>
+                      {editingBody ? "✓ 完了" : "✎ 記録する"}
                     </button>
                   </div>
 
@@ -4131,7 +4181,14 @@
                           <div className="absolute top-1 right-2 text-[16px] opacity-70">{item.icon}</div>
                           <div className="text-[9px] text-rose-500 mb-0.5" style={{letterSpacing:"0.15em"}}>{item.label}</div>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-[22px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}>{item.cur.toFixed(1)}</span>
+                            {editingBody ? (
+                              <input type="number" step="0.1" inputMode="decimal" value={item.cur}
+                                onChange={function(e){ updateBodyStat(item.k, e.target.value); }}
+                                className="w-[70px] text-[20px] text-rose-700 bg-white/80 border border-pink-300 rounded px-1 focus:outline-none focus:border-pink-500"
+                                style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}/>
+                            ) : (
+                              <span className="text-[22px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}>{item.cur.toFixed(1)}</span>
+                            )}
                             <span className="text-[10px] text-rose-400">{item.unit}</span>
                           </div>
                           <div className="mt-1.5 h-1.5 rounded-full bg-white/70 overflow-hidden">
@@ -4158,12 +4215,34 @@
                       <div key={item.k} className="rounded-xl bg-white/80 border border-pink-100 p-2 text-center">
                         <div className="text-[13px] mb-0.5">{item.emoji}</div>
                         <div className="text-[8.5px] text-rose-400" style={{letterSpacing:"0.12em"}}>{item.label}</div>
-                        <div className="text-[14px] text-rose-600 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif'}}>
-                          {typeof item.cur==="number" && item.cur>=100?item.cur:item.cur.toFixed(1)}
-                          <span className="text-[8px] text-rose-300 ml-0.5">{item.unit}</span>
-                        </div>
+                        {editingBody ? (
+                          <input type="number" step={item.unit==="kcal"?"1":"0.1"} inputMode="decimal" value={item.cur}
+                            onChange={function(e){ updateBodyStat(item.k, e.target.value); }}
+                            className="w-full text-[13px] text-center text-rose-700 bg-white border border-pink-300 rounded px-1 mt-0.5 focus:outline-none focus:border-pink-500"
+                            style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                        ) : (
+                          <div className="text-[14px] text-rose-600 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                            {typeof item.cur==="number" && item.cur>=100?item.cur:item.cur.toFixed(1)}
+                            <span className="text-[8px] text-rose-300 ml-0.5">{item.unit}</span>
+                          </div>
+                        )}
                       </div>
                     ))}
+                  </div>
+
+                  {/* 歩数 */}
+                  <div className="mt-2.5 rounded-xl bg-white/80 border border-pink-100 p-2.5 flex items-center gap-2">
+                    <span className="text-[16px]">🚶‍♀️</span>
+                    <span className="flex-1 text-[10px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>今日の歩数</span>
+                    {editingBody ? (
+                      <input type="number" inputMode="numeric" value={todaySteps}
+                        onChange={function(e){ updateSteps(e.target.value); }}
+                        className="w-[100px] text-right text-[15px] text-rose-700 bg-white border border-pink-300 rounded px-1 focus:outline-none focus:border-pink-500"
+                        style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                    ) : (
+                      <span className="text-[15px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif'}}>{todaySteps.toLocaleString()}</span>
+                    )}
+                    <span className="text-[9px] text-rose-400">歩</span>
                   </div>
 
                   {/* BMI 帯 */}
@@ -4194,10 +4273,13 @@
                     <p className="text-[10px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
                       からだの輪郭を、そっとお測りしましょう
                     </p>
-                    <span className="text-[8.5px] text-rose-300 px-2 py-0.5 rounded-full bg-rose-50 border border-rose-100" style={{letterSpacing:"0.12em"}}>unit : cm</span>
+                    <button onClick={function(){ setEditingSize(!editingSize); }}
+                      className="text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-pink-300 to-rose-300 text-white active:scale-95 transition" style={{boxShadow:"0 3px 8px rgba(244,114,182,0.3)"}}>
+                      {editingSize ? "✓ 完了" : "✎ サイズ更新"}
+                    </button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    {measurements.map(m=>{
+                    {measurements.map((m,mi)=>{
                       const diff = (m.cur - m.goal).toFixed(1);
                       const goingDown = m.goal < m.cur;
                       const progress = goingDown
@@ -4210,7 +4292,14 @@
                             <span className="text-[10px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>{m.k}</span>
                           </div>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-[16px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif'}}>{m.cur.toFixed(1)}</span>
+                            {editingSize ? (
+                              <input type="number" step="0.1" inputMode="decimal" value={m.cur}
+                                onChange={function(e){ updateMeasurement(mi, e.target.value); }}
+                                className="w-[60px] text-[14px] text-rose-700 bg-white border border-pink-300 rounded px-1 focus:outline-none focus:border-pink-500"
+                                style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                            ) : (
+                              <span className="text-[16px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif'}}>{m.cur.toFixed(1)}</span>
+                            )}
                             <span className="text-[8.5px] text-rose-400">{m.unit}</span>
                           </div>
                           <div className="mt-1 h-1 rounded-full bg-white/70 overflow-hidden">
@@ -4552,6 +4641,7 @@
         </div>
       );
     };
+
 
     /* =================================================
      *  MONTHLY SCREEN（マンスリー 主人公設定＋振り返り）
