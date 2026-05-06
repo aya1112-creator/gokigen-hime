@@ -4914,20 +4914,48 @@
   </script>
   <script src="./twemoji.min.js"></script>
   <script>
-    // TWEMOJI_START
-    function applyTwemoji(){
-      if(!window.twemoji) return;
-      twemoji.parse(document.body, {
-        callback: function(icon){ return './twemoji/' + icon + '.svg'; },
-        className: 'twemoji-img'
+    // iOS は美しいネイティブ絵文字があるので twemoji 置換をスキップ
+    // パチパチのちらつきを防ぐため、setIntervalは廃止し MutationObserver でDOM変化時だけ実行
+    (function(){
+      var ua = navigator.userAgent || "";
+      var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Mac/.test(ua) && navigator.maxTouchPoints > 1);
+      // iOS なら twemoji 完全スキップ（ネイティブ絵文字を使う）
+      if (isIOS) return;
+      if (!window.twemoji) return;
+
+      var pending = false;
+      var observer = null;
+      function applyTwemoji(){
+        // パース中の DOM 変化が再帰的に observer を発火しないように一時停止
+        if (observer) observer.disconnect();
+        twemoji.parse(document.body, {
+          callback: function(icon){ return './twemoji/' + icon + '.svg'; },
+          className: 'twemoji-img'
+        });
+        pending = false;
+        if (observer) observer.observe(document.body, { childList: true, subtree: true });
+      }
+      // 最初の描画後に一度だけ
+      setTimeout(applyTwemoji, 400);
+      // DOMの変化を監視してデバウンス実行（800ms ごとの強制再描画を廃止）
+      observer = new MutationObserver(function(){
+        if (pending) return;
+        pending = true;
+        setTimeout(applyTwemoji, 800);
       });
-    }
-    setTimeout(applyTwemoji, 300);
-    setInterval(applyTwemoji, 800);
-    // TWEMOJI_END
+      observer.observe(document.body, { childList: true, subtree: true });
+    })();
   </script>
   <style>
     img.twemoji-img { height: 1em; width: 1em; display: inline-block; vertical-align: -0.15em; margin: 0 0.02em; }
+    /* タップ・スクロール体験向上 */
+    * { -webkit-tap-highlight-color: transparent; }
+    /* モバイルでの過剰アニメーション抑制（OS設定で「視差効果を減らす」を ON にしている方向け） */
+    @media (prefers-reduced-motion: reduce) {
+      .anim-float, .anim-float-emoji, .anim-spin, .anim-spin-r {
+        animation: none !important;
+      }
+    }
   </style>
 </body>
 </html>
