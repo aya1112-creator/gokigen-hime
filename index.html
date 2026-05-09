@@ -571,16 +571,37 @@
      *  ごきげん指数 1週間チャート（emoji 顔文字付き）
      * ================================================= */
     const MoodWeekChart = () => {
-      const data = [
-        {day:"月", level:4, emoji:"😌", label:"おだやか"},
-        {day:"火", level:3, emoji:"😶",  label:"ふつう"},
-        {day:"水", level:5, emoji:"🥰", label:"ごきげん"},
-        {day:"木", level:2, emoji:"😞", label:"疲れた"},
-        {day:"金", level:4, emoji:"😌", label:"おだやか"},
-        {day:"土", level:5, emoji:"🥰", label:"ごきげん"},
-        {day:"日", level:5, emoji:"🥰", label:"ごきげん"},
-      ];
-      const avg = (data.reduce((a,b)=>a+b.level,0)/data.length).toFixed(1);
+      // 過去7日間のごきげん気分を実データから取得
+      const moodMeta = {
+        "ごきげん":  {level:5, emoji:"🥰"},
+        "おだやか":  {level:4, emoji:"😌"},
+        "疲れた":    {level:2, emoji:"😣"},
+        "悲しい":    {level:2, emoji:"🥺"},
+        "つらい":    {level:1, emoji:"😢"},
+        "イライラ":  {level:2, emoji:"😰"},
+      };
+      const dayLabels = ["月","火","水","木","金","土","日"];
+      const recent = getRecentDays(7, "selectedMood");
+      const data = recent.map(r => {
+        const dow = (r.dateObj.getDay()+6)%7; // Mon=0
+        if (r.value && moodMeta[r.value]) {
+          return { day: dayLabels[dow], level: moodMeta[r.value].level, emoji: moodMeta[r.value].emoji, label: r.value, hasData: true };
+        }
+        return { day: dayLabels[dow], level: 3, emoji: "·", label: "未記録", hasData: false };
+      });
+      // 全日未記録ならメッセージ表示
+      const valid = data.filter(d => d.hasData);
+      if (valid.length === 0) {
+        return (
+          <div className="bg-white/55 rounded-[22px] p-4 border border-white/70 backdrop-blur-sm text-center" style={{boxShadow:"0 2px 8px rgba(249,168,212,0.08)"}}>
+            <div className="text-[10px] text-rose-300 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              まだごきげんの記録がありません<br/>
+              ホーム → 朝のごきげんタイムから今日の気分を選んでね ♡
+            </div>
+          </div>
+        );
+      }
+      const avg = (valid.reduce((a,b)=>a+b.level,0)/valid.length).toFixed(1);
       const W = 320, H = 130, P = 24;
       const innerW = W - P*2, innerH = H - P - 16;
       const xs = data.map((_,i)=> P + (innerW/(data.length-1))*i);
@@ -610,8 +631,8 @@
             {/* データポイント（顔文字） */}
             {data.map((d,i)=>(
               <g key={i}>
-                <circle cx={xs[i]} cy={ys[i]} r="11" fill="white" stroke="#f9a8d4" strokeWidth="1.5"/>
-                <text x={xs[i]} y={ys[i]+4.2} fontSize="13" textAnchor="middle">{d.emoji}</text>
+                <circle cx={xs[i]} cy={ys[i]} r={d.hasData?"11":"6"} fill="white" stroke={d.hasData?"#f9a8d4":"#fbcfe8"} strokeWidth="1.5" strokeDasharray={d.hasData?"":"2 2"}/>
+                {d.hasData && <text x={xs[i]} y={ys[i]+4.2} fontSize="13" textAnchor="middle">{d.emoji}</text>}
               </g>
             ))}
             {/* 曜日ラベル */}
@@ -3661,14 +3682,15 @@
       const [foodWeeklyInsight,setFoodWeeklyInsight] = useState("");
       const [foodWeeklyImprove,setFoodWeeklyImprove] = useState("");
       const [foodNextChallenge,setFoodNextChallenge] = useState("");
-      const [walk,setWalk]   = useState(50);   // 分（理想 80分＝約8,000歩）
-      const [yoga,setYoga]   = useState(45);   // 分（理想 60分）
-      const [body,setBody]   = useState(20);   // 分（理想 30分）
-      const [gym,setGym]     = useState(0);    // 分（行く日は60-90分）
-      const [water,setWater] = useState(6);    // 杯（推奨 6-8杯／1.2-1.5L 飲み水）
-      const [sleep,setSleep] = useState(7);    // 時間（理想 7-8時間）
-      const [stretch,setStretch]     = useState(10); // 分（理想 10-15分）
-      const [meditation,setMeditation] = useState(10); // 分（理想 10分）
+      // 体ケアの数値（日ごとに記録：活動量・水分・睡眠・運動）
+      const [walk,setWalk]   = useDaily("walk",   50);  // 分（理想 80分＝約8,000歩）
+      const [yoga,setYoga]   = useDaily("yoga",   45);  // 分（理想 60分）
+      const [body,setBody]   = useDaily("bodyMin",20);  // 分（理想 30分）
+      const [gym,setGym]     = useDaily("gym",    0);   // 分
+      const [water,setWater] = useDaily("water",  6);   // 杯
+      const [sleep,setSleep] = useDaily("sleep",  7);   // 時間
+      const [stretch,setStretch]       = useDaily("stretch",   10); // 分
+      const [meditation,setMeditation] = useDaily("meditation",10); // 分
       const meals = [
         {key:"朝", emoji:"🌅", time:"7:40"},
         {key:"昼", emoji:"☀️", time:"12:30"},
@@ -3904,7 +3926,15 @@
                     <span className="text-[10px] text-rose-300">今週</span>
                   </div>
                   <WeekLineChart
-                    data={[55, 90, 30, 0, 75, 120, 45]}
+                    data={getRecentDays(7, "walk").map(r => {
+                      const w = typeof r.value === "number" ? r.value : 0;
+                      const y = (getDayRecord(r.date).yoga) || 0;
+                      const s = (getDayRecord(r.date).stretch) || 0;
+                      const b = (getDayRecord(r.date).bodyMin) || 0;
+                      const g = (getDayRecord(r.date).gym) || 0;
+                      const m = (getDayRecord(r.date).meditation) || 0;
+                      return w + y + s + b + g + m;
+                    })}
                     unit="分"
                     lineColor="#f472b6"
                     goalLine={60}
@@ -3923,7 +3953,7 @@
                     <span className="text-[10px] text-rose-300">今週</span>
                   </div>
                   <WeekLineChart
-                    data={[7.5, 6.5, 8.0, 5.5, 7.0, 8.5, 7.0]}
+                    data={getRecentDays(7, "sleep").map(r => typeof r.value === "number" ? r.value : 0)}
                     unit="h"
                     lineColor="#a78bfa"
                     goalLine={7.5}
