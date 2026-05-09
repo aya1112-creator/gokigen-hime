@@ -83,6 +83,77 @@
       return [v, setV];
     };
 
+    // ===== 日付ヘルパー =====
+    const todayKey = function(d){
+      d = d || new Date();
+      var y = d.getFullYear();
+      var m = String(d.getMonth()+1).padStart(2,"0");
+      var dd = String(d.getDate()).padStart(2,"0");
+      return y + "-" + m + "-" + dd;
+    };
+
+    // ===== 日付つき履歴フック =====
+    // 日ごとにスナップショットを保存する。新しい日に開いたらリセット、
+    // 過去の日付の記録は localStorage に保存され、グラフ・カレンダーで参照可能。
+    const useDaily = (key, initial) => {
+      const today = todayKey();
+      const storageKey = "gokigen_day_" + today + "_" + key;
+      const [v, setV] = useState(function(){
+        try {
+          var raw = localStorage.getItem(storageKey);
+          if (raw !== null) return JSON.parse(raw);
+        } catch(e){}
+        return initial;
+      });
+      useEffect(function(){
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(v));
+          // 履歴日付インデックスにも追加
+          var dates = [];
+          try { dates = JSON.parse(localStorage.getItem("gokigen_dates") || "[]"); } catch(e){}
+          if (dates.indexOf(today) < 0) {
+            dates.push(today);
+            localStorage.setItem("gokigen_dates", JSON.stringify(dates));
+          }
+        } catch(e){}
+      }, [v]);
+      return [v, setV];
+    };
+
+    // ===== 履歴読み取りヘルパー =====
+    // 指定日のレコードを取得（{key: value} 形式）
+    const getDayRecord = (dateStr) => {
+      var result = {};
+      var prefix = "gokigen_day_" + dateStr + "_";
+      for (var i=0; i<localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf(prefix) === 0) {
+          var sub = k.slice(prefix.length);
+          try { result[sub] = JSON.parse(localStorage.getItem(k)); } catch(e){}
+        }
+      }
+      return result;
+    };
+    // 記録のあった日付一覧（ソート済み）
+    const getRecordedDates = () => {
+      try {
+        var arr = JSON.parse(localStorage.getItem("gokigen_dates") || "[]");
+        return arr.sort();
+      } catch(e) { return []; }
+    };
+    // 直近N日間のキー値を取得（空白日も含む）
+    const getRecentDays = (n, key) => {
+      var result = [];
+      var d = new Date();
+      for (var i=n-1; i>=0; i--) {
+        var dt = new Date(d.getFullYear(), d.getMonth(), d.getDate()-i);
+        var ds = todayKey(dt);
+        var rec = getDayRecord(ds);
+        result.push({ date: ds, dateObj: dt, value: rec[key] });
+      }
+      return result;
+    };
+
     /* --- Inline SVG Icons (lucide代替) --- */
     const Icon = ({ d, className = "w-4 h-4", stroke = 2, fill = "none" }) => (
       <svg viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -656,13 +727,38 @@
     );
 
     const WeightChart = () => {
-      const data = [52.4,52.2,52.3,52.0,51.9,51.8,51.8];
-      const days = ["月","火","水","木","金","土","日"];
-      const min = Math.min(...data)-0.3, max = Math.max(...data)+0.3;
+      // 過去7日間の体重を実データから取得（記録のない日は前後の値で補完）
+      const recent = getRecentDays(7, "bodyStats");
+      const dayLabels = ["月","火","水","木","金","土","日"];
+      const days = recent.map(r => dayLabels[(r.dateObj.getDay()+6)%7]);
+      let lastWeight = null;
+      const data = recent.map(r => {
+        if (r.value && typeof r.value.weight === "number" && r.value.weight > 0) {
+          lastWeight = r.value.weight;
+          return r.value.weight;
+        }
+        return lastWeight;
+      });
+      // 全日データなしの場合は説明表示
+      const validCount = data.filter(v => v !== null).length;
+      if (validCount === 0) {
+        return (
+          <div className="bg-white/55 rounded-[22px] p-4 border border-white/70 backdrop-blur-sm text-center" style={{boxShadow:"0 2px 8px rgba(249,168,212,0.08)"}}>
+            <div className="text-[10px] text-rose-300 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              まだ体重の記録がありません<br/>
+              プリンセスケア → 理想の姿で記録してね ♡
+            </div>
+          </div>
+        );
+      }
+      // データが足りない部分は最後の値で埋める（チャート表示用）
+      const filled = data.map((v,i) => v !== null ? v : (data.find(x => x !== null) || 0));
+      const minV = Math.min(...filled)-0.3, maxV = Math.max(...filled)+0.3;
+      const range = maxV-minV || 1;
       const W = 320, H = 90, P = 20;
       const innerW = W-P*2, innerH = H-P-10;
-      const xs = data.map((_,i)=> P + (innerW/(data.length-1))*i);
-      const ys = data.map(v => P + innerH * (1 - (v-min)/(max-min)));
+      const xs = filled.map((_,i)=> P + (innerW/(filled.length-1))*i);
+      const ys = filled.map(v => P + innerH * (1 - (v-minV)/range));
       const path = xs.map((x,i)=> `${i===0?"M":"L"}${x},${ys[i]}`).join(" ");
       return (
         <div className="bg-white/55 rounded-[22px] p-3 border border-white/70 backdrop-blur-sm" style={{boxShadow:"0 2px 8px rgba(249,168,212,0.08)"}}>
@@ -673,7 +769,7 @@
             ))}
             <path d={path} fill="none" stroke="#f9a8d4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             {xs.map((x,i)=>(
-              <circle key={i} cx={x} cy={ys[i]} r="3" fill="#f472b6"/>
+              <circle key={i} cx={x} cy={ys[i]} r={data[i]!==null?"3":"2"} fill={data[i]!==null?"#f472b6":"#fbcfe8"}/>
             ))}
             {days.map((d,i)=>(
               <text key={i} x={xs[i]} y={H+8} fontSize="10" fill="#c4a6b8" textAnchor="middle">{d}</text>
@@ -782,12 +878,17 @@
       // 月初の曜日（月曜始まりに変換: Mon=0, Sun=6）
       const firstDayOfMonth = new Date(year, month-1, 1).getDay(); // Sun=0
       const firstWeekday = (firstDayOfMonth + 6) % 7; // Mon=0, Sun=6
-      // 例: 記録のあった日付 -> 絵文字（今日までの過去日のみ）
-      const moodSamples = ["😊","🌸","✨","💕","😴"];
+      // 実データから記録のあった日の絵文字を生成
+      const moodEmojiMap = {
+        "おだやか":"😌", "ごきげん":"🥰", "疲れた":"😣",
+        "悲しい":"🥺", "つらい":"😢", "イライラ":"😰",
+      };
       const moods = {};
-      for (let d=1; d<today; d++) {
-        if (d % 2 === 0 || d % 3 === 0) {
-          moods[d] = moodSamples[d % moodSamples.length];
+      for (let d=1; d<=daysInMonth; d++) {
+        const ds = year + "-" + String(month).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+        const rec = getDayRecord(ds);
+        if (rec.selectedMood && moodEmojiMap[rec.selectedMood]) {
+          moods[d] = moodEmojiMap[rec.selectedMood];
         }
       }
       const cells = [];
@@ -1003,12 +1104,12 @@
         {k:"heart",   label:"心の対話",     emoji:"💖", from:"#fecaca", to:"#f43f5e", done:true},
       ];
       const focusDone = focusGems.filter(g=>g.done).length;
-      // 朝のごきげんタイム（モーニングページ）
-      const [morningPriority,setMorningPriority] = useLocal("morningPriority", "");
-      const [morningGratitude,setMorningGratitude] = useLocal("morningGratitude", "");
+      // 朝のごきげんタイム（モーニングページ）— 日ごとに記録
+      const [morningPriority,setMorningPriority] = useDaily("morningPriority", "");
+      const [morningGratitude,setMorningGratitude] = useDaily("morningGratitude", "");
       // ネガ気分のときの「整える」ステップ
-      const [morningRelease,setMorningRelease] = useLocal("morningRelease", "");
-      const [morningCare,setMorningCare] = useLocal("morningCare", "");
+      const [morningRelease,setMorningRelease] = useDaily("morningRelease", "");
+      const [morningCare,setMorningCare] = useDaily("morningCare", "");
       const negativeMoods = ["疲れた","悲しい","つらい","イライラ"];
       const isNegativeMood = negativeMoods.includes(selectedMood);
       const careOptions = [
@@ -1023,11 +1124,11 @@
         {emoji:"😭", label:"泣く"},
         {emoji:"🌸", label:"何もしない時間"},
       ];
-      // 夜のおやすみタイム（イブニングページ）
-      const [eveningGood1,setEveningGood1] = useLocal("eveningGood1", "");
-      const [eveningGood2,setEveningGood2] = useLocal("eveningGood2", "");
-      const [eveningGood3,setEveningGood3] = useLocal("eveningGood3", "");
-      const [tomorrowStep,setTomorrowStep] = useLocal("tomorrowStep", "");
+      // 夜のおやすみタイム（イブニングページ）— 日ごとに記録
+      const [eveningGood1,setEveningGood1] = useDaily("eveningGood1", "");
+      const [eveningGood2,setEveningGood2] = useDaily("eveningGood2", "");
+      const [eveningGood3,setEveningGood3] = useDaily("eveningGood3", "");
+      const [tomorrowStep,setTomorrowStep] = useDaily("tomorrowStep", "");
       return (
         <div className="relative pb-40 anim-fade">
           {/* ─── 1. ヒーローヘッダー ─── */}
@@ -2818,13 +2919,14 @@
       const [morningItems,setMorningItems] = useLocal("morningItems", ["","",""]);
       const [noonItems,setNoonItems]       = useLocal("noonItems",    ["","",""]);
       const [nightItems,setNightItems]     = useLocal("nightItems",   ["","",""]);
-      const [morningDone,setMorningDone] = useLocal("morningDone", false);
-      const [noonDone,setNoonDone]       = useLocal("noonDone",    false);
-      const [nightDone,setNightDone]     = useLocal("nightDone",   false);
+      // 達成チェック・メモは日ごとに記録（過去の達成度を集計するため）
+      const [morningDone,setMorningDone] = useDaily("morningDone", false);
+      const [noonDone,setNoonDone]       = useDaily("noonDone",    false);
+      const [nightDone,setNightDone]     = useDaily("nightDone",   false);
       // 今日のひとこと（時間帯ごと）
-      const [morningMemo,setMorningMemo] = useLocal("morningMemo", "");
-      const [noonMemo,setNoonMemo]       = useLocal("noonMemo",    "");
-      const [nightMemo,setNightMemo]     = useLocal("nightMemo",   "");
+      const [morningMemo,setMorningMemo] = useDaily("morningMemo", "");
+      const [noonMemo,setNoonMemo]       = useDaily("noonMemo",    "");
+      const [nightMemo,setNightMemo]     = useDaily("nightMemo",   "");
       // リマインダー時刻
       const [morningReminder,setMorningReminder] = useLocal("morningReminder", "05:00");
       const [noonReminder,setNoonReminder]       = useLocal("noonReminder",    "12:00");
@@ -3196,11 +3298,21 @@
                 <span className="text-[8.5px] text-rose-300">時間帯別 達成率</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {[
-                  {label:"朝の儀式",     pct:80, emoji:"🌅", from:"#fde68a", to:"#f9a8d4"},
-                  {label:"昼のたしなみ", pct:50, emoji:"☀️", from:"#fbcfe8", to:"#f472b6"},
-                  {label:"夜のしつらえ", pct:30, emoji:"🌙", from:"#ddd6fe", to:"#c084fc"},
-                ].map((d,i)=>{
+                {(() => {
+                  // 過去7日間の達成率を実データから計算
+                  const days = getRecentDays(7, "morningDone");
+                  const noonDays = getRecentDays(7, "noonDone");
+                  const nightDays = getRecentDays(7, "nightDone");
+                  const calcPct = (arr) => {
+                    const done = arr.filter(d => d.value === true).length;
+                    return Math.round(done/7 * 100);
+                  };
+                  return [
+                    {label:"朝の儀式",     pct:calcPct(days),       emoji:"🌅", from:"#fde68a", to:"#f9a8d4"},
+                    {label:"昼のたしなみ", pct:calcPct(noonDays),   emoji:"☀️", from:"#fbcfe8", to:"#f472b6"},
+                    {label:"夜のしつらえ", pct:calcPct(nightDays),  emoji:"🌙", from:"#ddd6fe", to:"#c084fc"},
+                  ];
+                })().map((d,i)=>{
                   const R=24, C=2*Math.PI*R, dash=C*(d.pct/100);
                   return (
                     <div key={i} className="flex flex-col items-center">
@@ -3248,7 +3360,18 @@
                 ))}
                 {Array.from({length:calDaysInMonth}).map((_,i)=>{
                   const day = i+1;
-                  const v = day <= calToday ? (day*13+5)%4 : 0; // 過去日のみ実績色
+                  // 実際の記録から達成度を計算（朝・昼・夜のチェック数）
+                  let v = 0;
+                  if (day <= calToday) {
+                    const ds = calYear + "-" + String(calMonth).padStart(2,"0") + "-" + String(day).padStart(2,"0");
+                    const rec = getDayRecord(ds);
+                    let count = 0;
+                    if (rec.morningDone) count++;
+                    if (rec.noonDone)    count++;
+                    if (rec.nightDone)   count++;
+                    if (rec.selectedMood) count = Math.max(count, 1); // 気分入力でも記録扱い
+                    v = count; // 0-3
+                  }
                   const isToday = day === calToday;
                   const isSelected = day === selectedDate;
                   const hasMemo = !!calendarMemos[day];
@@ -3616,29 +3739,46 @@
       const [editingBody,setEditingBody] = useState(false);
       const [editingSize,setEditingSize] = useState(false);
       const [lastUpdated,setLastUpdated] = useState("");
-      // localStorageから初期値ロード
+      // localStorageから初期値ロード（settings + 今日の値）
       useEffect(function(){
         try{
+          // 体重ゴール・サイズリストなどの設定は前回値を引き継ぐ
           var raw = localStorage.getItem("gokigen_body_v1");
           if(raw){
             var d = JSON.parse(raw);
             if(d.bodyStats)    setBodyStats(d.bodyStats);
             if(d.measurements) setMeasurements(d.measurements);
-            if(typeof d.todaySteps === "number") setTodaySteps(d.todaySteps);
-            if(d.lastUpdated)  setLastUpdated(d.lastUpdated);
           }
+          // 今日の歩数・体重は今日の日付キーから読む
+          var today = todayKey();
+          var rec = getDayRecord(today);
+          if (typeof rec.todaySteps === "number") setTodaySteps(rec.todaySteps);
+          if (rec.bodyStats) setBodyStats(rec.bodyStats);
+          if (rec.measurements) setMeasurements(rec.measurements);
+          if (rec.lastUpdated) setLastUpdated(rec.lastUpdated);
         }catch(e){}
       },[]);
-      // 保存ヘルパー
+      // 保存ヘルパー（最新値の設定保存 + 日付スナップショット）
       const persistBody = function(nextStats, nextMeas, nextSteps){
         var now = new Date().toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-        var data = {
-          bodyStats:    nextStats || bodyStats,
-          measurements: nextMeas  || measurements,
-          todaySteps:   typeof nextSteps === "number" ? nextSteps : todaySteps,
-          lastUpdated:  now,
-        };
+        var stats = nextStats || bodyStats;
+        var meas  = nextMeas  || measurements;
+        var steps = typeof nextSteps === "number" ? nextSteps : todaySteps;
+        var data = { bodyStats: stats, measurements: meas, todaySteps: steps, lastUpdated: now };
         try{ localStorage.setItem("gokigen_body_v1", JSON.stringify(data)); }catch(e){}
+        // 日付スナップショット
+        try {
+          var today = todayKey();
+          localStorage.setItem("gokigen_day_"+today+"_bodyStats", JSON.stringify(stats));
+          localStorage.setItem("gokigen_day_"+today+"_measurements", JSON.stringify(meas));
+          localStorage.setItem("gokigen_day_"+today+"_todaySteps", JSON.stringify(steps));
+          localStorage.setItem("gokigen_day_"+today+"_lastUpdated", JSON.stringify(now));
+          var dates = JSON.parse(localStorage.getItem("gokigen_dates") || "[]");
+          if (dates.indexOf(today) < 0) {
+            dates.push(today);
+            localStorage.setItem("gokigen_dates", JSON.stringify(dates));
+          }
+        } catch(e){}
         setLastUpdated(now);
       };
       const updateBodyStat = function(k, v){
@@ -4898,7 +5038,7 @@
      * ================================================= */
     function App(){
       const [activeTab,setActiveTab] = useState("home");
-      const [selectedMood,setSelectedMood] = useLocal("selectedMood", "ごきげん");
+      const [selectedMood,setSelectedMood] = useDaily("selectedMood", "ごきげん");
       const [analysisType,setAnalysisType] = useState(null);
       const [loading,setLoading] = useState(false);
       const [screenKey,setScreenKey] = useState(0);
