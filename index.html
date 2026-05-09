@@ -67,6 +67,22 @@
   <script type="text/babel" data-presets="react">
     const { useState, useRef, useEffect } = React;
 
+    // ===== localStorage 永続化フック =====
+    // useState の代わりに使うと、自動的にブラウザに保存・復元される
+    const useLocal = (key, initial) => {
+      const [v, setV] = useState(function(){
+        try {
+          var raw = localStorage.getItem("gokigen_" + key);
+          if (raw !== null) return JSON.parse(raw);
+        } catch(e){}
+        return initial;
+      });
+      useEffect(function(){
+        try { localStorage.setItem("gokigen_" + key, JSON.stringify(v)); } catch(e){}
+      }, [v]);
+      return [v, setV];
+    };
+
     /* --- Inline SVG Icons (lucide代替) --- */
     const Icon = ({ d, className = "w-4 h-4", stroke = 2, fill = "none" }) => (
       <svg viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -756,17 +772,24 @@
      *  カレンダー（きろくカレンダー）
      * ================================================= */
     const MoodCalendar = () => {
-      // 2026年4月、1日は水曜、月曜始まり→月火の前に 2 マス空ける
-      const year = 2026, month = 4;
-      const daysInMonth = 30;
-      const firstWeekday = 2; // Mon=0, Tue=1, Wed=2
-      // 例: 記録のあった日付 -> 絵文字
-      const moods = {
-        1:"😊", 2:"🌸", 3:"😊", 5:"✨", 6:"😴", 7:"🌸",
-        8:"😊", 10:"💕", 11:"🌸", 12:"✨", 14:"😊", 15:"🌸",
-        16:"😊", 17:"💕", 19:"🌸", 20:"😊"
-      };
-      const today = 19;
+      // 今日の日付を自動取得
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1; // 1-12
+      const today = now.getDate();
+      // 月の日数
+      const daysInMonth = new Date(year, month, 0).getDate();
+      // 月初の曜日（月曜始まりに変換: Mon=0, Sun=6）
+      const firstDayOfMonth = new Date(year, month-1, 1).getDay(); // Sun=0
+      const firstWeekday = (firstDayOfMonth + 6) % 7; // Mon=0, Sun=6
+      // 例: 記録のあった日付 -> 絵文字（今日までの過去日のみ）
+      const moodSamples = ["😊","🌸","✨","💕","😴"];
+      const moods = {};
+      for (let d=1; d<today; d++) {
+        if (d % 2 === 0 || d % 3 === 0) {
+          moods[d] = moodSamples[d % moodSamples.length];
+        }
+      }
       const cells = [];
       for (let i=0; i<firstWeekday; i++) cells.push(null);
       for (let d=1; d<=daysInMonth; d++) cells.push(d);
@@ -786,7 +809,7 @@
               <span className="text-[10px] text-purple-400" style={{letterSpacing:"0.3em"}}>◁</span>
               <div className="text-center">
                 <p className="text-[10px] text-purple-400 italic" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.3em"}}>
-                  April {year}
+                  {["January","February","March","April","May","June","July","August","September","October","November","December"][month-1]} {year}
                 </p>
                 <p className="text-[16px] text-rose-600 mt-0.5"
                   style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.18em"}}>
@@ -981,11 +1004,11 @@
       ];
       const focusDone = focusGems.filter(g=>g.done).length;
       // 朝のごきげんタイム（モーニングページ）
-      const [morningPriority,setMorningPriority] = useState("");
-      const [morningGratitude,setMorningGratitude] = useState("");
+      const [morningPriority,setMorningPriority] = useLocal("morningPriority", "");
+      const [morningGratitude,setMorningGratitude] = useLocal("morningGratitude", "");
       // ネガ気分のときの「整える」ステップ
-      const [morningRelease,setMorningRelease] = useState("");
-      const [morningCare,setMorningCare] = useState("");
+      const [morningRelease,setMorningRelease] = useLocal("morningRelease", "");
+      const [morningCare,setMorningCare] = useLocal("morningCare", "");
       const negativeMoods = ["疲れた","悲しい","つらい","イライラ"];
       const isNegativeMood = negativeMoods.includes(selectedMood);
       const careOptions = [
@@ -1001,10 +1024,10 @@
         {emoji:"🌸", label:"何もしない時間"},
       ];
       // 夜のおやすみタイム（イブニングページ）
-      const [eveningGood1,setEveningGood1] = useState("");
-      const [eveningGood2,setEveningGood2] = useState("");
-      const [eveningGood3,setEveningGood3] = useState("");
-      const [tomorrowStep,setTomorrowStep] = useState("");
+      const [eveningGood1,setEveningGood1] = useLocal("eveningGood1", "");
+      const [eveningGood2,setEveningGood2] = useLocal("eveningGood2", "");
+      const [eveningGood3,setEveningGood3] = useLocal("eveningGood3", "");
+      const [tomorrowStep,setTomorrowStep] = useLocal("tomorrowStep", "");
       return (
         <div className="relative pb-40 anim-fade">
           {/* ─── 1. ヒーローヘッダー ─── */}
@@ -2387,23 +2410,23 @@
     const LoopScreen = ({selectedMood, setSelectedMood}) => {
       const [step,setStep] = useState(0);
       // STEP1
-      const [concern,setConcern] = useState(null);
-      const [want,setWant] = useState(null);
-      const [selfWord,setSelfWord] = useState(null);
-      const [moyaText,setMoyaText] = useState("");
-      const [hontoText,setHontoText] = useState("");
+      const [concern,setConcern] = useLocal("loop_concern", null);
+      const [want,setWant] = useLocal("loop_want", null);
+      const [selfWord,setSelfWord] = useLocal("loop_selfWord", null);
+      const [moyaText,setMoyaText] = useLocal("loop_moyaText", "");
+      const [hontoText,setHontoText] = useLocal("loop_hontoText", "");
       // STEP2
-      const [theme,setTheme] = useState("癒す");
-      const [valueChoice,setValueChoice] = useState("自分にやさしくする");
-      const [todayStep,setTodayStep] = useState("深呼吸・瞑想する");
+      const [theme,setTheme] = useLocal("loop_theme", "癒す");
+      const [valueChoice,setValueChoice] = useLocal("loop_valueChoice", "自分にやさしくする");
+      const [todayStep,setTodayStep] = useLocal("loop_todayStep", "深呼吸・瞑想する");
       // STEP3
       const [running,setRunning] = useState(false);
-      const [actionDone,setActionDone] = useState(false);
+      const [actionDone,setActionDone] = useLocal("loop_actionDone", false);
       // STEP4
-      const [afterFeel,setAfterFeel] = useState("少し楽になった");
-      const [wins,setWins] = useState(["深呼吸","水1杯"]);
-      const [kindWord,setKindWord] = useState("よくやった");
-      const [gratitude,setGratitude] = useState("");
+      const [afterFeel,setAfterFeel] = useLocal("loop_afterFeel", "少し楽になった");
+      const [wins,setWins] = useLocal("loop_wins", ["深呼吸","水1杯"]);
+      const [kindWord,setKindWord] = useLocal("loop_kindWord", "よくやった");
+      const [gratitude,setGratitude] = useLocal("loop_gratitude", "");
 
       const toggleWin = (w) => {
         setWins(wins.includes(w) ? wins.filter(x=>x!==w) : [...wins, w]);
@@ -2792,28 +2815,31 @@
       const dowJP = ["日","月","火","水","木","金","土"][today.getDay()];
 
       // 朝・昼・夜の習慣（行ごとに追加可能）
-      const [morningItems,setMorningItems] = useState(["","",""]);
-      const [noonItems,setNoonItems]       = useState(["","",""]);
-      const [nightItems,setNightItems]     = useState(["","",""]);
-      const [morningDone,setMorningDone] = useState(true);
-      const [noonDone,setNoonDone]       = useState(false);
-      const [nightDone,setNightDone]     = useState(false);
+      const [morningItems,setMorningItems] = useLocal("morningItems", ["","",""]);
+      const [noonItems,setNoonItems]       = useLocal("noonItems",    ["","",""]);
+      const [nightItems,setNightItems]     = useLocal("nightItems",   ["","",""]);
+      const [morningDone,setMorningDone] = useLocal("morningDone", false);
+      const [noonDone,setNoonDone]       = useLocal("noonDone",    false);
+      const [nightDone,setNightDone]     = useLocal("nightDone",   false);
       // 今日のひとこと（時間帯ごと）
-      const [morningMemo,setMorningMemo] = useState("");
-      const [noonMemo,setNoonMemo]       = useState("");
-      const [nightMemo,setNightMemo]     = useState("");
+      const [morningMemo,setMorningMemo] = useLocal("morningMemo", "");
+      const [noonMemo,setNoonMemo]       = useLocal("noonMemo",    "");
+      const [nightMemo,setNightMemo]     = useLocal("nightMemo",   "");
       // リマインダー時刻
-      const [morningReminder,setMorningReminder] = useState("05:00");
-      const [noonReminder,setNoonReminder]       = useState("12:00");
-      const [nightReminder,setNightReminder]     = useState("18:00");
+      const [morningReminder,setMorningReminder] = useLocal("morningReminder", "05:00");
+      const [noonReminder,setNoonReminder]       = useLocal("noonReminder",    "12:00");
+      const [nightReminder,setNightReminder]     = useLocal("nightReminder",   "18:00");
+      // 今日の日付情報（動的）
+      const _now = new Date();
+      const calYear = _now.getFullYear();
+      const calMonth = _now.getMonth() + 1; // 1-12
+      const calToday = _now.getDate();
+      const calDaysInMonth = new Date(calYear, calMonth, 0).getDate();
+      const _firstDow = new Date(calYear, calMonth-1, 1).getDay(); // Sun=0
+      const calFirstWeekday = (_firstDow + 6) % 7; // Mon=0, Sun=6
       // カレンダーのメモ（スケジュール管理）
-      const [calendarMemos,setCalendarMemos] = useState({
-        3:"朝ヨガクラス",
-        12:"友達とランチ",
-        18:"美容院",
-        26:"ピラティス",
-      });
-      const [selectedDate,setSelectedDate] = useState(26);
+      const [calendarMemos,setCalendarMemos] = useLocal("calendarMemos", {});
+      const [selectedDate,setSelectedDate] = useState(calToday);
       // 行の更新・追加・削除ヘルパー
       const updateItem = (items, setter, idx, val) => setter(items.map((it,i)=>i===idx?val:it));
       const addItem = (items, setter) => setter([...items, ""]);
@@ -3074,7 +3100,7 @@
                   memo:nightMemo, setMemo:setNightMemo, reminder:nightReminder, setReminder:setNightReminder,
                   placeholders:["ハーブティー","読書","ゆっくり入浴"]},
               ].map(card => (
-                <div key={card.title} className="relative rounded-[18px] bg-white border border-pink-200/80 flex flex-col overflow-hidden"
+                <div key={card.title} className="relative rounded-[18px] bg-white border border-pink-200/80 flex flex-col overflow-hidden min-w-0"
                   style={{minHeight:380, boxShadow:"0 4px 12px rgba(249,168,212,0.18)"}}>
                   <div className="absolute inset-[4px] rounded-[14px] border border-pink-100 pointer-events-none"/>
                   <FlowerMark className="absolute top-[3px] left-[3px] w-[10px] h-[10px] text-pink-300"/>
@@ -3097,16 +3123,17 @@
                   {/* 行ごとの入力 */}
                   <div className="relative mx-2 mt-2 mb-1 space-y-1">
                     {card.items.map((item,i)=>(
-                      <div key={i} className="group flex items-center gap-1">
-                        <span className="text-[8px] text-pink-300">♡</span>
-                        <input type="text" value={item}
+                      <div key={i} className="group flex items-start gap-1 min-w-0">
+                        <span className="text-[8px] text-pink-300 mt-1.5">♡</span>
+                        <textarea value={item} rows={1}
                           onChange={e=>updateItem(card.items, card.setItems, i, e.target.value)}
                           placeholder={card.placeholders[i] || "自由に書く…"}
-                          className="flex-1 bg-rose-50/30 border border-pink-100 rounded-md px-1.5 py-1.5 text-[10px] text-gray-700 placeholder:text-pink-300 focus:outline-none focus:border-pink-300"
-                          style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                          className="flex-1 min-w-0 bg-rose-50/30 border border-pink-100 rounded-md px-1.5 py-1 text-[10px] text-gray-700 placeholder:text-pink-300 focus:outline-none focus:border-pink-300 resize-none leading-snug"
+                          style={{fontFamily:'"Shippori Mincho",serif', wordBreak:"break-word", overflowWrap:"break-word"}}
+                          onInput={e=>{ e.target.style.height='auto'; e.target.style.height=Math.min(e.target.scrollHeight,40)+'px'; }}/>
                         {card.items.length > 1 && (
                           <button onClick={()=>removeItem(card.items, card.setItems, i)}
-                            className="opacity-0 group-hover:opacity-100 text-pink-300 text-[10px] w-3 transition">×</button>
+                            className="text-pink-300 text-[10px] w-3 mt-1 transition">×</button>
                         )}
                       </div>
                     ))}
@@ -3207,7 +3234,7 @@
             <div className="rounded-2xl bg-white/70 border border-pink-100 p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10.5px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.15em"}}>今月のスケジュール</span>
-                <span className="text-[8.5px] text-rose-300">2026 / 04　タップで予定を書く</span>
+                <span className="text-[8.5px] text-rose-300">{calYear} / {String(calMonth).padStart(2,'0')}　タップで予定を書く</span>
               </div>
               <div className="grid grid-cols-7 gap-1 mb-1">
                 {["月","火","水","木","金","土","日"].map(d=>(
@@ -3215,10 +3242,14 @@
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-1">
-                {Array.from({length:30}).map((_,i)=>{
+                {/* 月初の前の空セル */}
+                {Array.from({length:calFirstWeekday}).map((_,i)=>(
+                  <div key={"e"+i} className="aspect-square"/>
+                ))}
+                {Array.from({length:calDaysInMonth}).map((_,i)=>{
                   const day = i+1;
-                  const v = (i*13+5)%4; // 0=未,1=低,2=中,3=高
-                  const isToday = i === 25;
+                  const v = day <= calToday ? (day*13+5)%4 : 0; // 過去日のみ実績色
+                  const isToday = day === calToday;
                   const isSelected = day === selectedDate;
                   const hasMemo = !!calendarMemos[day];
                   return (
@@ -3253,7 +3284,7 @@
               <div className="mt-3 rounded-xl bg-gradient-to-br from-purple-50/60 to-pink-50/60 border border-pink-100 p-2.5">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, letterSpacing:"0.08em"}}>
-                    📌 4/{selectedDate} ({["日","月","火","水","木","金","土"][((new Date(2026,3,selectedDate)).getDay())]}) のお予定
+                    📌 {calMonth}/{selectedDate} ({["日","月","火","水","木","金","土"][((new Date(calYear,calMonth-1,selectedDate)).getDay())]}) のお予定
                   </span>
                   {calendarMemos[selectedDate] && (
                     <button onClick={()=>{
@@ -4867,7 +4898,7 @@
      * ================================================= */
     function App(){
       const [activeTab,setActiveTab] = useState("home");
-      const [selectedMood,setSelectedMood] = useState("ごきげん");
+      const [selectedMood,setSelectedMood] = useLocal("selectedMood", "ごきげん");
       const [analysisType,setAnalysisType] = useState(null);
       const [loading,setLoading] = useState(false);
       const [screenKey,setScreenKey] = useState(0);
