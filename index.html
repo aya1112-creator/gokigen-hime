@@ -55,6 +55,13 @@
     .anim-float { animation: floatY 4s ease-in-out infinite; }
     .anim-float-emoji { animation: floatEmoji 2.5s ease-in-out infinite; }
     .anim-spin { animation: spin360 3s linear infinite; }
+    @keyframes heartFly {
+      0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+      30%  { opacity: 1; transform: translate(-50%, -100%) scale(1.2) rotate(-12deg); }
+      70%  { opacity: 0.9; transform: translate(-50%, -180%) scale(1.0) rotate(8deg); }
+      100% { opacity: 0; transform: translate(-50%, -260%) scale(0.7) rotate(-5deg); color: #f9a8d4; }
+    }
+    .anim-heart-fly { animation: heartFly 1.4s ease-out forwards; color: #ec4899; text-shadow: 0 0 8px rgba(244,114,182,0.5); }
     .anim-spin-r { animation: spin360r 2s linear infinite; }
     input, textarea { font-family: inherit; }
     /* 選択時のハイライト色 */
@@ -2645,6 +2652,18 @@
           {/* 言葉の魔法 ── ネガ → ポジ変換 */}
           <WordsMagicSection/>
 
+          {/* ブラック姫にツッコミ ♪ */}
+          <BlackPrincessSection/>
+
+          {/* やさしく変化のレッスン */}
+          <GentleChangeSection/>
+
+          {/* 3歩先の未来へジャンプ */}
+          <ThreeStepsAheadSection/>
+
+          {/* できる！できる！ゲーム */}
+          <IcanGameSection/>
+
           <section className="px-5 mt-6">
             <SectionTitle icon={<Heart className="w-4 h-4 fill-pink-300 text-pink-300" filled/>}>ごきげんループ</SectionTitle>
             <SectionCard>
@@ -2970,6 +2989,320 @@
             <span>{rightLabel}</span>
           </div>
         </div>
+      );
+    };
+
+    /* =================================================
+     *  ブラック姫にツッコミ ♪
+     * ================================================= */
+    const blackPrincessData = [
+      {
+        key:"dekiruno",
+        voice:"本当にできるの？",
+        retorts:[
+          "♪ できないって、だれが言ったの？♪",
+          "♪ できるかどうか、まだ試してないでしょ？♪",
+          "♪ できる前提で動いてみよ？♪",
+        ],
+        butler:"お嬢様、ブラック姫がお出ましのご様子。可愛らしくツッコミを入れてくださいませ ♪",
+      },
+      {
+        key:"muiteruno",
+        voice:"私には向いてないかも…",
+        retorts:[
+          "♪ それって、本当？♪",
+          "♪ 向いてないって、いつ決めたの？♪",
+          "♪ 向いてるかどうかは、続けてみてからの話 ♪",
+        ],
+        butler:"お嬢様、向き不向きの審判は、もう少し後でも遅くありませんわ ♪",
+      },
+      {
+        key:"muzukashii",
+        voice:"やっぱり難しいんじゃない？",
+        retorts:[
+          "♪ 難しいって、だれが決めたの？♪",
+          "♪ 簡単なことだけが、価値ある道？♪",
+          "♪ 難しい＝成長中、ってことかも ♪",
+        ],
+        butler:"お嬢様、難しさは、お嬢様の伸びしろの証でございます ✨",
+      },
+      {
+        key:"shippai",
+        voice:"失敗したらどうしよう…",
+        retorts:[
+          "♪ 失敗の定義って、なんだろう？♪",
+          "♪ 失敗じゃなくて、データ収集 ♪",
+          "♪ うまくいかない＝学びのチャンス ♪",
+        ],
+        butler:"お嬢様、失敗とは、ただの『新しい発見』でございますわ ♪",
+      },
+      {
+        key:"muri",
+        voice:"私には無理…",
+        retorts:[
+          "♪ 無理って、いつ決めたんだっけ？♪",
+          "♪ 無理〜って言いたい気分だね、わかる ♪",
+          "♪ 「無理」って言葉、ちょっと封印してみる？♪",
+        ],
+        butler:"お嬢様、『無理』は便利すぎる魔法の言葉。今日だけお預けにいたしましょう ♪",
+      },
+    ];
+    const BlackPrincessSection = () => {
+      const [openKey, setOpenKey] = useState(null);
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>ブラック姫にツッコミ ♪</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            🎼 心の中の黒姫さんに、音符で軽やかにツッコミ ♪
+          </p>
+          <div className="space-y-2.5">
+            {blackPrincessData.map(card=>{
+              const isOpen = openKey===card.key;
+              return (
+                <div key={card.key} className={`rounded-2xl border overflow-hidden transition-all ${isOpen?"border-purple-300":"border-purple-100"}`}
+                  style={{boxShadow:isOpen?"0 6px 20px rgba(168,85,247,0.18)":"0 2px 8px rgba(168,85,247,0.08)"}}>
+                  <button onClick={()=>setOpenKey(isOpen?null:card.key)}
+                    className="w-full text-left p-3.5 bg-gradient-to-br from-purple-50 to-pink-50 active:scale-[0.99] transition">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[20px]">😈</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[9px] text-purple-500" style={{letterSpacing:"0.15em"}}>BLACK PRINCESS</div>
+                        <div className="text-[12px] text-purple-700 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                          「{card.voice}」
+                        </div>
+                      </div>
+                      <span className={`text-[14px] text-purple-400 transition-transform ${isOpen?"rotate-180":""}`}>⌄</span>
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <div className="bg-white/85 px-4 py-4 anim-fade">
+                      <div className="rounded-xl bg-gradient-to-br from-purple-50/60 to-pink-50/60 border border-purple-100 p-2.5 mb-3 flex items-start gap-2">
+                        <span className="text-[14px]">🎩</span>
+                        <p className="flex-1 text-[10px] text-rose-600 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.03em"}}>{card.butler}</p>
+                      </div>
+                      <div className="space-y-2">
+                        {card.retorts.map((r,i)=>(
+                          <div key={i} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-50/70 to-pink-50/70 border border-purple-100 px-3 py-2.5">
+                            <span className="text-[12px]">🎼</span>
+                            <p className="flex-1 text-[11px] text-purple-700 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.04em"}}>{r}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[8.5px] text-purple-400 text-center mt-3" style={{letterSpacing:"0.1em"}}>
+                        ✨ 音符♪をつけて、軽やかに唱えるのがコツ
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  やさしく変化のレッスン
+     * ================================================= */
+    const gentleQuestions = [
+      {key:"sukinawatashi",  emoji:"🍰", q:"私の好きな私なら、どうしたい？"},
+      {key:"hontou",         emoji:"🌸", q:"本当の本当は、どうしたい？"},
+      {key:"ureshii",        emoji:"💖", q:"結局、何があったらいちばん嬉しい？"},
+      {key:"yuuki",          emoji:"✨", q:"勇気を出して動いたら、どんな素敵が手に入る？"},
+      {key:"kyoka",          emoji:"👑", q:"自分に「許可」を出すとしたら、何を選ぶ？"},
+      {key:"sannenkomi",     emoji:"🌷", q:"3年後の私が今を振り返ったら、なんて声をかけてくれる？"},
+      {key:"enryonashi",     emoji:"💐", q:"誰にも遠慮しなくていいなら、何を選ぶ？"},
+    ];
+    const GentleChangeSection = () => {
+      const [answers, setAnswers] = useLocal("gentle_answers", {});
+      const update = (k,v) => setAnswers({...answers, [k]:v});
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>やさしく変化のレッスン</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            🍰 答えを急がず、ゆるやかに自分に問いかけて
+          </p>
+          <div className="space-y-2.5">
+            {gentleQuestions.map(q=>(
+              <div key={q.key} className="rounded-2xl bg-gradient-to-br from-amber-50/70 to-rose-50/70 border border-amber-100 p-3.5"
+                style={{boxShadow:"0 2px 8px rgba(251,191,36,0.1)"}}>
+                <div className="flex items-start gap-2 mb-2">
+                  <span className="text-[18px] mt-0.5">{q.emoji}</span>
+                  <p className="flex-1 text-[11.5px] text-rose-700 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, letterSpacing:"0.04em"}}>
+                    {q.q}
+                  </p>
+                </div>
+                <textarea value={answers[q.key]||""} onChange={e=>update(q.key, e.target.value)}
+                  rows={2}
+                  placeholder="ここに自由に書いてみて…"
+                  className="w-full bg-white/85 border border-amber-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
+                  style={{fontFamily:'"Shippori Mincho",serif'}}/>
+              </div>
+            ))}
+          </div>
+          <p className="text-[8.5px] text-rose-400 text-center mt-3 px-2 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+            🎩 お嬢様、お答えはいつ書いてくださっても、書き直してもよろしいのです ♡
+          </p>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  3歩先の未来へジャンプ
+     * ================================================= */
+    const ThreeStepsAheadSection = () => {
+      const [worry, setWorry] = useLocal("threeahead_worry", "");
+      const [m1,  setM1]  = useLocal("threeahead_1m", "");
+      const [m3,  setM3]  = useLocal("threeahead_3m", "");
+      const [y1,  setY1]  = useLocal("threeahead_1y", "");
+      const [y3,  setY3]  = useLocal("threeahead_3y", "");
+      const [savedAt, setSavedAt] = useLocal("threeahead_savedAt", "");
+      const handleSave = () => {
+        const now = new Date().toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+        setSavedAt(now);
+      };
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-sky-400"/>}>3歩先の未来へジャンプ</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            🚀 今の不安を、未来の私に「大丈夫」って言ってもらおう
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-sky-50/70 to-pink-50/70 border border-sky-100 p-4 space-y-3"
+            style={{boxShadow:"0 2px 10px rgba(14,165,233,0.08)"}}>
+            <div>
+              <p className="text-[10.5px] text-sky-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span>💭</span> 今、不安に感じていること
+              </p>
+              <textarea value={worry} onChange={e=>setWorry(e.target.value)} rows={2}
+                placeholder="例：来月のプレゼンが上手にできるか不安…"
+                className="w-full bg-white/85 border border-sky-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-sky-300 focus:outline-none focus:border-sky-300 resize-none leading-relaxed"
+                style={{fontFamily:'"Shippori Mincho",serif'}}/>
+            </div>
+            <div className="text-center text-[10px] text-sky-500 my-2" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              ✨ さあ、未来の私に会いに行きましょう ✨
+            </div>
+            {[
+              {label:"1ヶ月後の私は…", emoji:"🌷", value:m1, setValue:setM1, ph:"例：プレゼン成功して、達成感の中…"},
+              {label:"3ヶ月後の私は…", emoji:"🌸", value:m3, setValue:setM3, ph:"例：自信がついて、新しい仕事を任されてる…"},
+              {label:"1年後の私は…",   emoji:"💐", value:y1, setValue:setY1, ph:"例：人前で話すのが楽しくなってる…"},
+              {label:"3年後の私は…",   emoji:"👑", value:y3, setValue:setY3, ph:"例：自分のスタイルで自由に活躍してる…"},
+            ].map((step,i)=>(
+              <div key={i}>
+                <p className="text-[10.5px] text-sky-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                  <span>{step.emoji}</span> {step.label}
+                </p>
+                <textarea value={step.value} onChange={e=>step.setValue(e.target.value)} rows={2}
+                  placeholder={step.ph}
+                  className="w-full bg-white/85 border border-sky-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-sky-300 focus:outline-none focus:border-sky-300 resize-none leading-relaxed"
+                  style={{fontFamily:'"Shippori Mincho",serif'}}/>
+              </div>
+            ))}
+            <button onClick={handleSave}
+              className="w-full py-2.5 rounded-full bg-gradient-to-r from-sky-300 to-pink-300 text-white text-[10.5px] active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow:"0 3px 10px rgba(56,189,248,0.3)"}}>
+              ✨ 未来へジャンプ完了
+            </button>
+            {savedAt && (
+              <p className="text-[8.5px] text-sky-400 text-center" style={{letterSpacing:"0.08em"}}>
+                最後にジャンプした日：{savedAt}
+              </p>
+            )}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  できる！できる！ゲーム
+     * ================================================= */
+    const IcanGameSection = () => {
+      const [count, setCount] = useDaily("ican_count", 0);
+      const [bestRecord, setBestRecord] = useLocal("ican_best", 0);
+      const [hearts, setHearts] = useState([]); // {id, x, y}
+      // 過去7日間の合計
+      const weekTotal = (function(){
+        var total = 0;
+        var d = new Date();
+        for(var i=0; i<7; i++){
+          var dt = new Date(d.getFullYear(), d.getMonth(), d.getDate()-i);
+          var rec = getDayRecord(todayKey(dt));
+          if (typeof rec.ican_count === "number") total += rec.ican_count;
+        }
+        return total;
+      })();
+      // 執事のセリフ（達成数で変化）
+      const getButlerLine = (n) => {
+        if (n === 0) return "お嬢様、最初の一声から始めましょう ♡";
+        if (n <= 3)  return "お嬢様のお声、聞こえております ✨";
+        if (n <= 7)  return "お嬢様、もう " + n + " 回も。素晴らしいでございます ♡";
+        if (n <= 14) return "お嬢様の中の力が、確実に育ってまいります ✨";
+        if (n <= 21) return "本日のお嬢様は、輝いておられますわ 👑";
+        if (n <= 30) return "お嬢様、もう止まりません！姫の力が満ちあふれて ♡";
+        return "お嬢様！本日は伝説のごきげん姫でございます 👑✨";
+      };
+      const handleTap = () => {
+        const next = count + 1;
+        setCount(next);
+        if (next > bestRecord) setBestRecord(next);
+        // ハート飛び散らせ
+        const id = Date.now() + Math.random();
+        const x = Math.random()*60 - 30;
+        setHearts(prev => [...prev, {id, x}]);
+        setTimeout(()=>setHearts(prev=>prev.filter(h=>h.id!==id)), 1400);
+      };
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>できる！できる！ゲーム</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            ✨ 「私ならできる」を声に出すたびに、ハートをタップ ♡
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-amber-50 via-rose-50 to-pink-50 border border-amber-100 p-4 text-center"
+            style={{boxShadow:"0 4px 14px rgba(251,191,36,0.15)"}}>
+            <div className="text-[9px] text-amber-500 mb-1" style={{letterSpacing:"0.2em"}}>TODAY'S COUNT</div>
+            <div className="text-[44px] text-rose-600 leading-none my-2" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>
+              {count}
+              <span className="text-[14px] text-rose-400 ml-1">回</span>
+            </div>
+            {/* ハートタップボタン */}
+            <div className="relative inline-block my-3">
+              <button onClick={handleTap}
+                className="relative w-24 h-24 rounded-full text-[44px] active:scale-90 transition"
+                style={{background:"radial-gradient(circle at 30% 30%, #fff 0%, #fce7f3 60%, #f9a8d4 100%)", boxShadow:"0 6px 20px rgba(244,114,182,0.4), inset 0 -4px 10px rgba(244,114,182,0.2)"}}>
+                ♡
+              </button>
+              {/* 舞うハート */}
+              {hearts.map(h=>(
+                <span key={h.id} className="absolute pointer-events-none text-[22px] anim-heart-fly"
+                  style={{
+                    left:"50%", top:"50%",
+                    transform:`translate(calc(-50% + ${h.x}px), -50%)`,
+                  }}>
+                  ♡
+                </span>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <div className="rounded-xl bg-white/80 border border-amber-100 p-2">
+                <div className="text-[8.5px] text-amber-500" style={{letterSpacing:"0.12em"}}>今週合計</div>
+                <div className="text-[18px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                  {weekTotal}<span className="text-[10px] text-rose-400 ml-0.5">回</span>
+                </div>
+              </div>
+              <div className="rounded-xl bg-white/80 border border-amber-100 p-2">
+                <div className="text-[8.5px] text-amber-500" style={{letterSpacing:"0.12em"}}>ベスト記録</div>
+                <div className="text-[18px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                  {bestRecord}<span className="text-[10px] text-rose-400 ml-0.5">回 / 1日</span>
+                </div>
+              </div>
+            </div>
+            {/* 執事のセリフ */}
+            <div className="mt-3 rounded-xl bg-white/85 border border-pink-100 p-2.5 flex items-start gap-2 text-left">
+              <span className="text-[14px]">🎩</span>
+              <p className="flex-1 text-[10.5px] text-rose-600 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.03em"}}>
+                {getButlerLine(count)}
+              </p>
+            </div>
+          </div>
+        </section>
       );
     };
 
