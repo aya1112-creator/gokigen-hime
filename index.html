@@ -2642,6 +2642,9 @@
             <ButlerCard message="お嬢様のペースでどうぞ。1ステップだけでもじゅうぶんでございます。"/>
           </div>
 
+          {/* 言葉の魔法 ── ネガ → ポジ変換 */}
+          <WordsMagicSection/>
+
           <section className="px-5 mt-6">
             <SectionTitle icon={<Heart className="w-4 h-4 fill-pink-300 text-pink-300" filled/>}>ごきげんループ</SectionTitle>
             <SectionCard>
@@ -2967,6 +2970,124 @@
             <span>{rightLabel}</span>
           </div>
         </div>
+      );
+    };
+
+    /* =================================================
+     *  言葉の魔法（ネガ → ポジ変換）
+     * ================================================= */
+    const wordsMagicData = [
+      {
+        key: "ganbaranakya",
+        emoji: "🌸",
+        title: "「がんばらなきゃ」",
+        when: "気を張っているなと思ったとき",
+        butler: "お嬢様、もう十分にがんばっていらっしゃいます。少し肩の力をお抜きくださいませ。",
+        words: [
+          "もっと楽ちんでいいよ",
+          "もっと、肩の力を抜いていいよ",
+          "70%でいいよ、60%でもいいよ",
+          "完璧をめざさなくていいよ",
+          "うまくやろうとしなくていいよ",
+        ],
+        gradient: "from-rose-50 to-pink-100",
+        accent: "#ec4899",
+      },
+      {
+        key: "nantokashinakya",
+        emoji: "🗡️",
+        title: "「なんとかしなきゃ」",
+        when: "ひとりでどうにかしようと、サムライ姫が顔を出したとき",
+        butler: "お嬢様、サムライ姫がお出ましのご様子。剣をそっと置いて、お紅茶などいかがでしょう？",
+        words: [
+          "違うやり方でもOKだよ",
+          "楽しい方が正解だよ",
+          "降参しても大丈夫だよ",
+          "頼ったほうがうまくいくかもよ",
+          "1回深呼吸〜",
+        ],
+        gradient: "from-purple-50 to-pink-100",
+        accent: "#a855f7",
+      },
+      {
+        key: "iinaa",
+        emoji: "💐",
+        title: "「いいなぁ……」",
+        when: "人と比べて羨ましく思ったとき",
+        butler: "お嬢様、その気持ちは未来へのお手紙でございます。",
+        words: [
+          "いいよ、いいよ",
+          "あなたも素敵だよ",
+          "貴重な気持ちだよ",
+          "それはあなたの未来だよ",
+          "あなたのペースで大丈夫だよ",
+        ],
+        gradient: "from-amber-50 to-rose-100",
+        accent: "#f59e0b",
+      },
+    ];
+    const WordsMagicSection = () => {
+      const [openKey, setOpenKey] = useState(null);
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-pink-400"/>}>言葉の魔法</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            ✨ ネガティブな声に、優しい言葉を返してあげる魔法
+          </p>
+          <div className="space-y-2.5">
+            {wordsMagicData.map(card => {
+              const isOpen = openKey === card.key;
+              return (
+                <div key={card.key}
+                  className={`rounded-2xl border overflow-hidden transition-all ${isOpen?"border-pink-300":"border-pink-100"}`}
+                  style={{boxShadow: isOpen?"0 6px 20px rgba(244,114,182,0.18)":"0 2px 8px rgba(244,114,182,0.08)"}}>
+                  {/* ヘッダー（タップで開閉） */}
+                  <button onClick={()=>setOpenKey(isOpen?null:card.key)}
+                    className={`w-full text-left p-3.5 bg-gradient-to-br ${card.gradient} active:scale-[0.99] transition`}>
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[22px]">{card.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11.5px] text-rose-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.05em"}}>
+                          {card.title}
+                        </div>
+                        <div className="text-[9.5px] text-rose-500 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.04em"}}>
+                          {card.when}
+                        </div>
+                      </div>
+                      <span className={`text-[14px] text-rose-400 transition-transform ${isOpen?"rotate-180":""}`}>⌄</span>
+                    </div>
+                  </button>
+                  {/* 展開エリア */}
+                  {isOpen && (
+                    <div className="bg-white/85 px-4 py-4 anim-fade">
+                      {/* 執事の一言 */}
+                      <div className="rounded-xl bg-gradient-to-br from-purple-50/60 to-pink-50/60 border border-pink-100 p-2.5 mb-3 flex items-start gap-2">
+                        <span className="text-[14px]">🎩</span>
+                        <p className="flex-1 text-[10px] text-rose-600 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.03em"}}>
+                          {card.butler}
+                        </p>
+                      </div>
+                      {/* 優しい言葉リスト */}
+                      <div className="space-y-2">
+                        {card.words.map((w, i) => (
+                          <div key={i} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-50/70 to-rose-50/70 border border-pink-100 px-3 py-2.5">
+                            <span className="text-[10px]" style={{color: card.accent}}>♡</span>
+                            <p className="flex-1 text-[11px] text-rose-700 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.04em"}}>
+                              {w}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[8.5px] text-rose-400 text-center mt-3" style={{letterSpacing:"0.1em"}}>
+                        ✨ 声に出して読み上げると、より深く浸透します
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
       );
     };
 
