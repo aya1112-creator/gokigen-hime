@@ -153,6 +153,48 @@
       }
       return result;
     };
+    // 連続記録日数（今日から遡って何日連続で記録があるか）
+    const getStreak = () => {
+      var dates = getRecordedDates();
+      if (dates.length === 0) return 0;
+      var streak = 0;
+      var d = new Date();
+      for (var i=0; i<365; i++) {
+        var ds = todayKey(d);
+        if (dates.indexOf(ds) >= 0) {
+          streak++;
+          d = new Date(d.getFullYear(), d.getMonth(), d.getDate()-1);
+        } else {
+          break;
+        }
+      }
+      return streak;
+    };
+    // 特定キーが連続でtrueになった日数
+    const getKeyStreak = (key) => {
+      var streak = 0;
+      var d = new Date();
+      for (var i=0; i<365; i++) {
+        var rec = getDayRecord(todayKey(d));
+        if (rec[key] === true) {
+          streak++;
+          d = new Date(d.getFullYear(), d.getMonth(), d.getDate()-1);
+        } else {
+          break;
+        }
+      }
+      return streak;
+    };
+    // 特定キーが書き込まれた日数（テキストフィールド）
+    const getKeyCount = (key) => {
+      var dates = getRecordedDates();
+      var count = 0;
+      for (var i=0; i<dates.length; i++) {
+        var rec = getDayRecord(dates[i]);
+        if (rec[key] && String(rec[key]).trim().length > 0) count++;
+      }
+      return count;
+    };
 
     /* --- Inline SVG Icons (lucide代替) --- */
     const Icon = ({ d, className = "w-4 h-4", stroke = 2, fill = "none" }) => (
@@ -2929,6 +2971,136 @@
     };
 
     /* =================================================
+     *  小さなご褒美セクション（自分で追加・削除可能）
+     * ================================================= */
+    const RewardsSection = () => {
+      const [rewards, setRewards] = useLocal("rewards", [
+        {milestone:7,   reward:"お気に入りカフェに行く", emoji:"☕"},
+        {milestone:14,  reward:"新しい本を1冊買う",     emoji:"📖"},
+        {milestone:30,  reward:"エステの予約をする",     emoji:"💆"},
+        {milestone:60,  reward:"小旅行に出かける",       emoji:"✈️"},
+        {milestone:100, reward:"自分への花束",          emoji:"🌷"},
+      ]);
+      const [adding, setAdding] = useState(false);
+      const [newDays, setNewDays] = useState("");
+      const [newReward, setNewReward] = useState("");
+      const [newEmoji, setNewEmoji] = useState("🎀");
+      const streak = getStreak();
+      const emojiChoices = ["🎀","☕","📖","💆","✈️","🌷","🍰","💐","💄","👗","💍","🛁","🍷","🎵","🌸","✨","💎","🍓","🧁","💖"];
+
+      const addReward = () => {
+        const n = parseInt(newDays, 10);
+        if (!n || n < 1 || !newReward.trim()) return;
+        const next = [...rewards, {milestone:n, reward:newReward.trim(), emoji:newEmoji}].sort((a,b)=>a.milestone-b.milestone);
+        setRewards(next);
+        setNewDays(""); setNewReward(""); setNewEmoji("🎀"); setAdding(false);
+      };
+      const deleteReward = (idx) => {
+        if (!confirm("このご褒美を削除しますか？")) return;
+        setRewards(rewards.filter((_,i)=>i!==idx));
+      };
+
+      return (
+        <section className="px-5 mt-5">
+          <div className="rounded-2xl bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 border border-pink-100 p-3">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10.5px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.15em"}}>小さなご褒美</span>
+              <button onClick={()=>setAdding(!adding)}
+                className="text-[8.5px] text-rose-400 px-2.5 py-1 rounded-full bg-white/80 border border-pink-200 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                {adding ? "× 閉じる" : "＋ 追加"}
+              </button>
+            </div>
+
+            {/* 現在の連続記録日数 */}
+            <div className="text-[8.5px] text-rose-400 mb-2 px-1" style={{letterSpacing:"0.05em"}}>
+              現在 <span className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>{streak}</span> 日連続で記録中 ✨
+            </div>
+
+            {/* 追加フォーム */}
+            {adding && (
+              <div className="anim-fade rounded-xl bg-white/85 border border-pink-200 p-3 mb-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] text-rose-400 w-12">アイコン</span>
+                  <div className="flex-1 flex flex-wrap gap-1">
+                    {emojiChoices.map(e=>(
+                      <button key={e} onClick={()=>setNewEmoji(e)}
+                        className={`text-[16px] w-7 h-7 rounded-full flex items-center justify-center transition ${newEmoji===e?"bg-pink-100 ring-2 ring-pink-300":"bg-white/60 hover:bg-pink-50"}`}>
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] text-rose-400 w-12">日数</span>
+                  <input type="number" inputMode="numeric" value={newDays} onChange={e=>setNewDays(e.target.value)}
+                    placeholder="例：21"
+                    className="flex-1 bg-white border border-pink-100 rounded-md px-2 py-1 text-[11px] text-rose-700 placeholder:text-pink-300 focus:outline-none focus:border-pink-300"
+                    style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                  <span className="text-[9px] text-rose-400">日達成で</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] text-rose-400 w-12">ご褒美</span>
+                  <input type="text" value={newReward} onChange={e=>setNewReward(e.target.value)}
+                    placeholder="例：好きな雑誌を1冊買う"
+                    className="flex-1 bg-white border border-pink-100 rounded-md px-2 py-1 text-[11px] text-rose-700 placeholder:text-pink-300 focus:outline-none focus:border-pink-300"
+                    style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                </div>
+                <button onClick={addReward}
+                  className="w-full py-2 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 text-white text-[10px] active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow:"0 3px 8px rgba(244,114,182,0.3)"}}>
+                  ✨ ご褒美を追加する
+                </button>
+              </div>
+            )}
+
+            {/* リスト */}
+            <div className="space-y-2">
+              {rewards.length === 0 && (
+                <div className="text-[10px] text-rose-300 text-center py-3" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  ご褒美を追加して、小さな約束のモチベーションに ♡
+                </div>
+              )}
+              {rewards.map((r,i)=>{
+                const current = Math.min(streak, r.milestone);
+                const pct = Math.min(100, (streak/r.milestone)*100);
+                const unlocked = streak >= r.milestone;
+                return (
+                  <div key={i} className={`relative rounded-xl border p-2.5 ${
+                    unlocked
+                      ? "bg-gradient-to-r from-amber-50 to-pink-50 border-amber-200"
+                      : "bg-white/70 border-pink-100"
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[18px]">{r.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[10px] ${unlocked?"text-rose-600":"text-rose-500"}`}
+                            style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                            {r.milestone}日達成のご褒美
+                          </span>
+                          {unlocked && <span className="text-[9px] text-amber-500">✨ 達成！</span>}
+                        </div>
+                        <div className="text-[10px] text-rose-500 truncate" style={{fontFamily:'"Shippori Mincho",serif'}}>{r.reward}</div>
+                        <div className="h-1 rounded-full bg-pink-50 overflow-hidden mt-1">
+                          <div className={`h-full rounded-full ${unlocked?"bg-gradient-to-r from-amber-300 to-rose-400":"bg-gradient-to-r from-pink-300 to-rose-300"}`}
+                            style={{width:`${pct}%`}}/>
+                        </div>
+                        <div className="text-[7.5px] text-rose-400 mt-0.5">
+                          {current} / {r.milestone} 日
+                        </div>
+                      </div>
+                      <button onClick={()=>deleteReward(i)}
+                        className="text-[14px] text-pink-300 w-5 active:scale-90 transition">×</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
      *  DAILY SCREEN（シンプル習慣化ビュー）
      * ================================================= */
     const DailyScreen = () => {
@@ -3492,54 +3664,8 @@
             </div>
           </section>
 
-          {/* 小さなご褒美リスト */}
-          <section className="px-5 mt-5">
-            <div className="rounded-2xl bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 border border-pink-100 p-3">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10.5px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.15em"}}>小さなご褒美</span>
-                <button className="text-[8.5px] text-rose-400 px-2 py-0.5 rounded-full bg-white/70 border border-pink-100">＋ 追加</button>
-              </div>
-              <div className="space-y-2">
-                {[
-                  {milestone:"7日",   reward:"お気に入りカフェに行く",   emoji:"☕", current:12, target:7,   unlocked:true},
-                  {milestone:"14日",  reward:"新しい本を1冊買う",       emoji:"📖", current:12, target:14,  unlocked:false},
-                  {milestone:"30日",  reward:"エステの予約をする",       emoji:"💆", current:12, target:30,  unlocked:false},
-                  {milestone:"60日",  reward:"小旅行に出かける",         emoji:"✈️", current:12, target:60,  unlocked:false},
-                  {milestone:"100日", reward:"自分への花束",            emoji:"🌷", current:12, target:100, unlocked:false},
-                ].map((r,i)=>{
-                  const pct = Math.min(100, (r.current/r.target)*100);
-                  return (
-                    <div key={i} className={`rounded-xl border p-2.5 ${
-                      r.unlocked
-                        ? "bg-gradient-to-r from-amber-50 to-pink-50 border-amber-200"
-                        : "bg-white/70 border-pink-100"
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[18px]">{r.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-[10px] ${r.unlocked?"text-rose-600":"text-rose-500"}`}
-                              style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
-                              {r.milestone}達成のご褒美
-                            </span>
-                            {r.unlocked && <span className="text-[9px] text-amber-500">✨ 達成！</span>}
-                          </div>
-                          <div className="text-[10px] text-rose-500 truncate" style={{fontFamily:'"Shippori Mincho",serif'}}>{r.reward}</div>
-                          <div className="h-1 rounded-full bg-pink-50 overflow-hidden mt-1">
-                            <div className={`h-full rounded-full ${r.unlocked?"bg-gradient-to-r from-amber-300 to-rose-400":"bg-gradient-to-r from-pink-300 to-rose-300"}`}
-                              style={{width:`${pct}%`}}/>
-                          </div>
-                          <div className="text-[7.5px] text-rose-400 mt-0.5">
-                            {Math.min(r.current,r.target)} / {r.target} 日
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
+          {/* 小さなご褒美リスト — カスタマイズ可能 */}
+          <RewardsSection/>
 
           {/* 姫のお城 — 30日累積（一番下：長期成果のご褒美） */}
           <section className="px-5 mt-5">
