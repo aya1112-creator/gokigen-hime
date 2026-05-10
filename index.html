@@ -2661,6 +2661,15 @@
           {/* 3歩先の未来へジャンプ */}
           <ThreeStepsAheadSection/>
 
+          {/* ブラックプリンセス招集ワーク */}
+          <BPSummonSection/>
+
+          {/* 執事さんノート */}
+          <ButlerNotebookSection/>
+
+          {/* ラッキー♪未来フォルダ */}
+          <LuckyFutureSection/>
+
           {/* できる！できる！ゲーム */}
           <IcanGameSection/>
 
@@ -2989,6 +2998,380 @@
             <span>{rightLabel}</span>
           </div>
         </div>
+      );
+    };
+
+    /* =================================================
+     *  ブラックプリンセス招集ワーク（5ステップ夢実現ワーク）
+     * ================================================= */
+    const BPSummonSection = () => {
+      const [wish, setWish] = useLocal("bp_wish", "");
+      const [why, setWhy]   = useLocal("bp_why", "");
+      const [reasons, setReasons]   = useLocal("bp_reasons", ["","","","",""]);
+      const [retorts, setRetorts]   = useLocal("bp_retorts", ["","","","",""]);
+      const [power,   setPower]     = useLocal("bp_power", "");
+      const [step,    setStep]      = useState(0);
+      const [savedAt, setSavedAt]   = useLocal("bp_savedAt", "");
+      const updateReason  = (i,v)=>{ const n=reasons.slice();  n[i]=v; setReasons(n); };
+      const updateRetort  = (i,v)=>{ const n=retorts.slice();  n[i]=v; setRetorts(n); };
+      const handleSave = ()=>{
+        const now = new Date().toLocaleString("ja-JP",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+        setSavedAt(now);
+      };
+      const stepDots = (
+        <div className="flex items-center justify-center gap-1.5 mb-3">
+          {[0,1,2,3,4].map(i=>(
+            <button key={i} onClick={()=>setStep(i)}
+              className={`w-2 h-2 rounded-full transition ${i===step?"bg-purple-500 scale-150":"bg-purple-200"}`}/>
+          ))}
+        </div>
+      );
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Crown className="w-4 h-4 text-purple-400"/>}>ブラックプリンセス招集ワーク</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            👑 夢への抵抗を、自分で打ち破る5ステップワーク
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 border border-purple-100 p-4"
+            style={{boxShadow:"0 4px 14px rgba(168,85,247,0.12)"}}>
+            {stepDots}
+            {step===0 && (
+              <div className="anim-fade">
+                <div className="text-center mb-3">
+                  <div className="text-[9px] text-purple-500" style={{letterSpacing:"0.2em"}}>STEP 1</div>
+                  <div className="text-[12.5px] text-rose-700 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>叶えたいことを 1 つ</div>
+                </div>
+                <textarea value={wish} onChange={e=>setWish(e.target.value)} rows={2}
+                  placeholder="例：ストレスなく働きたい / 自分のお仕事で独立したい"
+                  className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"
+                  style={{fontFamily:'"Shippori Mincho",serif'}}/>
+              </div>
+            )}
+            {step===1 && (
+              <div className="anim-fade">
+                <div className="text-center mb-3">
+                  <div className="text-[9px] text-purple-500" style={{letterSpacing:"0.2em"}}>STEP 2</div>
+                  <div className="text-[12.5px] text-rose-700 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>叶ったら、なぜ嬉しい？</div>
+                </div>
+                <div className="rounded-lg bg-purple-50/60 border border-purple-100 px-3 py-2 mb-2 text-[10px] text-purple-700" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  ⭐ {wish || "（STEP 1 を入れてください）"}
+                </div>
+                <textarea value={why} onChange={e=>setWhy(e.target.value)} rows={3}
+                  placeholder="例：仕事内容は好きだから、人間関係がもっと良くなったら最高。ストレスなく日々を過ごせる"
+                  className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"
+                  style={{fontFamily:'"Shippori Mincho",serif'}}/>
+              </div>
+            )}
+            {step===2 && (
+              <div className="anim-fade">
+                <div className="text-center mb-3">
+                  <div className="text-[9px] text-purple-500" style={{letterSpacing:"0.2em"}}>STEP 3</div>
+                  <div className="text-[12.5px] text-rose-700 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>叶えられないと思う理由を 5 つ</div>
+                  <div className="text-[8.5px] text-purple-400 mt-1">😈 ブラックプリンセスを召喚 ✨</div>
+                </div>
+                <div className="space-y-2">
+                  {reasons.map((r,i)=>(
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-[10px] text-purple-500 mt-2 w-3 flex-shrink-0">{i+1}.</span>
+                      <textarea value={r} onChange={e=>updateReason(i, e.target.value)} rows={1}
+                        placeholder={"例：" + ["上司が怖くて意見を言えない","チームワークがうまくいかない","自己主張が強い人がいて怖い","仕事に疲れてしまう","結局転職するしかないかも"][i]}
+                        className="flex-1 bg-white/85 border border-purple-100 rounded-lg p-2 text-[10px] text-gray-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-snug"
+                        style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {step===3 && (
+              <div className="anim-fade">
+                <div className="text-center mb-3">
+                  <div className="text-[9px] text-purple-500" style={{letterSpacing:"0.2em"}}>STEP 4</div>
+                  <div className="text-[12.5px] text-rose-700 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>それぞれに自分から反論</div>
+                  <div className="text-[8.5px] text-purple-400 mt-1">💗 自分の味方になってあげましょう</div>
+                </div>
+                <div className="space-y-3">
+                  {reasons.map((r,i)=>(
+                    <div key={i} className="rounded-xl bg-white/80 border border-purple-100 p-2.5">
+                      <div className="text-[9.5px] text-purple-500 mb-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                        😈 {r || "（理由を STEP 3 で入れてね）"}
+                      </div>
+                      <div className="flex items-start gap-1.5 mt-1.5">
+                        <span className="text-[12px] mt-0.5">💗</span>
+                        <textarea value={retorts[i]||""} onChange={e=>updateRetort(i, e.target.value)} rows={1}
+                          placeholder="例：→ まだ何も伝えてないだけ！ここから少しずつ話してみよう"
+                          className="flex-1 bg-rose-50/40 border border-rose-100 rounded-lg p-2 text-[10px] text-rose-700 placeholder:text-rose-300 focus:outline-none focus:border-rose-300 resize-none leading-snug"
+                          style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {step===4 && (
+              <div className="anim-fade">
+                <div className="text-center mb-3">
+                  <div className="text-[9px] text-amber-500" style={{letterSpacing:"0.2em"}}>STEP 5</div>
+                  <div className="text-[12.5px] text-rose-700 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>力強い「大丈夫」「できる」</div>
+                  <div className="text-[8.5px] text-amber-500 mt-1">👑 自分の中の姫からのメッセージ</div>
+                </div>
+                <textarea value={power} onChange={e=>setPower(e.target.value)} rows={4}
+                  placeholder="例：私ならできる！我慢もストレスもなくしていいよ。少しずつ言ってみよう。今こそ、変えましょう。つくりたい世界を、つくりましょう ✨"
+                  className="w-full bg-gradient-to-br from-amber-50 to-pink-50 border border-amber-200 rounded-xl p-3 text-[11px] text-rose-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
+                  style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}/>
+                <button onClick={handleSave}
+                  className="w-full mt-3 py-2.5 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 text-white text-[11px] active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow:"0 3px 10px rgba(168,85,247,0.3)"}}>
+                  ✨ 招集ワーク完了
+                </button>
+                {savedAt && (
+                  <p className="text-[8.5px] text-purple-400 text-center mt-2" style={{letterSpacing:"0.08em"}}>
+                    最後に完了した日：{savedAt}
+                  </p>
+                )}
+              </div>
+            )}
+            {/* ナビゲーション */}
+            <div className="flex items-center justify-between mt-4">
+              <button onClick={()=>setStep(Math.max(0,step-1))}
+                disabled={step===0}
+                className={`text-[10px] px-3 py-1.5 rounded-full ${step===0?"bg-white/40 text-purple-200":"bg-white/80 border border-purple-200 text-purple-500 active:scale-95"} transition`}
+                style={{fontFamily:'"Shippori Mincho",serif'}}>
+                ← 戻る
+              </button>
+              <span className="text-[9px] text-purple-400" style={{letterSpacing:"0.1em"}}>STEP {step+1} / 5</span>
+              <button onClick={()=>setStep(Math.min(4,step+1))}
+                disabled={step===4}
+                className={`text-[10px] px-3 py-1.5 rounded-full ${step===4?"bg-white/40 text-purple-200":"bg-gradient-to-r from-purple-300 to-pink-300 text-white active:scale-95"} transition`}
+                style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                次へ →
+              </button>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  執事さんノート（不安⇔寄り添い言葉ペア）
+     * ================================================= */
+    const ButlerNotebookSection = () => {
+      const [entries, setEntries] = useLocal("butler_entries", [
+        {anxiety:"", comfort:""},
+      ]);
+      const update = (i, key, value) => {
+        const next = entries.map((e,idx)=> idx===i ? {...e, [key]:value} : e);
+        setEntries(next);
+      };
+      const addEntry = () => setEntries([...entries, {anxiety:"", comfort:""}]);
+      const removeEntry = (i) => {
+        if (!confirm("このペアを削除しますか？")) return;
+        setEntries(entries.filter((_,idx)=>idx!==i));
+      };
+      const butlerSamples = [
+        "そう思ったんだね",
+        "初めてのことに挑戦するんだから、無理もないよ",
+        "その気持ちを抱えている自分を、大切にしてあげましょう",
+        "頑張ってきたから、その気持ちが出てくるんだね",
+        "気づいてくれてありがとう、お嬢様",
+        "その不安は、お嬢様が真剣な証拠でございます",
+      ];
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Heart className="w-4 h-4 text-pink-400"/>}>執事さんノート</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            📓 不安や否定の声に、執事さんがそっと寄り添う対話日記
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-rose-50/80 via-pink-50/60 to-purple-50/60 border border-pink-100 p-3.5"
+            style={{boxShadow:"0 3px 12px rgba(244,114,182,0.1)"}}>
+            <div className="space-y-3">
+              {entries.map((e,i)=>(
+                <div key={i} className="rounded-xl bg-white/85 border border-pink-100 p-3 relative">
+                  {entries.length > 1 && (
+                    <button onClick={()=>removeEntry(i)}
+                      className="absolute top-1.5 right-2 text-[12px] text-pink-300 active:scale-90 transition">×</button>
+                  )}
+                  {/* 不安の声 */}
+                  <div className="mb-2">
+                    <p className="text-[10px] text-rose-500 mb-1 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                      <span>😟</span> 不安・否定の声
+                    </p>
+                    <textarea value={e.anxiety} onChange={ev=>update(i, "anxiety", ev.target.value)} rows={2}
+                      placeholder="例：本当にできるのかな…私には向いてないかも"
+                      className="w-full bg-rose-50/40 border border-rose-100 rounded-lg p-2 text-[10.5px] text-gray-700 placeholder:text-rose-300 focus:outline-none focus:border-rose-300 resize-none leading-relaxed"
+                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                  </div>
+                  {/* 執事の言葉 */}
+                  <div>
+                    <p className="text-[10px] text-purple-500 mb-1 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                      <span>🎩</span> 執事ルシアンの寄り添い言葉
+                    </p>
+                    <textarea value={e.comfort} onChange={ev=>update(i, "comfort", ev.target.value)} rows={2}
+                      placeholder={"例：" + butlerSamples[i % butlerSamples.length]}
+                      className="w-full bg-purple-50/40 border border-purple-100 rounded-lg p-2 text-[10.5px] text-purple-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"
+                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={addEntry}
+              className="w-full mt-3 py-2 rounded-xl bg-white/70 border border-dashed border-pink-200 text-[10px] text-rose-500 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              ＋ 新しいペアを追加する
+            </button>
+            {/* 寄り添い言葉のヒント */}
+            <details className="mt-3">
+              <summary className="cursor-pointer text-[9.5px] text-rose-400 px-2 py-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                💡 執事さんの言葉のヒント
+              </summary>
+              <div className="mt-2 space-y-1 px-2">
+                {butlerSamples.map((s,i)=>(
+                  <div key={i} className="text-[9.5px] text-purple-600 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                    🎩 「{s}」
+                  </div>
+                ))}
+              </div>
+            </details>
+            <p className="text-[8.5px] text-rose-400 text-center mt-3 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              ✨ 否定はしない。ただ、その気持ちを受け止めてあげる ♡
+            </p>
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  ラッキー♪未来フォルダ
+     * ================================================= */
+    const LuckyFutureSection = () => {
+      const [items, setItems] = useLocal("lucky_items", []);
+      const [adding, setAdding] = useState(false);
+      const [seen, setSeen]     = useState("");
+      const [desire, setDesire] = useState("");
+      const [when, setWhen]     = useState("");
+      const addItem = () => {
+        if (!seen.trim() || !desire.trim()) return;
+        const now = new Date().toLocaleDateString("ja-JP",{month:"2-digit",day:"2-digit"});
+        const next = [{seen:seen.trim(), desire:desire.trim(), when:when.trim(), date:now, achieved:false}, ...items];
+        setItems(next);
+        setSeen(""); setDesire(""); setWhen(""); setAdding(false);
+      };
+      const toggleAchieved = (idx) => {
+        setItems(items.map((it,i)=> i===idx ? {...it, achieved:!it.achieved} : it));
+      };
+      const removeItem = (idx) => {
+        if (!confirm("この未来を削除しますか？")) return;
+        setItems(items.filter((_,i)=>i!==idx));
+      };
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>ラッキー♪未来フォルダ</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            🌟 「いいなぁ」を「ラッキー♪私のなりたい未来！」に変換して保存
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-amber-50/80 via-rose-50/70 to-pink-50/70 border border-amber-100 p-3.5"
+            style={{boxShadow:"0 3px 12px rgba(251,191,36,0.12)"}}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[10px] text-rose-500" style={{letterSpacing:"0.1em"}}>
+                <span className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>{items.filter(i=>!i.achieved).length}</span> 個の未来を集め中 ✨
+              </div>
+              <button onClick={()=>setAdding(!adding)}
+                className="text-[9px] text-rose-400 px-2.5 py-1 rounded-full bg-white/80 border border-rose-200 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                {adding?"× 閉じる":"＋ 追加"}
+              </button>
+            </div>
+
+            {/* 追加フォーム */}
+            {adding && (
+              <div className="anim-fade rounded-xl bg-white/90 border border-amber-200 p-3 mb-3 space-y-2">
+                <div>
+                  <p className="text-[9.5px] text-rose-500 mb-1 flex items-center gap-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                    <span>👀</span> 「いいなぁ」と感じたもの
+                  </p>
+                  <input type="text" value={seen} onChange={e=>setSeen(e.target.value)}
+                    placeholder="例：友達のハワイ旅行 / 雑誌の素敵なお部屋"
+                    className="w-full bg-rose-50/40 border border-rose-100 rounded-lg p-2 text-[10.5px] text-gray-700 placeholder:text-rose-300 focus:outline-none focus:border-rose-300"
+                    style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                </div>
+                <div className="text-center text-[12px] text-amber-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  ✨ ラッキー♪ 変換 ✨
+                </div>
+                <div>
+                  <p className="text-[9.5px] text-amber-600 mb-1 flex items-center gap-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                    <span>🌟</span> 私のなりたい未来
+                  </p>
+                  <input type="text" value={desire} onChange={e=>setDesire(e.target.value)}
+                    placeholder="例：私もハワイに行きたい / こんな素敵な部屋に住みたい"
+                    className="w-full bg-amber-50/40 border border-amber-100 rounded-lg p-2 text-[10.5px] text-gray-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300"
+                    style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                </div>
+                <div>
+                  <p className="text-[9.5px] text-purple-500 mb-1 flex items-center gap-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                    <span>📅</span> いつ実現する？（任意）
+                  </p>
+                  <input type="text" value={when} onChange={e=>setWhen(e.target.value)}
+                    placeholder="例：来年の夏 / 3年後 / いつかきっと"
+                    className="w-full bg-purple-50/40 border border-purple-100 rounded-lg p-2 text-[10.5px] text-gray-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300"
+                    style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                </div>
+                <button onClick={addItem}
+                  className="w-full py-2 rounded-full bg-gradient-to-r from-amber-300 via-rose-300 to-pink-300 text-white text-[10px] active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow:"0 3px 8px rgba(251,191,36,0.3)"}}>
+                  ✨ 未来フォルダに追加
+                </button>
+              </div>
+            )}
+
+            {/* リスト */}
+            <div className="space-y-2">
+              {items.length === 0 && (
+                <div className="text-[10px] text-rose-300 text-center py-4" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  まだ未来フォルダは空っぽ ♡<br/>
+                  「いいなぁ」と感じた瞬間を、ここで未来に変換してね
+                </div>
+              )}
+              {items.map((it,i)=>(
+                <div key={i} className={`rounded-xl border p-2.5 transition ${
+                  it.achieved
+                    ? "bg-gradient-to-r from-amber-50 to-rose-50 border-amber-200"
+                    : "bg-white/80 border-amber-100"
+                }`}>
+                  <div className="flex items-start gap-2">
+                    <button onClick={()=>toggleAchieved(i)}
+                      className={`flex-shrink-0 w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center transition ${
+                        it.achieved
+                          ? "bg-gradient-to-br from-amber-300 to-rose-400 border-amber-300 text-white"
+                          : "border-pink-200 bg-white"
+                      }`}>
+                      {it.achieved && <span className="text-[10px]">✓</span>}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-[8.5px] ${it.achieved?"text-amber-600":"text-rose-400"}`} style={{letterSpacing:"0.08em"}}>
+                        👀 {it.seen}
+                      </div>
+                      <div className={`text-[11px] mt-0.5 ${it.achieved?"text-amber-700 line-through":"text-rose-700"}`} style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                        🌟 {it.desire}
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-[8px] text-purple-400">
+                          {it.when ? "📅 " + it.when : ""}
+                        </span>
+                        <span className="text-[7.5px] text-rose-300">{it.date}</span>
+                      </div>
+                      {it.achieved && (
+                        <div className="text-[8.5px] text-amber-500 mt-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                          ✨ 叶ったね！おめでとう ♡
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={()=>removeItem(i)}
+                      className="text-[12px] text-pink-300 active:scale-90 transition flex-shrink-0">×</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-[8.5px] text-rose-400 text-center mt-3 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              ✨ 「いいなぁ」は、夢のセンサー。叶ったら ✓ をタップで完了 ♡
+            </p>
+          </div>
+        </section>
       );
     };
 
