@@ -2586,6 +2586,8 @@
       const [selfWord,setSelfWord] = useLocal("loop_selfWord", null);
       const [moyaText,setMoyaText] = useLocal("loop_moyaText", "");
       const [hontoText,setHontoText] = useLocal("loop_hontoText", "");
+      // サブタブ（毎日 / ふかぼり）
+      const [subTab,setSubTab] = useLocal("loop_subtab", "daily");
       // STEP2
       const [theme,setTheme] = useLocal("loop_theme", "癒す");
       const [valueChoice,setValueChoice] = useLocal("loop_valueChoice", "自分にやさしくする");
@@ -2646,32 +2648,60 @@
         <div className="relative pb-40 anim-fade">
           <AppHeader subtitle="〜 今日の自分に会いにゆく 〜"/>
           <div className="px-5 mt-4">
-            <ButlerCard message="お嬢様のペースでどうぞ。1ステップだけでもじゅうぶんでございます。"/>
+            <ButlerCard message={subTab==="daily"
+              ? "お嬢様のペースでどうぞ。サクッと開いて、心を整えてくださいませ ♡"
+              : "お嬢様、じっくりお時間を取ってご自身を知る、特別なお時間でございます ✨"}/>
           </div>
 
-          {/* 言葉の魔法 ── ネガ → ポジ変換 */}
-          <WordsMagicSection/>
+          {/* サブタブナビゲーション */}
+          <div className="px-5 mt-4">
+            <div className="flex gap-1 p-1 rounded-full bg-white/60 border border-pink-100"
+              style={{boxShadow:"0 2px 8px rgba(244,114,182,0.08)"}}>
+              <button onClick={()=>setSubTab("daily")}
+                className={`flex-1 py-2 rounded-full text-[11px] transition active:scale-[0.97] ${
+                  subTab==="daily"
+                    ? "bg-gradient-to-r from-pink-300 to-rose-300 text-white"
+                    : "text-rose-500"
+                }`}
+                style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, letterSpacing:"0.05em", boxShadow: subTab==="daily" ? "0 3px 8px rgba(244,114,182,0.3)" : "none"}}>
+                🌸 毎日
+              </button>
+              <button onClick={()=>setSubTab("deep")}
+                className={`flex-1 py-2 rounded-full text-[11px] transition active:scale-[0.97] ${
+                  subTab==="deep"
+                    ? "bg-gradient-to-r from-purple-300 to-pink-300 text-white"
+                    : "text-rose-500"
+                }`}
+                style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, letterSpacing:"0.05em", boxShadow: subTab==="deep" ? "0 3px 8px rgba(168,85,247,0.3)" : "none"}}>
+                💎 ふかぼり
+              </button>
+            </div>
+            <p className="text-[8.5px] text-rose-400 text-center mt-2 px-2 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              {subTab==="daily"
+                ? "サクッと読む・タップする道具箱（数秒〜5分）"
+                : "じっくり書く・深く知るワーク（10〜20分）"}
+            </p>
+          </div>
 
-          {/* ブラック姫にツッコミ ♪ */}
-          <BlackPrincessSection/>
+          {/* === 毎日タブ === */}
+          {subTab==="daily" && (
+            <div className="anim-fade">
+              {/* できる！できる！ゲーム */}
+              <IcanGameSection/>
+              {/* 言葉の魔法 ── ネガ → ポジ変換 */}
+              <WordsMagicSection/>
+              {/* ブラック姫にツッコミ ♪ */}
+              <BlackPrincessSection/>
+              {/* 焦りを溶かす できる探しワーク */}
+              <AnxietyWorkSection/>
+              {/* ラッキー♪未来フォルダ */}
+              <LuckyFutureSection/>
+            </div>
+          )}
 
-          {/* やさしく変化のレッスン */}
-          <GentleChangeSection/>
-
-          {/* 3歩先の未来へジャンプ */}
-          <ThreeStepsAheadSection/>
-
-          {/* ブラックプリンセス招集ワーク */}
-          <BPSummonSection/>
-
-          {/* 執事さんノート */}
-          <ButlerNotebookSection/>
-
-          {/* ラッキー♪未来フォルダ */}
-          <LuckyFutureSection/>
-
-          {/* できる！できる！ゲーム */}
-          <IcanGameSection/>
+          {/* === ふかぼりタブ === */}
+          {subTab==="deep" && (
+            <div className="anim-fade">
 
           <section className="px-5 mt-6">
             <SectionTitle icon={<Heart className="w-4 h-4 fill-pink-300 text-pink-300" filled/>}>ごきげんループ</SectionTitle>
@@ -2901,9 +2931,20 @@
             </SectionCard>
           </section>
 
+          {/* やさしく変化のレッスン */}
+          <GentleChangeSection/>
+          {/* 3歩先の未来へジャンプ */}
+          <ThreeStepsAheadSection/>
+          {/* ブラックプリンセス招集ワーク */}
+          <BPSummonSection/>
+          {/* 執事さんノート */}
+          <ButlerNotebookSection/>
+
           <div className="px-5 mt-4">
             <ButlerCard message="どんな小さな一歩も、お嬢様の物語の大切な一行でございます。"/>
           </div>
+            </div>
+          )}
         </div>
       );
     };
@@ -3595,12 +3636,239 @@
     };
 
     /* =================================================
+     *  焦りを溶かす「できる探し」ワーク
+     * ================================================= */
+    const anxietyPresets = [
+      {emoji:"📅", label:"締切に追われて焦る", examples:[
+        "◯月◯日の◯時まで、少しずつ進めれば、できる！",
+        "今日は〜まで終わらせれば、できる！",
+        "朝◯時に◯分だけ集中すれば、できる！",
+        "「ここまで」と区切れば、〜は、できる！",
+        "〜さんに状況を伝えて相談すれば、できる！",
+      ]},
+      {emoji:"👯", label:"人と比べて自分ができてなくて焦る", examples:[
+        "1年前の自分と比べたら、〜ができる！",
+        "私には〜という強みがあるって思えば、できる！",
+        "比べる相手を「昨日の私」にすれば、〜ができる！",
+        "毎日ひとつ「できた」を見つければ、できる！",
+        "私には私の〜があるって信じれば、できる！",
+      ]},
+      {emoji:"💼", label:"仕事の量が多すぎて焦る", examples:[
+        "今日は〜と〜の3つに絞れば、できる！",
+        "◯時間以内に〜だけ終わらせれば、できる！",
+        "70%でOKって決めれば、〜は、できる！",
+        "〜さんに「ここを助けて」と言えば、できる！",
+        "今日は◯時に終わると決めれば、できる！",
+      ]},
+      {emoji:"💰", label:"お金が少なくて焦る", examples:[
+        "今晩の〜を食べることは、できる！",
+        "1日◯円だけ貯金すれば、できる！",
+        "家計簿を◯分だけつければ、できる！",
+        "今月は〜を買わないと決めれば、できる！",
+        "月◯円の〜の副業を始めれば、できる！",
+      ]},
+      {emoji:"💭", label:"自分にできるかどうか、不安になり焦る", examples:[
+        "過去の私は〜ができた。今回も練習すれば、きっとできる！",
+        "まず◯分だけ〜をやってみれば、できる！",
+        "失敗しても、そこから〜を学べば、できる！",
+        "一歩〜を踏み出すことは、できる！",
+        "「私ならできる」を◯回声に出せば、できる！",
+      ]},
+      {emoji:"💕", label:"恋愛・結婚のことで焦る", examples:[
+        "今日、自分の良いところを〜つ見つけることは、できる！",
+        "自分のペースで〜を大切にすれば、できる！",
+        "◯月までに〜を磨く時間を持つことは、できる！",
+        "〜の場に1回行ってみれば、できる！",
+        "〜な素敵な人になる準備をすれば、できる！",
+      ]},
+      {emoji:"🎂", label:"年齢を重ねることに焦る", examples:[
+        "◯歳の今が一番若い、今から〜を始めれば、できる！",
+        "◯歳に合った美しさを大切にすれば、できる！",
+        "〜年の経験を活かして〜することは、できる！",
+        "〜への好奇心を持ち続けることは、できる！",
+        "1日◯分、健康に気を遣うことは、できる！",
+      ]},
+      {emoji:"📱", label:"SNSを見て焦る", examples:[
+        "スマホを◯分だけ置くことは、できる！",
+        "「いいなぁ」を未来フォルダに〜個入れれば、できる！",
+        "今日は◯人の良い投稿に「いいね」することは、できる！",
+        "自分の好きを◯個集めることは、できる！",
+        "〜のフォローを整理することは、できる！",
+      ]},
+      {emoji:"🏥", label:"体調・健康が心配で焦る", examples:[
+        "今夜◯時までに寝ることは、できる！",
+        "◯分歩くことは、できる！",
+        "1日◯杯の白湯を飲むことは、できる！",
+        "深呼吸を◯回することは、できる！",
+        "〜病院に予約を入れることは、できる！",
+      ]},
+      {emoji:"🌈", label:"将来・老後が不安で焦る", examples:[
+        "今月◯円だけ将来のために貯めれば、できる！",
+        "〜について情報を1つ調べれば、できる！",
+        "1日◯分歩いて、健康な体を作ることは、できる！",
+        "〜さんとのつながりを大切にすれば、できる！",
+        "今この瞬間を丁寧に〜すれば、できる！",
+      ]},
+      {emoji:"📚", label:"スキル・資格が足りなくて焦る", examples:[
+        "1日◯分だけ〜を勉強すれば、できる！",
+        "〜の入門書を1冊読めば、できる！",
+        "〜の講座に1つ申し込めば、できる！",
+        "◯ヶ月後に〜ができる目標を立てれば、できる！",
+        "〜から、まず始めることは、できる！",
+      ]},
+      {emoji:"👨‍👩‍👧", label:"子育て・家族のことで焦る", examples:[
+        "完璧じゃなくていいと、〜を許すことは、できる！",
+        "1日◯分だけ〜と向き合う時間を作れば、できる！",
+        "〜の感性の違いを尊重することは、できる！",
+        "自分のケア時間を◯分作ることは、できる！",
+        "〜さんに「〜を助けて」と頼むことは、できる！",
+      ]},
+      {emoji:"💗", label:"自分の見た目・体型に焦る", examples:[
+        "1日◯分、〜のストレッチをすれば、できる！",
+        "水を1日◯杯多く飲むことは、できる！",
+        "〜の姿勢を良くすることは、できる！",
+        "鏡で自分の素敵を◯つ見つけることは、できる！",
+        "〜な自分を愛でる言葉をかけることは、できる！",
+      ]},
+      {emoji:"💎", label:"夢が叶うか不安で焦る", examples:[
+        "なりたい〜の自分をイメージすることは、できる！",
+        "1ミリでも〜に向かって進むことは、できる！",
+        "今日の小さな〜から始めれば、できる！",
+        "〜さんからの応援を信じることは、できる！",
+        "過去の自分の〜を信じることは、できる！",
+      ]},
+    ];
+    const AnxietyWorkSection = () => {
+      const [worry, setWorry] = useLocal("anxiety_worry", "");
+      const [dekirus, setDekirus] = useLocal("anxiety_dekirus", ["","","","",""]);
+      const [savedList, setSavedList] = useLocal("anxiety_saved", []);
+      const updateD = (i,v)=>{ const n=dekirus.slice(); n[i]=v; setDekirus(n); };
+      const handleSave = ()=>{
+        if (!worry.trim() || !dekirus.some(d=>d.trim())) return;
+        const now = new Date().toLocaleDateString("ja-JP",{month:"2-digit",day:"2-digit"});
+        const entry = {worry:worry.trim(), dekirus:dekirus.filter(d=>d.trim()), date:now};
+        setSavedList([entry, ...savedList].slice(0, 20));
+        setWorry(""); setDekirus(["","","","",""]);
+      };
+      const removeEntry = (idx) => {
+        if (!confirm("この記録を削除しますか？")) return;
+        setSavedList(savedList.filter((_,i)=>i!==idx));
+      };
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>焦りを溶かす「できる探し」</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1 leading-relaxed" style={{letterSpacing:"0.06em"}}>
+            ⏳ そわそわした焦りを、「〜できる！」に変換して手放すゲーム
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-amber-50/80 via-pink-50/70 to-rose-50/70 border border-amber-100 p-3.5 space-y-3"
+            style={{boxShadow:"0 3px 12px rgba(251,191,36,0.1)"}}>
+
+            {/* STEP 1: 焦りを選ぶ */}
+            <div>
+              <p className="text-[10px] text-amber-600 mb-2 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span>📍</span> 今、どんな焦りを抱えてる？
+              </p>
+              {/* プリセットチップ：タップで焦り文＋5つの「できる！」例文が自動セット */}
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {anxietyPresets.map((p,i)=>(
+                  <button key={i} onClick={()=>{
+                      setWorry(p.label);
+                      if (p.examples) setDekirus([...p.examples, "", "", "", "", ""].slice(0,5));
+                    }}
+                    className={`text-[8.5px] px-2.5 py-1 rounded-full border transition active:scale-95 ${
+                      worry===p.label
+                        ? "bg-gradient-to-r from-amber-200 to-pink-200 border-amber-300 text-rose-700"
+                        : "bg-white/70 border-amber-100 text-rose-500"
+                    }`}
+                    style={{fontFamily:'"Shippori Mincho",serif'}}>
+                    {p.emoji} {p.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between mb-2 px-1">
+                <p className="text-[8.5px] text-amber-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  💡 タップすると「できる！」例文がすぐ読める状態に ✨
+                </p>
+                <button onClick={()=>{ setWorry(""); setDekirus(["","","","",""]); }}
+                  className="text-[8.5px] text-amber-600 px-2 py-0.5 rounded-full bg-white/70 border border-amber-200 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  ✏️ 自分で書く
+                </button>
+              </div>
+              <textarea value={worry} onChange={e=>setWorry(e.target.value)} rows={2}
+                placeholder="または、自分の言葉で書く…（例：プレゼン直前で頭が真っ白で焦る）"
+                className="w-full bg-white/85 border border-amber-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
+                style={{fontFamily:'"Shippori Mincho",serif'}}/>
+            </div>
+
+            {/* STEP 2: できるを5つ */}
+            <div>
+              <p className="text-[10px] text-amber-600 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span>✏️</span> その焦りに対して「〜できる！」を書く
+              </p>
+              <p className="text-[8.5px] text-rose-400 mb-2 px-1" style={{letterSpacing:"0.05em"}}>
+                ※ 文末は必ず「できる！」で終えるのがコツ ✨
+              </p>
+              <div className="space-y-2">
+                {dekirus.map((d,i)=>(
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="text-[10px] text-amber-500 mt-2 w-3 flex-shrink-0">{i+1}.</span>
+                    <textarea value={d} onChange={e=>updateD(i, e.target.value)} rows={1}
+                      placeholder={"例：" + ["○月○日までにやれば、できる！","1年前の自分と比べたら、確実に成長できている！","今晩のごはんを食べることはできる！","深呼吸 1 回はできる！","明日の朝、もう一度考え直すことはできる！"][i]}
+                      className="flex-1 bg-white/85 border border-amber-100 rounded-lg p-2 text-[10.5px] text-rose-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300 resize-none leading-snug"
+                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={handleSave}
+              className="w-full py-2.5 rounded-full bg-gradient-to-r from-amber-300 via-rose-300 to-pink-300 text-white text-[10.5px] active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow:"0 3px 10px rgba(251,191,36,0.3)"}}>
+              ✨ できる探しを保存する
+            </button>
+
+            <p className="text-[8.5px] text-amber-600 text-center leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              5分もあれば、ふわっと軽い気持ちに ♡ あなたなら大丈夫 ✨
+            </p>
+
+            {/* 過去の記録 */}
+            {savedList.length > 0 && (
+              <details className="mt-3">
+                <summary className="cursor-pointer text-[9.5px] text-amber-600 px-2 py-1 select-none" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  📚 過去の「できる探し」を見る（{savedList.length}件）
+                </summary>
+                <div className="mt-2 space-y-2 max-h-72 overflow-y-auto">
+                  {savedList.map((e,idx)=>(
+                    <div key={idx} className="rounded-xl bg-white/80 border border-amber-100 p-2.5 relative">
+                      <button onClick={()=>removeEntry(idx)}
+                        className="absolute top-1 right-2 text-[12px] text-amber-300 active:scale-90 transition">×</button>
+                      <div className="text-[8px] text-rose-300 mb-0.5">{e.date}</div>
+                      <div className="text-[10px] text-rose-700 mb-1.5 leading-snug pr-5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                        💭 {e.worry}
+                      </div>
+                      {e.dekirus.map((d,i)=>(
+                        <div key={i} className="text-[9.5px] text-amber-700 leading-relaxed pl-2" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                          ✨ {d}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
      *  できる！できる！ゲーム
      * ================================================= */
     const IcanGameSection = () => {
+      const [topic, setTopic] = useLocal("ican_topic", "");
       const [count, setCount] = useDaily("ican_count", 0);
       const [bestRecord, setBestRecord] = useLocal("ican_best", 0);
       const [hearts, setHearts] = useState([]); // {id, x, y}
+      const [history, setHistory] = useLocal("ican_history", []);
       // 過去7日間の合計
       const weekTotal = (function(){
         var total = 0;
@@ -3612,6 +3880,7 @@
         }
         return total;
       })();
+      const displayPhrase = (topic.trim() ? topic.trim() : "私") + "ならできる！";
       // 執事のセリフ（達成数で変化）
       const getButlerLine = (n) => {
         if (n === 0) return "お嬢様、最初の一声から始めましょう ♡";
@@ -3626,51 +3895,100 @@
         const next = count + 1;
         setCount(next);
         if (next > bestRecord) setBestRecord(next);
+        // 履歴に追加（現在のトピック）
+        if (topic.trim() && !history.includes(topic.trim())) {
+          setHistory([topic.trim(), ...history].slice(0, 10));
+        }
         // ハート飛び散らせ
         const id = Date.now() + Math.random();
-        const x = Math.random()*60 - 30;
+        const x = Math.random()*80 - 40;
         setHearts(prev => [...prev, {id, x}]);
         setTimeout(()=>setHearts(prev=>prev.filter(h=>h.id!==id)), 1400);
       };
+      const samplePhrases = ["私","プレゼン","ダイエット","新しい仕事","お金持ちになること","健康","結婚","起業","引っ越し","資格"];
       return (
         <section className="px-5 mt-6">
           <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>できる！できる！ゲーム</SectionTitle>
           <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
-            ✨ 「私ならできる」を声に出すたびに、ハートをタップ ♡
+            ✨ 「○○ならできる！」を自分の言葉でつくって、ハートをタップ ♡
           </p>
-          <div className="rounded-2xl bg-gradient-to-br from-amber-50 via-rose-50 to-pink-50 border border-amber-100 p-4 text-center"
+          <div className="rounded-2xl bg-gradient-to-br from-amber-50 via-rose-50 to-pink-50 border border-amber-100 p-4"
             style={{boxShadow:"0 4px 14px rgba(251,191,36,0.15)"}}>
-            <div className="text-[9px] text-amber-500 mb-1" style={{letterSpacing:"0.2em"}}>TODAY'S COUNT</div>
-            <div className="text-[44px] text-rose-600 leading-none my-2" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>
-              {count}
-              <span className="text-[14px] text-rose-400 ml-1">回</span>
+
+            {/* トピック入力 */}
+            <div className="mb-3">
+              <p className="text-[9.5px] text-amber-600 mb-1.5 flex items-center gap-1" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span>✏️</span> 何ならできる？
+              </p>
+              <input type="text" value={topic} onChange={e=>setTopic(e.target.value)}
+                placeholder="例：プレゼン / ダイエット / 起業 …"
+                className="w-full bg-white/90 border border-amber-200 rounded-xl p-2.5 text-[12px] text-rose-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-400 text-center"
+                style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}/>
+              {/* 履歴サンプル */}
+              {history.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {history.slice(0, 6).map((h,i)=>(
+                    <button key={i} onClick={()=>setTopic(h)}
+                      className="text-[8.5px] text-amber-600 px-2 py-0.5 rounded-full bg-white/70 border border-amber-100 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                      {h}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
+            {/* メインフレーズ表示 */}
+            <div className="text-center bg-gradient-to-br from-white/80 to-amber-50/80 rounded-2xl py-4 px-3 mb-3 border border-amber-100">
+              <div className="text-[9px] text-amber-500 mb-1" style={{letterSpacing:"0.2em"}}>TODAY'S MAGIC WORDS</div>
+              <div className="text-[20px] text-rose-700 my-1 leading-tight" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.03em"}}>
+                {displayPhrase}
+              </div>
+              <div className="text-[8.5px] text-amber-600 mt-1" style={{letterSpacing:"0.1em"}}>
+                ✨ 声に出して、唱えてみて ♪
+              </div>
+            </div>
+
+            {/* カウント */}
+            <div className="text-center">
+              <div className="text-[9px] text-amber-500 mb-0.5" style={{letterSpacing:"0.2em"}}>TODAY'S COUNT</div>
+              <div className="text-[36px] text-rose-600 leading-none my-1" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>
+                {count}
+                <span className="text-[12px] text-rose-400 ml-1">回</span>
+              </div>
+            </div>
+
             {/* ハートタップボタン */}
-            <div className="relative inline-block my-3">
-              <button onClick={handleTap}
-                className="relative w-24 h-24 rounded-full text-[44px] active:scale-90 transition"
-                style={{background:"radial-gradient(circle at 30% 30%, #fff 0%, #fce7f3 60%, #f9a8d4 100%)", boxShadow:"0 6px 20px rgba(244,114,182,0.4), inset 0 -4px 10px rgba(244,114,182,0.2)"}}>
-                ♡
-              </button>
-              {/* 舞うハート */}
-              {hearts.map(h=>(
-                <span key={h.id} className="absolute pointer-events-none text-[22px] anim-heart-fly"
-                  style={{
-                    left:"50%", top:"50%",
-                    transform:`translate(calc(-50% + ${h.x}px), -50%)`,
-                  }}>
+            <div className="text-center my-3">
+              <div className="relative inline-block">
+                <button onClick={handleTap}
+                  className="relative w-24 h-24 rounded-full text-[44px] active:scale-90 transition"
+                  style={{background:"radial-gradient(circle at 30% 30%, #fff 0%, #fce7f3 60%, #f9a8d4 100%)", boxShadow:"0 6px 20px rgba(244,114,182,0.4), inset 0 -4px 10px rgba(244,114,182,0.2)"}}>
                   ♡
-                </span>
-              ))}
+                </button>
+                {/* 舞うハート */}
+                {hearts.map(h=>(
+                  <span key={h.id} className="absolute pointer-events-none text-[22px] anim-heart-fly"
+                    style={{
+                      left:"50%", top:"50%",
+                      transform:`translate(calc(-50% + ${h.x}px), -50%)`,
+                    }}>
+                    ♡
+                  </span>
+                ))}
+              </div>
+              <p className="text-[8.5px] text-amber-600 mt-1.5" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                唱えるたびにタップ ♡
+              </p>
             </div>
+
             <div className="grid grid-cols-2 gap-2 mt-3">
-              <div className="rounded-xl bg-white/80 border border-amber-100 p-2">
+              <div className="rounded-xl bg-white/80 border border-amber-100 p-2 text-center">
                 <div className="text-[8.5px] text-amber-500" style={{letterSpacing:"0.12em"}}>今週合計</div>
                 <div className="text-[18px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                   {weekTotal}<span className="text-[10px] text-rose-400 ml-0.5">回</span>
                 </div>
               </div>
-              <div className="rounded-xl bg-white/80 border border-amber-100 p-2">
+              <div className="rounded-xl bg-white/80 border border-amber-100 p-2 text-center">
                 <div className="text-[8.5px] text-amber-500" style={{letterSpacing:"0.12em"}}>ベスト記録</div>
                 <div className="text-[18px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                   {bestRecord}<span className="text-[10px] text-rose-400 ml-0.5">回 / 1日</span>
