@@ -62,6 +62,18 @@
       100% { opacity: 0; transform: translate(-50%, -260%) scale(0.7) rotate(-5deg); color: #f9a8d4; }
     }
     .anim-heart-fly { animation: heartFly 1.4s ease-out forwards; color: #ec4899; text-shadow: 0 0 8px rgba(244,114,182,0.5); }
+    @keyframes sparkleFly {
+      0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
+      30%  { opacity: 1; transform: translate(-50%, -100%) scale(1.4) rotate(60deg); }
+      70%  { opacity: 0.9; transform: translate(-50%, -200%) scale(1.1) rotate(180deg); }
+      100% { opacity: 0; transform: translate(-50%, -320%) scale(0.7) rotate(360deg); }
+    }
+    .anim-sparkle-fly { animation: sparkleFly 1.6s ease-out forwards; text-shadow: 0 0 12px rgba(255,200,230,0.9); }
+    @keyframes wandWave {
+      0%,100% { transform: rotate(-5deg); }
+      50%    { transform: rotate(8deg); }
+    }
+    .anim-wand-wave { animation: wandWave 2.5s ease-in-out infinite; transform-origin: bottom center; }
     .anim-spin-r { animation: spin360r 2s linear infinite; }
     input, textarea { font-family: inherit; }
     /* 選択時のハイライト色 */
@@ -2588,6 +2600,8 @@
       const [hontoText,setHontoText] = useLocal("loop_hontoText", "");
       // サブタブ（毎日 / ふかぼり）
       const [subTab,setSubTab] = useLocal("loop_subtab", "daily");
+      // ラッキー未来フォルダの中身（宝石箱と共有するため親で管理）
+      const [luckyItems, setLuckyItems] = useLocal("lucky_items", []);
       // STEP2
       const [theme,setTheme] = useLocal("loop_theme", "癒す");
       const [valueChoice,setValueChoice] = useLocal("loop_valueChoice", "自分にやさしくする");
@@ -2686,16 +2700,20 @@
           {/* === 毎日タブ === */}
           {subTab==="daily" && (
             <div className="anim-fade">
-              {/* できる！できる！ゲーム */}
-              <IcanGameSection/>
+              {/* 魔法のステッキ ── 開始のワクワク入口 */}
+              <MagicWandSection/>
               {/* 言葉の魔法 ── ネガ → ポジ変換 */}
               <WordsMagicSection/>
               {/* ブラック姫にツッコミ ♪ */}
               <BlackPrincessSection/>
+              {/* できる！できる！ゲーム ── 自分のテーマで唱える */}
+              <IcanGameSection/>
               {/* 焦りを溶かす できる探しワーク */}
               <AnxietyWorkSection/>
+              {/* 未来の宝石箱 ── ラッキー未来フォルダと連動 */}
+              <JewelryBoxSection items={luckyItems}/>
               {/* ラッキー♪未来フォルダ */}
-              <LuckyFutureSection/>
+              <LuckyFutureSection items={luckyItems} setItems={setLuckyItems}/>
             </div>
           )}
 
@@ -3279,10 +3297,100 @@
     };
 
     /* =================================================
+     *  未来の宝石箱 ── ラッキー未来フォルダと連動
+     * ================================================= */
+    const JewelryBoxSection = ({items}) => {
+      const arr = items || [];
+      const count = arr.length;
+      const achievedCount = arr.filter(i => i.achieved).length;
+      const jewelSymbols = ["💎","💍","🌸","✨","💫","🌟","💖"];
+      return (
+        <section className="px-5 mt-5">
+          <div className="relative rounded-[28px] p-5 overflow-hidden text-center"
+            style={{
+              background:"linear-gradient(160deg, #faf5ff 0%, #fdf2f8 40%, #ede9fe 100%)",
+              boxShadow:"0 8px 30px rgba(168,85,247,0.18)",
+              border:"1px solid rgba(255,255,255,0.8)"
+            }}>
+            {/* 背景の装飾 */}
+            <span className="absolute top-3 left-4 text-[14px] opacity-50 anim-float-emoji">✨</span>
+            <span className="absolute top-5 right-5 text-[16px] opacity-50 anim-float">💎</span>
+            <span className="absolute bottom-12 left-6 text-[12px] opacity-50 anim-float-emoji">⭐</span>
+            <span className="absolute bottom-5 right-4 text-[14px] opacity-50 anim-float">✨</span>
+
+            <div className="relative">
+              <div className="text-[9.5px] text-purple-500 mb-1" style={{letterSpacing:"0.3em"}}>💎 JEWELRY BOX ✨</div>
+              <h2 className="text-[16px] text-purple-700 mb-2" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.15em"}}>
+                未来の宝石箱
+              </h2>
+              <p className="text-[10px] text-rose-500 mb-3 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                ✨ 集めた未来の宝石が、キラキラ輝きます ✨
+              </p>
+
+              {/* 宝石箱本体 */}
+              <div className="rounded-2xl p-4 mb-3 relative"
+                style={{
+                  background:"radial-gradient(ellipse at center, rgba(255,255,255,0.85) 0%, rgba(253,242,248,0.6) 50%, rgba(237,233,254,0.5) 100%)",
+                  border:"2px dashed rgba(168,85,247,0.3)",
+                  minHeight: "120px",
+                  boxShadow:"inset 0 4px 14px rgba(168,85,247,0.08)",
+                }}>
+                {count === 0 ? (
+                  <div className="py-6 text-[10.5px] text-purple-400 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                    まだ宝石は集まっていません 💭<br/>
+                    下の「ラッキー♪未来フォルダ」で<br/>未来の宝石を集めましょう ♡
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5 justify-center items-center py-2">
+                    {arr.map((it, i) => (
+                      <span key={i}
+                        className="text-[26px] anim-float-emoji"
+                        style={{
+                          animationDelay: ((i % 6) * 0.25) + "s",
+                          animationDuration: (2 + (i % 3) * 0.5) + "s",
+                          filter: it.achieved
+                            ? "drop-shadow(0 0 10px rgba(251,191,36,0.85))"
+                            : "drop-shadow(0 0 7px rgba(168,85,247,0.55))",
+                          opacity: it.achieved ? 1 : 0.92,
+                        }}
+                        title={it.desire}>
+                        {it.achieved ? "🌟" : jewelSymbols[i % jewelSymbols.length]}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* カウンター */}
+              <div className="inline-flex items-center gap-2 bg-white/75 rounded-full px-4 py-1.5 border border-purple-100">
+                <span className="text-[8.5px] text-purple-500" style={{letterSpacing:"0.15em"}}>あなたの宝石</span>
+                <span className="text-[18px] text-purple-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>
+                  {count}<span className="text-[10px] text-purple-400 ml-0.5">個</span>
+                </span>
+                {achievedCount > 0 && (
+                  <>
+                    <span className="text-purple-300">|</span>
+                    <span className="text-[11px] text-amber-600" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                      ✨ {achievedCount} 個 叶ったね
+                    </span>
+                  </>
+                )}
+              </div>
+              {count > 0 && (
+                <p className="text-[8.5px] text-purple-400 mt-2" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  💎 宝石をタップで願いが見えます（長押し）
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
      *  ラッキー♪未来フォルダ
      * ================================================= */
-    const LuckyFutureSection = () => {
-      const [items, setItems] = useLocal("lucky_items", []);
+    const LuckyFutureSection = ({items, setItems}) => {
       const [adding, setAdding] = useState(false);
       const [seen, setSeen]     = useState("");
       const [desire, setDesire] = useState("");
@@ -3630,6 +3738,111 @@
                 最後にジャンプした日：{savedAt}
               </p>
             )}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  魔法のステッキ ── 1日を始める入口セクション
+     * ================================================= */
+    const MagicWandSection = () => {
+      const [count, setCount] = useDaily("ican_count", 0);
+      const [bestRecord, setBestRecord] = useLocal("ican_best", 0);
+      const [sparkles, setSparkles] = useState([]);
+      const symbols = ["✨","💖","⭐","💫","♡","🌸","💎"];
+      const handleCast = () => {
+        const next = count + 1;
+        setCount(next);
+        if (next > bestRecord) setBestRecord(next);
+        // 5つのキラキラを散らす
+        const baseId = Date.now();
+        const newSparks = [0,1,2,3,4].map(i => ({
+          id: baseId + i,
+          x: (Math.random() - 0.5) * 120,
+          sym: symbols[(baseId + i) % symbols.length],
+          delay: i * 70,
+        }));
+        setSparkles(prev => [...prev, ...newSparks]);
+        setTimeout(() => {
+          setSparkles(prev => prev.filter(s => !newSparks.find(n => n.id === s.id)));
+        }, 1700);
+      };
+      return (
+        <section className="px-5 mt-5">
+          <div className="relative rounded-[28px] p-5 overflow-hidden text-center"
+            style={{
+              background:"linear-gradient(160deg, #fff7fa 0%, #fce7f3 40%, #f9d5e5 100%)",
+              boxShadow:"0 8px 30px rgba(244,114,182,0.2)",
+              border:"1px solid rgba(255,255,255,0.8)"
+            }}>
+            {/* 背景の装飾 */}
+            <span className="absolute top-3 left-4 text-[14px] opacity-50 anim-float-emoji">✨</span>
+            <span className="absolute top-5 right-5 text-[18px] opacity-50 anim-float">⭐</span>
+            <span className="absolute bottom-12 left-6 text-[12px] opacity-50 anim-float-emoji">💫</span>
+            <span className="absolute bottom-5 right-4 text-[16px] opacity-50 anim-float">✨</span>
+
+            {/* タイトル */}
+            <div className="relative">
+              <div className="text-[9.5px] text-purple-500 mb-1" style={{letterSpacing:"0.3em"}}>✨ MAGIC WAND ✨</div>
+              <h2 className="text-[16px] text-rose-700 mb-2" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.15em"}}>
+                魔法のステッキ
+              </h2>
+              <p className="text-[10px] text-rose-500 mb-3 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                ✨ 唱えるたびに、姫の魔法がかかります ✨
+              </p>
+
+              {/* お姫様＋ステッキ */}
+              <div className="relative inline-block my-2">
+                <img src="./gokigen_t.png" alt=""
+                  className="w-28 h-28 mx-auto"
+                  style={{filter:"drop-shadow(0 4px 12px rgba(244,114,182,0.3))"}}
+                  onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
+                <span className="absolute -right-2 top-4 text-[40px] anim-wand-wave"
+                  style={{textShadow:"0 0 14px rgba(255,200,230,0.9)"}}>🪄</span>
+              </div>
+
+              {/* メインフレーズ */}
+              <div className="bg-white/80 rounded-2xl px-4 py-2.5 mx-auto inline-block my-2 border border-pink-100">
+                <p className="text-[13px] text-rose-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.1em"}}>
+                  「私ならできる！」
+                </p>
+              </div>
+
+              {/* タップエリア */}
+              <div className="relative inline-block my-3">
+                <button onClick={handleCast}
+                  className="relative w-28 h-28 rounded-full text-[52px] active:scale-90 transition flex items-center justify-center"
+                  style={{
+                    background:"radial-gradient(circle at 30% 30%, #fff 0%, #fce7f3 50%, #f472b6 100%)",
+                    boxShadow:"0 8px 30px rgba(244,114,182,0.5), inset 0 -6px 14px rgba(244,114,182,0.25)",
+                  }}>
+                  <span className="anim-wand-wave inline-block">🪄</span>
+                </button>
+                {/* 飛び散るキラキラ */}
+                {sparkles.map(s => (
+                  <span key={s.id} className="absolute pointer-events-none text-[22px] anim-sparkle-fly"
+                    style={{
+                      left:"50%", top:"50%",
+                      transform:`translate(calc(-50% + ${s.x}px), -50%)`,
+                      animationDelay: s.delay + "ms",
+                    }}>
+                    {s.sym}
+                  </span>
+                ))}
+              </div>
+              <p className="text-[8.5px] text-rose-400" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                ステッキをタップして魔法をかける ♡
+              </p>
+
+              {/* カウント */}
+              <div className="mt-3 inline-flex items-center gap-2 bg-white/70 rounded-full px-4 py-1.5 border border-pink-100">
+                <span className="text-[8.5px] text-purple-500" style={{letterSpacing:"0.15em"}}>魔法をかけた数</span>
+                <span className="text-[18px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>
+                  {count}<span className="text-[10px] text-rose-400 ml-0.5">回</span>
+                </span>
+              </div>
+            </div>
           </div>
         </section>
       );
