@@ -3474,3 +3474,43 @@ video {
   --tw-scale-y: 0.99;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
+
+/* ===========================================================
+ * 追加カスタムスタイル — 揺れ停止・iOS Safari対策・姫イラスト馴染ませ
+ * =========================================================== */
+
+/* iOS Safari の 100vh 問題対策：min-h-screen を動的ビューポート高さに */
+.min-h-screen { min-height: 100dvh !important; }
+
+/* iOSアドレスバー出入りによる揺れを防ぐ */
+body { overscroll-behavior-y: none; }
+
+/* 揺れ・回転・点滅の元になる無限アニメーション全停止 */
+*, *::before, *::after {
+  animation-iteration-count: 1 !important;
+  animation-fill-mode: forwards !important;
+}
+.anim-float, .anim-float-emoji, .anim-wand-wave,
+.anim-spin, .anim-spin-r, .animate-pulse, .animate-bounce,
+.animate-spin, .animate-ping {
+  animation: none !important;
+}
+
+/* iOS Safari でスクロール時のチカチカ・揺れの原因になる backdrop-filter を停止 */
+[class*="backdrop-blur"], [style*="backdropFilter"], [style*="backdrop-filter"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* keyframes 自体も動かないように上書き（保険） */
+@keyframes floatY      { 0%,100% { transform: translateY(0); } 50% { transform: translateY(0); } }
+@keyframes floatEmoji  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(0); } }
+@keyframes spin360     { 0%,100% { transform: rotate(0deg); } }
+@keyframes spin360r    { 0%,100% { transform: rotate(0deg); } }
+@keyframes wandWave    { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(0deg); } }
+
+/* 魔法のステッキの姫イラスト ── 背景のピンクへ自然になじむフェード */
+.magic-princess {
+  -webkit-mask-image: radial-gradient(ellipse 78% 88% at 50% 48%, #000 38%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.35) 82%, transparent 100%);
+  mask-image: radial-gradient(ellipse 78% 88% at 50% 48%, #000 38%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.35) 82%, transparent 100%);
+}
