@@ -117,10 +117,29 @@
     @keyframes spin360r    { 0%,100% { transform: rotate(0deg); } }
     @keyframes wandWave    { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(0deg); } }
 
-    /* 魔法のステッキの姫イラスト ── 背景のピンクへ自然になじむフェード */
+    /* 魔法のステッキの姫イラスト ── 背景のピンクへふわっとなじむフェード（より柔らかく） */
     .magic-princess {
-      -webkit-mask-image: radial-gradient(ellipse 78% 88% at 50% 48%, #000 38%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.35) 82%, transparent 100%);
-      mask-image: radial-gradient(ellipse 78% 88% at 50% 48%, #000 38%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.35) 82%, transparent 100%);
+      mix-blend-mode: multiply;
+      -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 48%, #000 0%, rgba(0,0,0,0.92) 30%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.15) 85%, transparent 100%);
+      mask-image: radial-gradient(ellipse 60% 70% at 50% 48%, #000 0%, rgba(0,0,0,0.92) 30%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.15) 85%, transparent 100%);
+    }
+    /* 黒バラ姫アイコン ── 白背景を抜いて紫ピンク背景になじませる */
+    .kurobara-icon {
+      mix-blend-mode: multiply;
+      -webkit-mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, #000 55%, rgba(0,0,0,0.7) 75%, transparent 100%);
+      mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, #000 55%, rgba(0,0,0,0.7) 75%, transparent 100%);
+    }
+    /* 魔法ステッキのアイコン ── ボタンのピンクと馴染ませる */
+    .wand-icon {
+      mix-blend-mode: multiply;
+      -webkit-mask-image: radial-gradient(ellipse 80% 88% at 50% 50%, #000 50%, rgba(0,0,0,0.7) 75%, transparent 100%);
+      mask-image: radial-gradient(ellipse 80% 88% at 50% 50%, #000 50%, rgba(0,0,0,0.7) 75%, transparent 100%);
+    }
+    /* 未来の宝石箱のイラスト ── 白背景を抜いて紫ピンク背景になじませる */
+    .jewelry-box-img {
+      mix-blend-mode: multiply;
+      -webkit-mask-image: radial-gradient(ellipse 72% 80% at 50% 50%, #000 30%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.3) 85%, transparent 100%);
+      mask-image: radial-gradient(ellipse 72% 80% at 50% 50%, #000 30%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.3) 85%, transparent 100%);
     }
   </style>
 </head>
@@ -2748,7 +2767,7 @@
               <MagicWandSection/>
               {/* 言葉の魔法 ── ネガ → ポジ変換 */}
               <WordsMagicSection/>
-              {/* ブラック姫にツッコミ ♪ */}
+              {/* 黒バラ姫にツッコミ ♪ */}
               <BlackPrincessSection/>
               {/* できる！できる！ゲーム ── 自分のテーマで唱える */}
               <IcanGameSection/>
@@ -3076,7 +3095,7 @@
             {idealPct != null && (
               <div className="absolute pointer-events-none flex flex-col items-center"
                 style={{left:`${idealPct}%`, top:"50%", transform:"translate(-50%, -50%)"}}>
-                <span className={`text-[12px] leading-none ${reached?"text-amber-400":"text-rose-300"}`}
+                <span className={`text-[12px] leading-none ${reached?"text-rose-400":"text-rose-300"}`}
                   style={{textShadow: reached?"0 0 6px rgba(251,191,36,0.6)":"0 0 4px rgba(255,255,255,0.9)", filter:"drop-shadow(0 1px 1px rgba(244,114,182,0.4))"}}>
                   {reached?"★":"☆"}
                 </span>
@@ -3085,7 +3104,7 @@
             {idealMinPct != null && idealMaxPct != null && (
               <div className="absolute pointer-events-none flex flex-col items-center"
                 style={{left:`${(idealMinPct + idealMaxPct)/2}%`, top:"50%", transform:"translate(-50%, -50%)"}}>
-                <span className={`text-[12px] leading-none ${reached?"text-amber-400":"text-rose-300"}`}
+                <span className={`text-[12px] leading-none ${reached?"text-rose-400":"text-rose-300"}`}
                   style={{textShadow: reached?"0 0 6px rgba(251,191,36,0.6)":"0 0 4px rgba(255,255,255,0.9)", filter:"drop-shadow(0 1px 1px rgba(244,114,182,0.4))"}}>
                   {reached?"★":"☆"}
                 </span>
@@ -3213,13 +3232,13 @@
             {step===4 && (
               <div className="anim-fade">
                 <div className="text-center mb-3">
-                  <div className="text-[9px] text-amber-500" style={{letterSpacing:"0.2em"}}>STEP 5</div>
+                  <div className="text-[9px] text-rose-500" style={{letterSpacing:"0.2em"}}>STEP 5</div>
                   <div className="text-[12.5px] text-rose-700 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>力強い「大丈夫」「できる」</div>
-                  <div className="text-[8.5px] text-amber-500 mt-1">👑 自分の中の姫からのメッセージ</div>
+                  <div className="text-[8.5px] text-rose-500 mt-1">👑 自分の中の姫からのメッセージ</div>
                 </div>
                 <textarea value={power} onChange={e=>setPower(e.target.value)} rows={4}
                   placeholder="例：私ならできる！我慢もストレスもなくしていいよ。少しずつ言ってみよう。今こそ、変えましょう。つくりたい世界を、つくりましょう ✨"
-                  className="w-full bg-gradient-to-br from-amber-50 to-pink-50 border border-amber-200 rounded-xl p-3 text-[11px] text-rose-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
+                  className="w-full bg-gradient-to-br from-amber-50 to-pink-50 border border-amber-200 rounded-xl p-3 text-[11px] text-rose-700 placeholder:text-rose-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
                   style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}/>
                 <button onClick={handleSave}
                   className="w-full mt-3 py-2.5 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 text-white text-[11px] active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow:"0 3px 10px rgba(168,85,247,0.3)"}}>
@@ -3372,20 +3391,26 @@
               </p>
 
               {/* 宝石箱本体 */}
-              <div className="rounded-2xl p-4 mb-3 relative"
+              <div className="rounded-2xl p-4 mb-3 relative overflow-hidden"
                 style={{
                   background:"radial-gradient(ellipse at center, rgba(255,255,255,0.85) 0%, rgba(253,242,248,0.6) 50%, rgba(237,233,254,0.5) 100%)",
                   border:"2px dashed rgba(168,85,247,0.3)",
-                  minHeight: "120px",
+                  minHeight: "200px",
                   boxShadow:"inset 0 4px 14px rgba(168,85,247,0.08)",
                 }}>
+                {/* 宝石箱のイラスト（背景になじむ） */}
+                <img src="./jewelry.png" alt="" aria-hidden
+                  className="jewelry-box-img mx-auto mb-2"
+                  style={{width:"180px", maxWidth:"75%", height:"auto", display:"block"}}
+                  onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
+
                 {count === 0 ? (
-                  <div className="py-6 text-[10.5px] text-purple-400 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  <div className="relative text-[10.5px] text-purple-400 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
                     まだ宝石は集まっていません 💭<br/>
                     下の「ラッキー♪未来フォルダ」で<br/>未来の宝石を集めましょう ♡
                   </div>
                 ) : (
-                  <div className="flex flex-wrap gap-1.5 justify-center items-center py-2">
+                  <div className="relative flex flex-wrap gap-1.5 justify-center items-center">
                     {arr.map((it, i) => (
                       <span key={i}
                         className="text-[26px] anim-float-emoji"
@@ -3414,7 +3439,7 @@
                 {achievedCount > 0 && (
                   <>
                     <span className="text-purple-300">|</span>
-                    <span className="text-[11px] text-amber-600" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                    <span className="text-[11px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
                       ✨ {achievedCount} 個 叶ったね
                     </span>
                   </>
@@ -3455,7 +3480,7 @@
       };
       return (
         <section className="px-5 mt-6">
-          <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>ラッキー♪未来フォルダ</SectionTitle>
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-rose-400"/>}>ラッキー♪未来フォルダ</SectionTitle>
           <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
             🌟 「いいなぁ」を「ラッキー♪私のなりたい未来！」に変換して保存
           </p>
@@ -3483,16 +3508,16 @@
                     className="w-full bg-rose-50/40 border border-rose-100 rounded-lg p-2 text-[10.5px] text-gray-700 placeholder:text-rose-300 focus:outline-none focus:border-rose-300"
                     style={{fontFamily:'"Shippori Mincho",serif'}}/>
                 </div>
-                <div className="text-center text-[12px] text-amber-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                <div className="text-center text-[12px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
                   ✨ ラッキー♪ 変換 ✨
                 </div>
                 <div>
-                  <p className="text-[9.5px] text-amber-600 mb-1 flex items-center gap-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  <p className="text-[9.5px] text-rose-500 mb-1 flex items-center gap-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
                     <span>🌟</span> 私のなりたい未来
                   </p>
                   <input type="text" value={desire} onChange={e=>setDesire(e.target.value)}
                     placeholder="例：私もハワイに行きたい / こんな素敵な部屋に住みたい"
-                    className="w-full bg-amber-50/40 border border-amber-100 rounded-lg p-2 text-[10.5px] text-gray-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300"
+                    className="w-full bg-amber-50/40 border border-amber-100 rounded-lg p-2 text-[10.5px] text-gray-700 placeholder:text-rose-300 focus:outline-none focus:border-amber-300"
                     style={{fontFamily:'"Shippori Mincho",serif'}}/>
                 </div>
                 <div>
@@ -3535,10 +3560,10 @@
                       {it.achieved && <span className="text-[10px]">✓</span>}
                     </button>
                     <div className="flex-1 min-w-0">
-                      <div className={`text-[8.5px] ${it.achieved?"text-amber-600":"text-rose-400"}`} style={{letterSpacing:"0.08em"}}>
+                      <div className={`text-[8.5px] ${it.achieved?"text-rose-500":"text-rose-400"}`} style={{letterSpacing:"0.08em"}}>
                         👀 {it.seen}
                       </div>
-                      <div className={`text-[11px] mt-0.5 ${it.achieved?"text-amber-700 line-through":"text-rose-700"}`} style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                      <div className={`text-[11px] mt-0.5 ${it.achieved?"text-rose-600 line-through":"text-rose-700"}`} style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                         🌟 {it.desire}
                       </div>
                       <div className="flex items-center justify-between mt-1">
@@ -3548,7 +3573,7 @@
                         <span className="text-[7.5px] text-rose-300">{it.date}</span>
                       </div>
                       {it.achieved && (
-                        <div className="text-[8.5px] text-amber-500 mt-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                        <div className="text-[8.5px] text-rose-500 mt-1" style={{fontFamily:'"Shippori Mincho",serif'}}>
                           ✨ 叶ったね！おめでとう ♡
                         </div>
                       )}
@@ -3569,7 +3594,7 @@
     };
 
     /* =================================================
-     *  ブラック姫にツッコミ ♪
+     *  黒バラ姫にツッコミ ♪
      * ================================================= */
     const blackPrincessData = [
       {
@@ -3580,7 +3605,7 @@
           "♪ できるかどうか、まだ試してないでしょ？♪",
           "♪ できる前提で動いてみよ？♪",
         ],
-        butler:"お嬢様、ブラック姫がお出ましのご様子。可愛らしくツッコミを入れてくださいませ ♪",
+        butler:"お嬢様、黒バラ姫がお出ましのご様子。可愛らしくツッコミを入れてくださいませ ♪",
       },
       {
         key:"muiteruno",
@@ -3627,9 +3652,9 @@
       const [openKey, setOpenKey] = useState(null);
       return (
         <section className="px-5 mt-6">
-          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>ブラック姫にツッコミ ♪</SectionTitle>
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>黒バラ姫にツッコミ ♪</SectionTitle>
           <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
-            🎼 心の中の黒姫さんに、音符で軽やかにツッコミ ♪
+            🎼 心の中の黒バラ姫さんに、音符で軽やかにツッコミ ♪
           </p>
           <div className="space-y-2.5">
             {blackPrincessData.map(card=>{
@@ -3640,9 +3665,10 @@
                   <button onClick={()=>setOpenKey(isOpen?null:card.key)}
                     className="w-full text-left p-3.5 bg-gradient-to-br from-purple-50 to-pink-50 active:scale-[0.99] transition">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-[20px]">😈</span>
+                      <img src="./kurobara.png" alt="黒バラ" className="w-8 h-8 object-contain kurobara-icon"
+                        onError={(e)=>{ e.currentTarget.outerHTML='<span class="text-[20px]">🥀</span>'; }}/>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[9px] text-purple-500" style={{letterSpacing:"0.15em"}}>BLACK PRINCESS</div>
+                        <div className="text-[9px] text-purple-500" style={{letterSpacing:"0.15em"}}>BLACK ROSE</div>
                         <div className="text-[12px] text-purple-700 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                           「{card.voice}」
                         </div>
@@ -3694,7 +3720,7 @@
       const update = (k,v) => setAnswers({...answers, [k]:v});
       return (
         <section className="px-5 mt-6">
-          <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>やさしく変化のレッスン</SectionTitle>
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-rose-400"/>}>やさしく変化のレッスン</SectionTitle>
           <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
             🍰 答えを急がず、ゆるやかに自分に問いかけて
           </p>
@@ -3711,7 +3737,7 @@
                 <textarea value={answers[q.key]||""} onChange={e=>update(q.key, e.target.value)}
                   rows={2}
                   placeholder="ここに自由に書いてみて…"
-                  className="w-full bg-white/85 border border-amber-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
+                  className="w-full bg-white/85 border border-amber-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-rose-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
                   style={{fontFamily:'"Shippori Mincho",serif'}}/>
               </div>
             ))}
@@ -3844,12 +3870,14 @@
               {/* タップエリア */}
               <div className="relative inline-block my-3">
                 <button onClick={handleCast}
-                  className="relative w-28 h-28 rounded-full text-[52px] active:scale-90 transition flex items-center justify-center"
+                  className="relative w-28 h-28 rounded-full active:scale-90 transition flex items-center justify-center overflow-hidden"
                   style={{
                     background:"radial-gradient(circle at 30% 30%, #fff 0%, #fce7f3 50%, #f472b6 100%)",
                     boxShadow:"0 8px 30px rgba(244,114,182,0.5), inset 0 -6px 14px rgba(244,114,182,0.25)",
                   }}>
-                  <span className="anim-wand-wave inline-block">🪄</span>
+                  <img src="./sutekki.png" alt="ステッキ"
+                    className="wand-icon w-20 h-20 object-contain"
+                    onError={(e)=>{ e.currentTarget.outerHTML='<span class="text-[52px]">🪄</span>'; }}/>
                 </button>
                 {/* 飛び散るキラキラ */}
                 {sparkles.map(s => (
@@ -4001,7 +4029,7 @@
       };
       return (
         <section className="px-5 mt-6">
-          <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>焦りを溶かす「できる探し」</SectionTitle>
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-rose-400"/>}>焦りを溶かす「できる探し」</SectionTitle>
           <p className="text-[9.5px] text-rose-400 mb-3 px-1 leading-relaxed" style={{letterSpacing:"0.06em"}}>
             ⏳ そわそわした焦りを、「〜できる！」に変換して手放すゲーム
           </p>
@@ -4010,7 +4038,7 @@
 
             {/* STEP 1: 焦りを選ぶ */}
             <div>
-              <p className="text-[10px] text-amber-600 mb-2 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+              <p className="text-[10px] text-rose-500 mb-2 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                 <span>📍</span> 今、どんな焦りを抱えてる？
               </p>
               {/* プリセットチップ：タップで焦り文＋5つの「できる！」例文が自動セット */}
@@ -4031,23 +4059,23 @@
                 ))}
               </div>
               <div className="flex items-center justify-between mb-2 px-1">
-                <p className="text-[8.5px] text-amber-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                <p className="text-[8.5px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
                   💡 タップすると「できる！」例文がすぐ読める状態に ✨
                 </p>
                 <button onClick={()=>{ setWorry(""); setDekirus(["","","","",""]); }}
-                  className="text-[8.5px] text-amber-600 px-2 py-0.5 rounded-full bg-white/70 border border-amber-200 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  className="text-[8.5px] text-rose-500 px-2 py-0.5 rounded-full bg-white/70 border border-amber-200 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
                   ✏️ 自分で書く
                 </button>
               </div>
               <textarea value={worry} onChange={e=>setWorry(e.target.value)} rows={2}
                 placeholder="または、自分の言葉で書く…（例：プレゼン直前で頭が真っ白で焦る）"
-                className="w-full bg-white/85 border border-amber-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
+                className="w-full bg-white/85 border border-amber-100 rounded-xl p-2.5 text-[10.5px] text-gray-700 placeholder:text-rose-300 focus:outline-none focus:border-amber-300 resize-none leading-relaxed"
                 style={{fontFamily:'"Shippori Mincho",serif'}}/>
             </div>
 
             {/* STEP 2: できるを5つ */}
             <div>
-              <p className="text-[10px] text-amber-600 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+              <p className="text-[10px] text-rose-500 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                 <span>✏️</span> その焦りに対して「〜できる！」を書く
               </p>
               <p className="text-[8.5px] text-rose-400 mb-2 px-1" style={{letterSpacing:"0.05em"}}>
@@ -4056,10 +4084,10 @@
               <div className="space-y-2">
                 {dekirus.map((d,i)=>(
                   <div key={i} className="flex items-start gap-2">
-                    <span className="text-[10px] text-amber-500 mt-2 w-3 flex-shrink-0">{i+1}.</span>
+                    <span className="text-[10px] text-rose-500 mt-2 w-3 flex-shrink-0">{i+1}.</span>
                     <textarea value={d} onChange={e=>updateD(i, e.target.value)} rows={1}
                       placeholder={"例：" + ["○月○日までにやれば、できる！","1年前の自分と比べたら、確実に成長できている！","今晩のごはんを食べることはできる！","深呼吸 1 回はできる！","明日の朝、もう一度考え直すことはできる！"][i]}
-                      className="flex-1 bg-white/85 border border-amber-100 rounded-lg p-2 text-[10.5px] text-rose-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-300 resize-none leading-snug"
+                      className="flex-1 bg-white/85 border border-amber-100 rounded-lg p-2 text-[10.5px] text-rose-700 placeholder:text-rose-300 focus:outline-none focus:border-amber-300 resize-none leading-snug"
                       style={{fontFamily:'"Shippori Mincho",serif'}}/>
                   </div>
                 ))}
@@ -4071,27 +4099,27 @@
               ✨ できる探しを保存する
             </button>
 
-            <p className="text-[8.5px] text-amber-600 text-center leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+            <p className="text-[8.5px] text-rose-500 text-center leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
               5分もあれば、ふわっと軽い気持ちに ♡ あなたなら大丈夫 ✨
             </p>
 
             {/* 過去の記録 */}
             {savedList.length > 0 && (
               <details className="mt-3">
-                <summary className="cursor-pointer text-[9.5px] text-amber-600 px-2 py-1 select-none" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                <summary className="cursor-pointer text-[9.5px] text-rose-500 px-2 py-1 select-none" style={{fontFamily:'"Shippori Mincho",serif'}}>
                   📚 過去の「できる探し」を見る（{savedList.length}件）
                 </summary>
                 <div className="mt-2 space-y-2 max-h-72 overflow-y-auto">
                   {savedList.map((e,idx)=>(
                     <div key={idx} className="rounded-xl bg-white/80 border border-amber-100 p-2.5 relative">
                       <button onClick={()=>removeEntry(idx)}
-                        className="absolute top-1 right-2 text-[12px] text-amber-300 active:scale-90 transition">×</button>
+                        className="absolute top-1 right-2 text-[12px] text-rose-300 active:scale-90 transition">×</button>
                       <div className="text-[8px] text-rose-300 mb-0.5">{e.date}</div>
                       <div className="text-[10px] text-rose-700 mb-1.5 leading-snug pr-5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                         💭 {e.worry}
                       </div>
                       {e.dekirus.map((d,i)=>(
-                        <div key={i} className="text-[9.5px] text-amber-700 leading-relaxed pl-2" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                        <div key={i} className="text-[9.5px] text-rose-600 leading-relaxed pl-2" style={{fontFamily:'"Shippori Mincho",serif'}}>
                           ✨ {d}
                         </div>
                       ))}
@@ -4153,7 +4181,7 @@
       const samplePhrases = ["私","プレゼン","ダイエット","新しい仕事","お金持ちになること","健康","結婚","起業","引っ越し","資格"];
       return (
         <section className="px-5 mt-6">
-          <SectionTitle icon={<Sparkles className="w-4 h-4 text-amber-400"/>}>できる！できる！ゲーム</SectionTitle>
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-rose-400"/>}>できる！できる！ゲーム</SectionTitle>
           <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
             ✨ 「○○ならできる！」を自分の言葉でつくって、ハートをタップ ♡
           </p>
@@ -4162,19 +4190,19 @@
 
             {/* トピック入力 */}
             <div className="mb-3">
-              <p className="text-[9.5px] text-amber-600 mb-1.5 flex items-center gap-1" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+              <p className="text-[9.5px] text-rose-500 mb-1.5 flex items-center gap-1" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                 <span>✏️</span> 何ならできる？
               </p>
               <input type="text" value={topic} onChange={e=>setTopic(e.target.value)}
                 placeholder="例：プレゼン / ダイエット / 起業 …"
-                className="w-full bg-white/90 border border-amber-200 rounded-xl p-2.5 text-[12px] text-rose-700 placeholder:text-amber-300 focus:outline-none focus:border-amber-400 text-center"
+                className="w-full bg-white/90 border border-amber-200 rounded-xl p-2.5 text-[12px] text-rose-700 placeholder:text-rose-300 focus:outline-none focus:border-amber-400 text-center"
                 style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}/>
               {/* 履歴サンプル */}
               {history.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1.5">
                   {history.slice(0, 6).map((h,i)=>(
                     <button key={i} onClick={()=>setTopic(h)}
-                      className="text-[8.5px] text-amber-600 px-2 py-0.5 rounded-full bg-white/70 border border-amber-100 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                      className="text-[8.5px] text-rose-500 px-2 py-0.5 rounded-full bg-white/70 border border-amber-100 active:scale-95 transition" style={{fontFamily:'"Shippori Mincho",serif'}}>
                       {h}
                     </button>
                   ))}
@@ -4184,18 +4212,18 @@
 
             {/* メインフレーズ表示 */}
             <div className="text-center bg-gradient-to-br from-white/80 to-amber-50/80 rounded-2xl py-4 px-3 mb-3 border border-amber-100">
-              <div className="text-[9px] text-amber-500 mb-1" style={{letterSpacing:"0.2em"}}>TODAY'S MAGIC WORDS</div>
+              <div className="text-[9px] text-rose-500 mb-1" style={{letterSpacing:"0.2em"}}>TODAY'S MAGIC WORDS</div>
               <div className="text-[20px] text-rose-700 my-1 leading-tight" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.03em"}}>
                 {displayPhrase}
               </div>
-              <div className="text-[8.5px] text-amber-600 mt-1" style={{letterSpacing:"0.1em"}}>
+              <div className="text-[8.5px] text-rose-500 mt-1" style={{letterSpacing:"0.1em"}}>
                 ✨ 声に出して、唱えてみて ♪
               </div>
             </div>
 
             {/* カウント */}
             <div className="text-center">
-              <div className="text-[9px] text-amber-500 mb-0.5" style={{letterSpacing:"0.2em"}}>TODAY'S COUNT</div>
+              <div className="text-[9px] text-rose-500 mb-0.5" style={{letterSpacing:"0.2em"}}>TODAY'S COUNT</div>
               <div className="text-[36px] text-rose-600 leading-none my-1" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>
                 {count}
                 <span className="text-[12px] text-rose-400 ml-1">回</span>
@@ -4221,20 +4249,20 @@
                   </span>
                 ))}
               </div>
-              <p className="text-[8.5px] text-amber-600 mt-1.5" style={{fontFamily:'"Shippori Mincho",serif'}}>
+              <p className="text-[8.5px] text-rose-500 mt-1.5" style={{fontFamily:'"Shippori Mincho",serif'}}>
                 唱えるたびにタップ ♡
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-2 mt-3">
               <div className="rounded-xl bg-white/80 border border-amber-100 p-2 text-center">
-                <div className="text-[8.5px] text-amber-500" style={{letterSpacing:"0.12em"}}>今週合計</div>
+                <div className="text-[8.5px] text-rose-500" style={{letterSpacing:"0.12em"}}>今週合計</div>
                 <div className="text-[18px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                   {weekTotal}<span className="text-[10px] text-rose-400 ml-0.5">回</span>
                 </div>
               </div>
               <div className="rounded-xl bg-white/80 border border-amber-100 p-2 text-center">
-                <div className="text-[8.5px] text-amber-500" style={{letterSpacing:"0.12em"}}>ベスト記録</div>
+                <div className="text-[8.5px] text-rose-500" style={{letterSpacing:"0.12em"}}>ベスト記録</div>
                 <div className="text-[18px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
                   {bestRecord}<span className="text-[10px] text-rose-400 ml-0.5">回 / 1日</span>
                 </div>

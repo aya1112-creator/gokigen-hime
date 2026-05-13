@@ -3514,3 +3514,31 @@ body { overscroll-behavior-y: none; }
   -webkit-mask-image: radial-gradient(ellipse 78% 88% at 50% 48%, #000 38%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.35) 82%, transparent 100%);
   mask-image: radial-gradient(ellipse 78% 88% at 50% 48%, #000 38%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.35) 82%, transparent 100%);
 }
+
+/* 黒バラ姫アイコン ── 白背景を抜いて紫ピンク背景になじませる */
+.kurobara-icon {
+  mix-blend-mode: multiply;
+  -webkit-mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, #000 55%, rgba(0,0,0,0.7) 75%, transparent 100%);
+  mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, #000 55%, rgba(0,0,0,0.7) 75%, transparent 100%);
+}
+
+/* 魔法ステッキのアイコン ── ボタンのピンクと馴染ませる */
+.wand-icon {
+  mix-blend-mode: multiply;
+  -webkit-mask-image: radial-gradient(ellipse 80% 88% at 50% 50%, #000 50%, rgba(0,0,0,0.7) 75%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 88% at 50% 50%, #000 50%, rgba(0,0,0,0.7) 75%, transparent 100%);
+}
+
+/* magic-princess を上書き ── もっとふわっと馴染ませる */
+.magic-princess {
+  mix-blend-mode: multiply;
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 48%, #000 0%, rgba(0,0,0,0.92) 30%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.15) 85%, transparent 100%) !important;
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 48%, #000 0%, rgba(0,0,0,0.92) 30%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.15) 85%, transparent 100%) !important;
+}
+
+/* 未来の宝石箱のイラスト ── 白背景を抜いて紫ピンク背景になじませる */
+.jewelry-box-img {
+  mix-blend-mode: multiply;
+  -webkit-mask-image: radial-gradient(ellipse 72% 80% at 50% 50%, #000 30%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.3) 85%, transparent 100%);
+  mask-image: radial-gradient(ellipse 72% 80% at 50% 50%, #000 30%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.3) 85%, transparent 100%);
+}
