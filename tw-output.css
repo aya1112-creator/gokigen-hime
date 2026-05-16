@@ -3542,3 +3542,53 @@ body { overscroll-behavior-y: none; }
   -webkit-mask-image: radial-gradient(ellipse 72% 80% at 50% 50%, #000 30%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.3) 85%, transparent 100%);
   mask-image: radial-gradient(ellipse 72% 80% at 50% 50%, #000 30%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.3) 85%, transparent 100%);
 }
+
+/* jewelry-box-img をさらに柔らかく上書き */
+.jewelry-box-img {
+  mix-blend-mode: multiply !important;
+  opacity: 0.92 !important;
+  -webkit-mask-image: radial-gradient(ellipse 55% 62% at 50% 50%, #000 0%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.25) 75%, transparent 100%) !important;
+  mask-image: radial-gradient(ellipse 55% 62% at 50% 50%, #000 0%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.25) 75%, transparent 100%) !important;
+}
+
+/* jewelry-box-img の最終調整 ── 中央くっきり、外周のみフェード */
+.jewelry-box-img {
+  mix-blend-mode: multiply !important;
+  opacity: 1 !important;
+  -webkit-mask-image: radial-gradient(ellipse 78% 80% at 50% 50%, #000 60%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.3) 92%, transparent 100%) !important;
+  mask-image: radial-gradient(ellipse 78% 80% at 50% 50%, #000 60%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.3) 92%, transparent 100%) !important;
+}
+
+/* jewelry-box-img のふんわり調整 */
+.jewelry-box-img {
+  mix-blend-mode: multiply !important;
+  opacity: 0.88 !important;
+  -webkit-mask-image: radial-gradient(ellipse 68% 72% at 50% 50%, #000 20%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.2) 90%, transparent 100%) !important;
+  mask-image: radial-gradient(ellipse 68% 72% at 50% 50%, #000 20%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.2) 90%, transparent 100%) !important;
+}
+
+/* jewelry-box-img の最終ふんわり調整 ── さらにぼかし強め */
+.jewelry-box-img {
+  mix-blend-mode: multiply !important;
+  opacity: 0.68 !important;
+  filter: blur(2.2px) !important;
+  -webkit-mask-image: radial-gradient(ellipse 52% 58% at 50% 50%, #000 0%, rgba(0,0,0,0.55) 22%, rgba(0,0,0,0.28) 48%, rgba(0,0,0,0.08) 75%, transparent 100%) !important;
+  mask-image: radial-gradient(ellipse 52% 58% at 50% 50%, #000 0%, rgba(0,0,0,0.55) 22%, rgba(0,0,0,0.28) 48%, rgba(0,0,0,0.08) 75%, transparent 100%) !important;
+}
+
+/* jewelry-box-img の調整 ── 中央クリアで外周だけふんわり */
+.jewelry-box-img {
+  mix-blend-mode: multiply !important;
+  opacity: 0.92 !important;
+  filter: none !important;
+  -webkit-mask-image: radial-gradient(ellipse 62% 68% at 50% 50%, #000 0%, rgba(0,0,0,0.92) 25%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.3) 75%, transparent 100%) !important;
+  mask-image: radial-gradient(ellipse 62% 68% at 50% 50%, #000 0%, rgba(0,0,0,0.92) 25%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.3) 75%, transparent 100%) !important;
+}
+
+/* 宝石ボタンの光るエフェクト */
+@keyframes jewelGlow {
+  0%   { transform: scale(1); filter: brightness(1); }
+  40%  { transform: scale(1.08); filter: brightness(1.25); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+.jewel-glow { animation: jewelGlow 0.8s ease-out; }
