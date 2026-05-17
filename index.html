@@ -129,6 +129,12 @@
       -webkit-mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, #000 55%, rgba(0,0,0,0.7) 75%, transparent 100%);
       mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, #000 55%, rgba(0,0,0,0.7) 75%, transparent 100%);
     }
+    /* 呼吸法ワークの姫イラスト ── 背景に自然になじむ */
+    .mindful-princess {
+      mix-blend-mode: multiply;
+      -webkit-mask-image: radial-gradient(ellipse 75% 80% at 50% 50%, #000 50%, rgba(0,0,0,0.75) 75%, transparent 100%);
+      mask-image: radial-gradient(ellipse 75% 80% at 50% 50%, #000 50%, rgba(0,0,0,0.75) 75%, transparent 100%);
+    }
     /* 魔法ステッキのアイコン ── ボタンのピンクと馴染ませる */
     .wand-icon {
       mix-blend-mode: multiply;
@@ -4155,20 +4161,31 @@
               </div>
             )}
 
-            {/* 呼吸ボール */}
-            <div className="flex justify-center my-4">
-              <div className="relative w-40 h-40 flex items-center justify-center">
+            {/* 呼吸ボール + 中央に姫が瞑想 */}
+            <div className="flex flex-col items-center justify-center pt-10 pb-4" style={{minHeight:"320px"}}>
+              {/* 呼吸ボール（姫を中央に内包） */}
+              <div className="relative w-56 h-56 flex items-center justify-center">
+                {/* 後ろの呼吸ボール */}
                 <div className="absolute inset-0 flex items-center justify-center transition-all duration-[3500ms] ease-in-out"
                   style={{transform:`scale(${scale})`}}>
-                  <div className="w-32 h-32 rounded-full"
+                  <div className="w-44 h-44 rounded-full"
                     style={{
                       background: `radial-gradient(circle at 30% 28%, #fff 0%, ${phaseColor} 80%)`,
-                      boxShadow:`0 0 30px ${phaseColor}aa, inset 0 -6px 14px rgba(255,255,255,0.4)`,
+                      boxShadow:`0 0 40px ${phaseColor}aa, inset 0 -6px 14px rgba(255,255,255,0.4)`,
                     }}/>
                 </div>
-                <span className="relative text-[15px] text-purple-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, textShadow:"0 1px 4px rgba(255,255,255,0.7)"}}>
-                  {phaseMsg}
-                </span>
+                {/* 中央の瞑想する姫（一緒に呼吸） */}
+                <div className="relative transition-all duration-[3500ms] ease-in-out"
+                  style={{transform:`scale(${0.95 + (scale-1)*0.3})`}}>
+                  <img src="./mindful.png" alt="瞑想する姫"
+                    className="mindful-princess"
+                    style={{width:"150px", height:"auto"}}
+                    onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
+                </div>
+              </div>
+              {/* 呼吸ガイドの文字（ボールの下） */}
+              <div className="mt-3 text-[18px] text-purple-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.15em", textShadow:"0 1px 4px rgba(255,255,255,0.7)"}}>
+                {phaseMsg}
               </div>
             </div>
 
