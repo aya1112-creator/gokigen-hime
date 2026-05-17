@@ -3020,6 +3020,19 @@
             </SectionCard>
           </section>
 
+          {/* Day2: 嫉妬心を手放すワーク */}
+          <JealousyWorkSection/>
+          {/* Day3: 嫌な人こそ大切なメッセンジャー */}
+          <MessengerWorkSection/>
+          {/* Day4: 私が私の味方になる呼吸法 */}
+          <BreathingWorkSection/>
+          {/* Day5: みんなから応援される */}
+          <SupportedWorkSection/>
+          {/* Day6: マイルールを見直す */}
+          <MyRulesWorkSection/>
+          {/* Day7: 大好き♡ワーク */}
+          <DaisukiWorkSection/>
+
           {/* やさしく変化のレッスン */}
           <GentleChangeSection/>
           {/* 3歩先の未来へジャンプ */}
@@ -3828,6 +3841,672 @@
               <p className="text-[8.5px] text-sky-400 text-center" style={{letterSpacing:"0.08em"}}>
                 最後にジャンプした日：{savedAt}
               </p>
+            )}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  嫉妬心を手放すワーク（推奨10分）
+     * ================================================= */
+    const JealousyWorkSection = () => {
+      const [openHelp, setOpenHelp] = useState(false);
+      const [wishItem, setWishItem] = useLocal("jealousy_wish", "");
+      const [targetName, setTargetName] = useLocal("jealousy_target", "");
+      const [feelings, setFeelings] = useLocal("jealousy_feelings", "");
+      const [crossed, setCrossed] = useLocal("jealousy_crossed", false);
+      const [spoken, setSpoken] = useLocal("jealousy_spoken", false);
+
+      const reset = () => {
+        setWishItem(""); setTargetName(""); setFeelings("");
+        setCrossed(false); setSpoken(false);
+      };
+
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>嫉妬心を手放すワーク</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            ✨ 嫉妬心を手放して、思考をスムーズに現実化する（推奨10分）
+          </p>
+
+          <div className="rounded-2xl bg-gradient-to-br from-purple-50/70 to-pink-50/70 border border-purple-100 p-4 space-y-3"
+            style={{boxShadow:"0 2px 10px rgba(168,85,247,0.1)"}}>
+
+            {/* ヒント開閉 */}
+            <button onClick={()=>setOpenHelp(!openHelp)}
+              className="w-full text-left text-[10px] text-purple-600 px-2.5 py-1.5 bg-white/70 rounded-lg border border-purple-100 flex items-center justify-between active:scale-[0.99]"
+              style={{fontFamily:'"Shippori Mincho",serif'}}>
+              <span>💡 ワークのやり方を見る</span>
+              <span className={`transition-transform ${openHelp?"rotate-180":""}`}>⌄</span>
+            </button>
+            {openHelp && (
+              <div className="rounded-lg bg-white/60 border border-purple-100 p-3 text-[10px] text-rose-600 leading-relaxed anim-fade"
+                style={{fontFamily:'"Shippori Mincho",serif'}}>
+                できるだけ静かな場所で、リラックスした状態で行ってください。<br/>
+                「自分の心の声をしっかり聞き取ってあげよう」という気持ちで取り組むと、効果を感じるのが早くなります ♡
+              </div>
+            )}
+
+            {/* STEP 1 */}
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">1</span>
+                願っていること・手に入れたいもの
+              </p>
+              <textarea value={wishItem} onChange={e=>setWishItem(e.target.value)} rows={2}
+                placeholder="例：素敵な彼氏／キャリアアップ／資金 …"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            {/* STEP 2 */}
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">2</span>
+                既に手に入れている周りの人の名前
+              </p>
+              <input type="text" value={targetName} onChange={e=>setTargetName(e.target.value)}
+                placeholder="例：Sさん（友人）"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[11px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300"/>
+            </div>
+
+            {/* STEP 3 */}
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">3</span>
+                ぶっちゃけ正直に告白
+              </p>
+              <div className="rounded-xl bg-white/85 border border-purple-100 p-3">
+                <p className="text-[10.5px] text-rose-600 mb-2" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  「正直に告白するならば、私は<span className="text-purple-600 font-bold mx-1">{targetName||"◯◯"}</span>さんに嫉妬しています！」
+                </p>
+                <textarea value={feelings} onChange={e=>setFeelings(e.target.value)} rows={2}
+                  placeholder="モヤモヤした気持ちを書き出しましょう…"
+                  className="w-full bg-purple-50/60 border border-purple-100 rounded-lg p-2 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+              </div>
+            </div>
+
+            {/* STEP 4 */}
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">4</span>
+                書き出したものに大きくバッテンをつける
+              </p>
+              <button onClick={()=>setCrossed(!crossed)}
+                className={`w-full rounded-xl border p-4 active:scale-[0.99] transition relative overflow-hidden ${crossed?"bg-purple-50 border-purple-300":"bg-white/85 border-purple-100"}`}>
+                <p className={`text-[11px] text-rose-700 leading-relaxed ${crossed?"opacity-60":""}`} style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  {feelings || "（STEP3 で書いた内容がここに表示されます）"}
+                </p>
+                {crossed && (
+                  <>
+                    <span className="absolute inset-0 flex items-center justify-center text-[60px] text-rose-400 font-bold pointer-events-none" style={{textShadow:"0 0 8px rgba(244,114,182,0.4)"}}>✕</span>
+                  </>
+                )}
+                <div className="mt-2 text-[9px] text-purple-500 text-right" style={{letterSpacing:"0.1em"}}>
+                  {crossed ? "✓ バッテンつけたね" : "タップしてバッテン ✕"}
+                </div>
+              </button>
+            </div>
+
+            {/* STEP 5 */}
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">5</span>
+                声に出して潜在意識ちゃんに感謝
+              </p>
+              <div className="rounded-xl bg-gradient-to-br from-pink-50/80 to-purple-50/80 border border-purple-200 p-3">
+                <p className="text-[10.5px] text-rose-700 leading-relaxed mb-3" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  「<span className="text-purple-700 font-bold">{targetName||"◯◯"}</span>さんへの嫉妬は間違いでした。<br/>
+                  本当はまもなく私にも<span className="text-purple-700 font-bold">{wishItem||"◯◯"}</span>が現れますよのサインでした！<br/>
+                  だから、やったね私！おめでとう！<br/>
+                  潜在意識ちゃん、教えてくれてありがとう！」
+                </p>
+                <button onClick={()=>setSpoken(!spoken)}
+                  className={`w-full text-[11px] py-2 rounded-full transition active:scale-95 ${spoken?"bg-gradient-to-r from-pink-400 to-purple-400 text-white":"bg-white/80 text-purple-600 border border-purple-200"}`}
+                  style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow: spoken?"0 3px 10px rgba(168,85,247,0.3)":"none"}}>
+                  {spoken ? "✨ 声に出して唱えた ♡" : "🎤 声に出して唱える"}
+                </button>
+              </div>
+            </div>
+
+            {/* リセット */}
+            {(wishItem || targetName || feelings || crossed || spoken) && (
+              <div className="flex justify-center pt-1">
+                <button onClick={reset}
+                  className="text-[9.5px] text-purple-400 px-3 py-1 rounded-full border border-purple-200 active:scale-95"
+                  style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  もう一度はじめから
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  Day3: 嫌な人こそ大切なメッセンジャーワーク
+     * ================================================= */
+    const MessengerWorkSection = () => {
+      const [openHelp, setOpenHelp] = useState(false);
+      const [name, setName] = useLocal("msgr_name", "");
+      const [dislike, setDislike] = useLocal("msgr_dislike", "");
+      const [sayWords, setSayWords] = useLocal("msgr_say", "");
+      const [reflect, setReflect] = useLocal("msgr_reflect", "");
+      const [spoken, setSpoken] = useLocal("msgr_spoken", false);
+      const reset = () => { setName(""); setDislike(""); setSayWords(""); setReflect(""); setSpoken(false); };
+
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>嫌な人こそ大切なメッセンジャー</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            🕊 嫌な人を通して、潜在意識ちゃんがあなたに伝えたいことを発見するワーク
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-purple-50/70 to-pink-50/70 border border-purple-100 p-4 space-y-3"
+            style={{boxShadow:"0 2px 10px rgba(168,85,247,0.1)"}}>
+
+            <button onClick={()=>setOpenHelp(!openHelp)}
+              className="w-full text-left text-[10px] text-purple-600 px-2.5 py-1.5 bg-white/70 rounded-lg border border-purple-100 flex items-center justify-between active:scale-[0.99]"
+              style={{fontFamily:'"Shippori Mincho",serif'}}>
+              <span>💡 ワークのやり方を見る</span>
+              <span className={`transition-transform ${openHelp?"rotate-180":""}`}>⌄</span>
+            </button>
+            {openHelp && (
+              <div className="rounded-lg bg-white/60 border border-purple-100 p-3 text-[10px] text-rose-600 leading-relaxed anim-fade"
+                style={{fontFamily:'"Shippori Mincho",serif'}}>
+                嫌な人は、潜在意識ちゃんからあなたへのメッセンジャーです ♡<br/>
+                「もう変わりたい」あなたの扉を開けてくれている存在として、感謝に変えていきましょう。
+              </div>
+            )}
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">1</span>
+                嫌な人の名前
+              </p>
+              <input type="text" value={name} onChange={e=>setName(e.target.value)}
+                placeholder="例：Uさん（職場）"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[11px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">2</span>
+                どんなところが嫌？
+              </p>
+              <textarea value={dislike} onChange={e=>setDislike(e.target.value)} rows={2}
+                placeholder="理不尽に怒る／勝手すぎる…など"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">3</span>
+                言いたいことを書き出す
+              </p>
+              <textarea value={sayWords} onChange={e=>setSayWords(e.target.value)} rows={2}
+                placeholder="本当は言いたかったこと…"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">4</span>
+                自分も誰かに思われてないか振り返る
+              </p>
+              <textarea value={reflect} onChange={e=>setReflect(e.target.value)} rows={2}
+                placeholder="同じようなことを私もしていたかも…"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">5</span>
+                声に出して感謝
+              </p>
+              <div className="rounded-xl bg-gradient-to-br from-pink-50/80 to-purple-50/80 border border-purple-200 p-3">
+                <p className="text-[10.5px] text-rose-700 leading-relaxed mb-3" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  「<span className="text-purple-700 font-bold">{name||"◯◯"}</span>さんを通して潜在意識ちゃんが教えてくれてありがとう。<br/>
+                  一緒に変わりたかったから、<span className="text-purple-700 font-bold">{name||"◯◯"}</span>さんは私の扉だね ♡」
+                </p>
+                <button onClick={()=>setSpoken(!spoken)}
+                  className={`w-full text-[11px] py-2 rounded-full transition active:scale-95 ${spoken?"bg-gradient-to-r from-pink-400 to-purple-400 text-white":"bg-white/80 text-purple-600 border border-purple-200"}`}
+                  style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow: spoken?"0 3px 10px rgba(168,85,247,0.3)":"none"}}>
+                  {spoken ? "✨ 声に出して唱えた ♡" : "🎤 声に出して唱える"}
+                </button>
+              </div>
+            </div>
+
+            {(name||dislike||sayWords||reflect||spoken) && (
+              <div className="flex justify-center pt-1">
+                <button onClick={reset} className="text-[9.5px] text-purple-400 px-3 py-1 rounded-full border border-purple-200 active:scale-95" style={{fontFamily:'"Shippori Mincho",serif'}}>もう一度はじめから</button>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  Day4: 私が私の味方になる呼吸ワーク
+     * ================================================= */
+    const BreathingWorkSection = () => {
+      const [openHelp, setOpenHelp] = useState(false);
+      const [phase, setPhase] = useState("idle"); // idle / in / hold / out
+      const [count, setCount] = useState(0);
+      const [running, setRunning] = useState(false);
+      const [done, setDone] = useLocal("breath_done_today", false);
+
+      useEffect(() => {
+        if (!running) return;
+        const sequence = [
+          {p:"in",   t:4000, msg:"すーっ（吸う）"},
+          {p:"hold", t:2000, msg:"ふっ（とめる）"},
+          {p:"out",  t:6000, msg:"ふーっ（吐く）"},
+        ];
+        let idx = 0;
+        setPhase(sequence[0].p);
+        const tick = () => {
+          idx = (idx + 1) % sequence.length;
+          if (idx === 0) setCount(c => c + 1);
+          setPhase(sequence[idx].p);
+        };
+        const ids = [];
+        let acc = 0;
+        for (let i = 1; i <= 100; i++) {
+          acc += sequence[(i-1) % 3].t;
+          ids.push(setTimeout(tick, acc));
+        }
+        return () => ids.forEach(clearTimeout);
+      }, [running]);
+
+      const stop = () => { setRunning(false); setPhase("idle"); setDone(true); };
+      const start = () => { setCount(0); setRunning(true); };
+
+      const phaseColor = phase==="in"?"#a78bfa":phase==="out"?"#f9a8d4":phase==="hold"?"#fcd34d":"#e9d5ff";
+      const phaseMsg = phase==="in"?"すーっ":phase==="out"?"ふーっ":phase==="hold"?"ふっ":"準備OK";
+      const scale = phase==="in"?1.35:phase==="hold"?1.35:phase==="out"?0.85:1;
+
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>私が私の味方になる呼吸法</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            🌬 潜在意識ちゃんとじっくりお話できる、姫の深呼吸メソッド
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-purple-50/70 to-pink-50/70 border border-purple-100 p-4 space-y-3 text-center"
+            style={{boxShadow:"0 2px 10px rgba(168,85,247,0.1)"}}>
+
+            <button onClick={()=>setOpenHelp(!openHelp)}
+              className="w-full text-left text-[10px] text-purple-600 px-2.5 py-1.5 bg-white/70 rounded-lg border border-purple-100 flex items-center justify-between active:scale-[0.99]"
+              style={{fontFamily:'"Shippori Mincho",serif'}}>
+              <span>💡 ワークのやり方を見る</span>
+              <span className={`transition-transform ${openHelp?"rotate-180":""}`}>⌄</span>
+            </button>
+            {openHelp && (
+              <div className="rounded-lg bg-white/60 border border-purple-100 p-3 text-[10px] text-rose-600 leading-relaxed text-left anim-fade"
+                style={{fontFamily:'"Shippori Mincho",serif'}}>
+                ①目を閉じて、呼吸に意識を集中する<br/>
+                ②吐く息「ふーっ」に意識を向ける<br/>
+                ③吸う息「すーっ」に意識を向ける<br/>
+                ④2〜4分、意識的に繰り返す<br/>
+                ⑤心の中で「ありがとう」「大好き」を伝える<br/>
+                ⑥潜在意識ちゃんに優しく語りかけます<br/>
+                ⑦「私は私を信じる！」「私は自分を大好き！」と自分に伝える
+              </div>
+            )}
+
+            {/* 呼吸ボール */}
+            <div className="flex justify-center my-4">
+              <div className="relative w-40 h-40 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center transition-all duration-[3500ms] ease-in-out"
+                  style={{transform:`scale(${scale})`}}>
+                  <div className="w-32 h-32 rounded-full"
+                    style={{
+                      background: `radial-gradient(circle at 30% 28%, #fff 0%, ${phaseColor} 80%)`,
+                      boxShadow:`0 0 30px ${phaseColor}aa, inset 0 -6px 14px rgba(255,255,255,0.4)`,
+                    }}/>
+                </div>
+                <span className="relative text-[15px] text-purple-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, textShadow:"0 1px 4px rgba(255,255,255,0.7)"}}>
+                  {phaseMsg}
+                </span>
+              </div>
+            </div>
+
+            <div className="text-[10px] text-purple-500" style={{letterSpacing:"0.1em"}}>
+              {running ? `${count}回目` : (done ? "✨ 今日のワーク完了 ♡" : "「はじめる」を押して呼吸を始めましょう")}
+            </div>
+
+            <div className="flex justify-center gap-2 pt-1">
+              {!running ? (
+                <button onClick={start}
+                  className="text-[12px] text-white px-6 py-2 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 active:scale-95"
+                  style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow:"0 3px 10px rgba(168,85,247,0.3)"}}>
+                  ✨ はじめる
+                </button>
+              ) : (
+                <button onClick={stop}
+                  className="text-[12px] text-purple-600 px-6 py-2 rounded-full bg-white/80 border border-purple-200 active:scale-95"
+                  style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                  終わる
+                </button>
+              )}
+            </div>
+
+            <div className="pt-2 rounded-xl bg-gradient-to-br from-pink-50/80 to-purple-50/80 border border-purple-200 p-3 mt-2">
+              <p className="text-[10.5px] text-rose-700 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                ♡ 「私は私を信じる！」<br/>
+                ♡ 「私は自分が大好き！」
+              </p>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  Day5: みんなから応援される（見下しを手放す）
+     * ================================================= */
+    const SupportedWorkSection = () => {
+      const [openHelp, setOpenHelp] = useState(false);
+      const [persons, setPersons] = useLocal("supp_persons", "");
+      const [howLooked, setHowLooked] = useLocal("supp_how", "");
+      const [apology, setApology] = useLocal("supp_apology", "");
+      const [decided, setDecided] = useLocal("supp_decided", false);
+      const [spoken, setSpoken] = useLocal("supp_spoken", false);
+      const reset = () => { setPersons(""); setHowLooked(""); setApology(""); setDecided(false); setSpoken(false); };
+
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>みんなから応援される</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            🌟 無意識の「見下し」を手放して、応援される自分になるワーク
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-purple-50/70 to-pink-50/70 border border-purple-100 p-4 space-y-3"
+            style={{boxShadow:"0 2px 10px rgba(168,85,247,0.1)"}}>
+
+            <button onClick={()=>setOpenHelp(!openHelp)}
+              className="w-full text-left text-[10px] text-purple-600 px-2.5 py-1.5 bg-white/70 rounded-lg border border-purple-100 flex items-center justify-between active:scale-[0.99]"
+              style={{fontFamily:'"Shippori Mincho",serif'}}>
+              <span>💡 ワークのやり方を見る</span>
+              <span className={`transition-transform ${openHelp?"rotate-180":""}`}>⌄</span>
+            </button>
+            {openHelp && (
+              <div className="rounded-lg bg-white/60 border border-purple-100 p-3 text-[10px] text-rose-600 leading-relaxed anim-fade"
+                style={{fontFamily:'"Shippori Mincho",serif'}}>
+                無意識のうちに人を見下しているかも？に気づいたら、それを書き出し、手放す宣言をします。<br/>
+                応援してくれる人が、あなたのそばに集まります ♡
+              </div>
+            )}
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">1</span>
+                見下していたかも？という人の名前
+              </p>
+              <textarea value={persons} onChange={e=>setPersons(e.target.value)} rows={2}
+                placeholder="例：同僚のAさん、SNSで見かけたBさん…"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">2</span>
+                どんなふうに見下していたか
+              </p>
+              <textarea value={howLooked} onChange={e=>setHowLooked(e.target.value)} rows={2}
+                placeholder="心の中で思っていたこと…"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">3</span>
+                「もう見下すのをやめる」と決意
+              </p>
+              <button onClick={()=>setDecided(!decided)}
+                className={`w-full py-3 rounded-xl active:scale-[0.98] transition border ${decided?"bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300":"bg-white/85 border-purple-100"}`}>
+                <span className={`text-[11.5px] ${decided?"text-purple-700":"text-purple-500"}`} style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                  {decided ? "✓ 決意しました ♡" : "タップして決意する"}
+                </span>
+              </button>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">4</span>
+                謝罪と感謝の言葉
+              </p>
+              <textarea value={apology} onChange={e=>setApology(e.target.value)} rows={2}
+                placeholder="心の中で謝りたいこと、感謝したいこと…"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">5</span>
+                声に出して宣言
+              </p>
+              <div className="rounded-xl bg-gradient-to-br from-pink-50/80 to-purple-50/80 border border-purple-200 p-3">
+                <p className="text-[10.5px] text-rose-700 leading-relaxed mb-3" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  「やったね私！おめでとう！<br/>
+                  これからは、応援される自分でいきます ♡」
+                </p>
+                <button onClick={()=>setSpoken(!spoken)}
+                  className={`w-full text-[11px] py-2 rounded-full transition active:scale-95 ${spoken?"bg-gradient-to-r from-pink-400 to-purple-400 text-white":"bg-white/80 text-purple-600 border border-purple-200"}`}
+                  style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow: spoken?"0 3px 10px rgba(168,85,247,0.3)":"none"}}>
+                  {spoken ? "✨ 声に出して唱えた ♡" : "🎤 声に出して唱える"}
+                </button>
+              </div>
+            </div>
+
+            {(persons||howLooked||apology||decided||spoken) && (
+              <div className="flex justify-center pt-1">
+                <button onClick={reset} className="text-[9.5px] text-purple-400 px-3 py-1 rounded-full border border-purple-200 active:scale-95" style={{fontFamily:'"Shippori Mincho",serif'}}>もう一度はじめから</button>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  Day6: マイルールを見直す
+     * ================================================= */
+    const MyRulesWorkSection = () => {
+      const [openHelp, setOpenHelp] = useState(false);
+      const [rules, setRules] = useLocal("myrules_list", ["","","","",""]);
+      const [analysis, setAnalysis] = useLocal("myrules_analysis", "");
+      const [oldBelief, setOldBelief] = useLocal("myrules_old", "");
+      const [newBelief, setNewBelief] = useLocal("myrules_new", "");
+      const [spoken, setSpoken] = useLocal("myrules_spoken", false);
+
+      const updateRule = (i, v) => {
+        const next = [...rules]; next[i] = v; setRules(next);
+      };
+      const reset = () => { setRules(["","","","",""]); setAnalysis(""); setOldBelief(""); setNewBelief(""); setSpoken(false); };
+
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>マイルールを見直す</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            📜 「愛して◯◯◯だよね」自分に課してきたルールを書き出して、見直すワーク
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-purple-50/70 to-pink-50/70 border border-purple-100 p-4 space-y-3"
+            style={{boxShadow:"0 2px 10px rgba(168,85,247,0.1)"}}>
+
+            <button onClick={()=>setOpenHelp(!openHelp)}
+              className="w-full text-left text-[10px] text-purple-600 px-2.5 py-1.5 bg-white/70 rounded-lg border border-purple-100 flex items-center justify-between active:scale-[0.99]"
+              style={{fontFamily:'"Shippori Mincho",serif'}}>
+              <span>💡 ワークのやり方を見る</span>
+              <span className={`transition-transform ${openHelp?"rotate-180":""}`}>⌄</span>
+            </button>
+            {openHelp && (
+              <div className="rounded-lg bg-white/60 border border-purple-100 p-3 text-[10px] text-rose-600 leading-relaxed anim-fade"
+                style={{fontFamily:'"Shippori Mincho",serif'}}>
+                「愛しているからこそ◯◯◯だよね」と、自分にかけてきたマイルールを書き出して、潜在意識ちゃんに新しいバージョンを教えてもらいましょう ♡
+              </div>
+            )}
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">1</span>
+                「愛して◯◯◯だよね」を書き出す
+              </p>
+              <div className="space-y-1.5">
+                {rules.map((r, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-white/85 border border-purple-100 rounded-xl px-2.5 py-1.5">
+                    <span className="text-[10px] text-purple-400">愛して</span>
+                    <input type="text" value={r} onChange={e=>updateRule(i,e.target.value)}
+                      placeholder="◯◯◯"
+                      className="flex-1 bg-transparent text-[11px] text-rose-700 placeholder:text-purple-300 focus:outline-none"/>
+                    <span className="text-[10px] text-purple-400">だよね</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">2</span>
+                書き出した言葉の全体の傾向は？
+              </p>
+              <textarea value={analysis} onChange={e=>setAnalysis(e.target.value)} rows={2}
+                placeholder="例：誰かに気をつかってばかりだな…"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">3</span>
+                これまで信じてきた「私のイメージ」
+              </p>
+              <input type="text" value={oldBelief} onChange={e=>setOldBelief(e.target.value)}
+                placeholder="例：気をつかえる人"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[11px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">4</span>
+                新しいバージョンの私
+              </p>
+              <input type="text" value={newBelief} onChange={e=>setNewBelief(e.target.value)}
+                placeholder="例：自分を大切にできる人"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[11px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">5</span>
+                声に出して潜在意識ちゃんに感謝
+              </p>
+              <div className="rounded-xl bg-gradient-to-br from-pink-50/80 to-purple-50/80 border border-purple-200 p-3">
+                <p className="text-[10.5px] text-rose-700 leading-relaxed mb-3" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  「潜在意識ちゃん、たくさん信じ続けてきてくれていたのは、私のことを<span className="text-purple-700 font-bold mx-1">「{oldBelief||"◯◯"}」</span>と思いたかったから。<br/>
+                  新しいバージョンの私を見つけてくれてありがとう。<br/>
+                  これからは<span className="text-purple-700 font-bold mx-1">「{newBelief||"◯◯"}」</span>っていう実を創造してくれているね ♡」
+                </p>
+                <button onClick={()=>setSpoken(!spoken)}
+                  className={`w-full text-[11px] py-2 rounded-full transition active:scale-95 ${spoken?"bg-gradient-to-r from-pink-400 to-purple-400 text-white":"bg-white/80 text-purple-600 border border-purple-200"}`}
+                  style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow: spoken?"0 3px 10px rgba(168,85,247,0.3)":"none"}}>
+                  {spoken ? "✨ 声に出して唱えた ♡" : "🎤 声に出して唱える"}
+                </button>
+              </div>
+            </div>
+
+            {(rules.some(r=>r)||analysis||oldBelief||newBelief||spoken) && (
+              <div className="flex justify-center pt-1">
+                <button onClick={reset} className="text-[9.5px] text-purple-400 px-3 py-1 rounded-full border border-purple-200 active:scale-95" style={{fontFamily:'"Shippori Mincho",serif'}}>もう一度はじめから</button>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    };
+
+    /* =================================================
+     *  Day7: 大好きワーク
+     * ================================================= */
+    const DaisukiWorkSection = () => {
+      const [openHelp, setOpenHelp] = useState(false);
+      const [things, setThings] = useLocal("daisuki_things", ["","","",""]);
+      const [selfLove, setSelfLove] = useLocal("daisuki_self", "");
+      const [spoken, setSpoken] = useLocal("daisuki_spoken", false);
+      const update = (i,v) => { const n = [...things]; n[i] = v; setThings(n); };
+      const reset = () => { setThings(["","","",""]); setSelfLove(""); setSpoken(false); };
+
+      return (
+        <section className="px-5 mt-6">
+          <SectionTitle icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>大好き♡ワーク</SectionTitle>
+          <p className="text-[9.5px] text-rose-400 mb-3 px-1" style={{letterSpacing:"0.08em"}}>
+            💖 「大好き」の気持ちで、潜在意識ちゃんに大好きを刻むワーク（推奨5分）
+          </p>
+          <div className="rounded-2xl bg-gradient-to-br from-purple-50/70 to-pink-50/70 border border-purple-100 p-4 space-y-3"
+            style={{boxShadow:"0 2px 10px rgba(168,85,247,0.1)"}}>
+
+            <button onClick={()=>setOpenHelp(!openHelp)}
+              className="w-full text-left text-[10px] text-purple-600 px-2.5 py-1.5 bg-white/70 rounded-lg border border-purple-100 flex items-center justify-between active:scale-[0.99]"
+              style={{fontFamily:'"Shippori Mincho",serif'}}>
+              <span>💡 ワークのやり方を見る</span>
+              <span className={`transition-transform ${openHelp?"rotate-180":""}`}>⌄</span>
+            </button>
+            {openHelp && (
+              <div className="rounded-lg bg-white/60 border border-purple-100 p-3 text-[10px] text-rose-600 leading-relaxed anim-fade"
+                style={{fontFamily:'"Shippori Mincho",serif'}}>
+                大好きな気持ちは最強の魔法 ♡<br/>
+                大好きなものを書き出して、自分自身にも「大好き」を伝えましょう。
+              </div>
+            )}
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">1</span>
+                大好きなものや人を書き出す
+              </p>
+              <div className="space-y-1.5">
+                {things.map((t,i) => (
+                  <div key={i} className="flex items-center gap-2 bg-white/85 border border-purple-100 rounded-xl px-2.5 py-1.5">
+                    <span className="text-[14px]">💖</span>
+                    <input type="text" value={t} onChange={e=>update(i,e.target.value)}
+                      placeholder={`大好きなもの ${i+1}`}
+                      className="flex-1 bg-transparent text-[11px] text-rose-700 placeholder:text-purple-300 focus:outline-none"/>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">2</span>
+                大好きな自分のことを書き出す
+              </p>
+              <textarea value={selfLove} onChange={e=>setSelfLove(e.target.value)} rows={3}
+                placeholder="自分の好きなところ、頑張ってるところ…"
+                className="w-full bg-white/85 border border-purple-100 rounded-xl p-2.5 text-[10.5px] text-rose-700 placeholder:text-purple-300 focus:outline-none focus:border-purple-300 resize-none leading-relaxed"/>
+            </div>
+
+            <div>
+              <p className="text-[10.5px] text-purple-700 mb-1.5 flex items-center gap-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">3</span>
+                声に出して大好きを伝える
+              </p>
+              <div className="rounded-xl bg-gradient-to-br from-pink-50/80 to-purple-50/80 border border-purple-200 p-3">
+                <p className="text-[12px] text-rose-700 leading-relaxed mb-3 text-center" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.05em"}}>
+                  💕 「私、大好き♡」<br/>
+                  💕 「私、最高♡」
+                </p>
+                <button onClick={()=>setSpoken(!spoken)}
+                  className={`w-full text-[11px] py-2 rounded-full transition active:scale-95 ${spoken?"bg-gradient-to-r from-pink-400 to-purple-400 text-white":"bg-white/80 text-purple-600 border border-purple-200"}`}
+                  style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow: spoken?"0 3px 10px rgba(168,85,247,0.3)":"none"}}>
+                  {spoken ? "✨ 声に出して唱えた ♡" : "🎤 声に出して唱える"}
+                </button>
+              </div>
+            </div>
+
+            {(things.some(t=>t)||selfLove||spoken) && (
+              <div className="flex justify-center pt-1">
+                <button onClick={reset} className="text-[9.5px] text-purple-400 px-3 py-1 rounded-full border border-purple-200 active:scale-95" style={{fontFamily:'"Shippori Mincho",serif'}}>もう一度はじめから</button>
+              </div>
             )}
           </div>
         </section>
