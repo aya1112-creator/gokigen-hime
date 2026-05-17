@@ -129,11 +129,12 @@
       -webkit-mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, #000 55%, rgba(0,0,0,0.7) 75%, transparent 100%);
       mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, #000 55%, rgba(0,0,0,0.7) 75%, transparent 100%);
     }
-    /* 呼吸法ワークの姫イラスト ── 背景に自然になじむ */
+    /* 呼吸法ワークの姫イラスト ── 白背景をしっかり透過してピンクに溶け込ませる */
     .mindful-princess {
-      mix-blend-mode: multiply;
-      -webkit-mask-image: radial-gradient(ellipse 75% 80% at 50% 50%, #000 50%, rgba(0,0,0,0.75) 75%, transparent 100%);
-      mask-image: radial-gradient(ellipse 75% 80% at 50% 50%, #000 50%, rgba(0,0,0,0.75) 75%, transparent 100%);
+      mix-blend-mode: darken;
+      opacity: 0.92;
+      -webkit-mask-image: radial-gradient(ellipse 55% 62% at 50% 50%, #000 15%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.45) 70%, rgba(0,0,0,0.12) 88%, transparent 100%);
+      mask-image: radial-gradient(ellipse 55% 62% at 50% 50%, #000 15%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.45) 70%, rgba(0,0,0,0.12) 88%, transparent 100%);
     }
     /* 魔法ステッキのアイコン ── ボタンのピンクと馴染ませる */
     .wand-icon {
@@ -2482,6 +2483,20 @@
       {k:"SNS・比較", e:"📱"},
       {k:"よく分からない", e:"🫧"},
     ];
+
+    // 気になること → おすすめのふかぼりワーク
+    const concernToWork = {
+      "SNS・比較":     {key:"jealousy",  title:"嫉妬心を手放すワーク",       emoji:"✨", desc:"嫉妬を手放して、思考をスムーズに現実化"},
+      "恋愛":          {key:"jealousy",  title:"嫉妬心を手放すワーク",       emoji:"💕", desc:"嫉妬を手放して、思考をスムーズに現実化"},
+      "お金":          {key:"jealousy",  title:"嫉妬心を手放すワーク",       emoji:"💰", desc:"嫉妬を手放して、思考をスムーズに現実化"},
+      "人間関係":      {key:"messenger", title:"嫌な人こそ大切なメッセンジャー", emoji:"🕊", desc:"嫌な人を扉として変換するワーク"},
+      "家族":          {key:"messenger", title:"嫌な人こそ大切なメッセンジャー", emoji:"🏡", desc:"嫌な人を扉として変換するワーク"},
+      "仕事":          {key:"supported", title:"みんなから応援される",          emoji:"🌟", desc:"無意識の見下しを手放して応援される自分に"},
+      "見た目":        {key:"daisuki",   title:"大好き♡ワーク",                 emoji:"💖", desc:"大好きを書き出して、自分にも大好きを伝える"},
+      "将来":          {key:"myrules",   title:"マイルールを見直す",            emoji:"📜", desc:"自分に課してきたルールを書き出して見直す"},
+      "体調":          {key:"breathing", title:"私が私の味方になる呼吸法",      emoji:"🌬", desc:"4-4-8呼吸法で心を整える"},
+      "よく分からない": {key:"breathing", title:"私が私の味方になる呼吸法",      emoji:"🌬", desc:"4-4-8呼吸法で心を整える"},
+    };
     const loopWantOptions = [
       {k:"休みたい",              e:"🌙"},
       {k:"すっきりしたい",        e:"🫧"},
@@ -2671,6 +2686,8 @@
       const [step,setStep] = useState(0);
       // STEP1
       const [concern,setConcern] = useLocal("loop_concern", null);
+      // おすすめワーク展開
+      const [showRecWork, setShowRecWork] = useState(false);
       const [want,setWant] = useLocal("loop_want", null);
       const [selfWord,setSelfWord] = useLocal("loop_selfWord", null);
       const [moyaText,setMoyaText] = useLocal("loop_moyaText", "");
@@ -2823,7 +2840,52 @@
                   </div>
 
                   <Label>何がいちばん気になってる？</Label>
-                  <LoopChipGroup options={loopConcernOptions} selected={concern} onToggle={(k)=>setConcern(concern===k?null:k)}/>
+                  <LoopChipGroup options={loopConcernOptions} selected={concern} onToggle={(k)=>{setConcern(concern===k?null:k); setShowRecWork(false);}}/>
+
+                  {/* おすすめのふかぼりワーク */}
+                  {concern && concernToWork[concern] && (
+                    <div className="anim-fade mt-3">
+                      <button onClick={()=>setShowRecWork(!showRecWork)}
+                        className="w-full rounded-2xl p-3 bg-gradient-to-br from-purple-100/70 to-pink-100/70 border border-purple-200 active:scale-[0.99] transition"
+                        style={{boxShadow:"0 3px 12px rgba(168,85,247,0.18)"}}>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[28px] flex-shrink-0">{concernToWork[concern].emoji}</span>
+                          <div className="flex-1 text-left min-w-0">
+                            <div className="text-[8.5px] text-purple-500" style={{letterSpacing:"0.2em"}}>RECOMMENDED ✨</div>
+                            <div className="text-[11.5px] text-purple-700 truncate" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>
+                              「{concern}」を選んだあなたへ
+                            </div>
+                            <div className="text-[10px] text-rose-500 mt-0.5" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                              💎 {concernToWork[concern].title}
+                            </div>
+                          </div>
+                          <span className={`text-[14px] text-purple-400 transition-transform flex-shrink-0 ${showRecWork?"rotate-180":""}`}>⌄</span>
+                        </div>
+                        {!showRecWork && (
+                          <div className="text-[9.5px] text-purple-500 mt-2 text-center" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                            タップしてワークを始める ♡
+                          </div>
+                        )}
+                      </button>
+                      {showRecWork && (
+                        <div className="anim-fade -mx-2">
+                          {concernToWork[concern].key==="jealousy"  && <JealousyWorkSection/>}
+                          {concernToWork[concern].key==="messenger" && <MessengerWorkSection/>}
+                          {concernToWork[concern].key==="breathing" && <BreathingWorkSection/>}
+                          {concernToWork[concern].key==="supported" && <SupportedWorkSection/>}
+                          {concernToWork[concern].key==="myrules"   && <MyRulesWorkSection/>}
+                          {concernToWork[concern].key==="daisuki"   && <DaisukiWorkSection/>}
+                          <div className="px-2 mt-2 text-center">
+                            <button onClick={()=>setShowRecWork(false)}
+                              className="text-[9.5px] text-purple-400 px-3 py-1 rounded-full border border-purple-200 active:scale-95"
+                              style={{fontFamily:'"Shippori Mincho",serif'}}>
+                              ワークを閉じる ✕
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <Label>今ほんとはどうしたい？</Label>
                   <LoopChipGroup options={loopWantOptions} selected={want} onToggle={(k)=>setWant(want===k?null:k)}/>
@@ -4105,10 +4167,11 @@
 
       useEffect(() => {
         if (!running) return;
+        // 4-4-8呼吸法（吸う4秒・止める4秒・吐く8秒）
         const sequence = [
-          {p:"in",   t:4000, msg:"すーっ（吸う）"},
-          {p:"hold", t:2000, msg:"ふっ（とめる）"},
-          {p:"out",  t:6000, msg:"ふーっ（吐く）"},
+          {p:"in",   t:4000},
+          {p:"hold", t:4000},
+          {p:"out",  t:8000},
         ];
         let idx = 0;
         setPhase(sequence[0].p);
@@ -4130,8 +4193,9 @@
       const start = () => { setCount(0); setRunning(true); };
 
       const phaseColor = phase==="in"?"#a78bfa":phase==="out"?"#f9a8d4":phase==="hold"?"#fcd34d":"#e9d5ff";
-      const phaseMsg = phase==="in"?"すーっ":phase==="out"?"ふーっ":phase==="hold"?"ふっ":"準備OK";
+      const phaseMsg = phase==="in"?"吸う（4秒）":phase==="hold"?"止める（4秒）":phase==="out"?"吐く（8秒）":"準備OK";
       const scale = phase==="in"?1.35:phase==="hold"?1.35:phase==="out"?0.85:1;
+      const transDuration = phase==="in"?4000:phase==="hold"?100:phase==="out"?8000:600;
 
       return (
         <section className="px-5 mt-6">
@@ -4151,35 +4215,34 @@
             {openHelp && (
               <div className="rounded-lg bg-white/60 border border-purple-100 p-3 text-[10px] text-rose-600 leading-relaxed text-left anim-fade"
                 style={{fontFamily:'"Shippori Mincho",serif'}}>
-                ①目を閉じて、呼吸に意識を集中する<br/>
-                ②吐く息「ふーっ」に意識を向ける<br/>
-                ③吸う息「すーっ」に意識を向ける<br/>
-                ④2〜4分、意識的に繰り返す<br/>
-                ⑤心の中で「ありがとう」「大好き」を伝える<br/>
-                ⑥潜在意識ちゃんに優しく語りかけます<br/>
-                ⑦「私は私を信じる！」「私は自分を大好き！」と自分に伝える
+                <div className="text-[11px] text-purple-700 font-bold mb-1">4-4-8呼吸法（イライラや緊張を鎮める）</div>
+                <p className="mb-2">ストレスを感じて浅くなった呼吸を深く整え、心を素早く落ち着かせる方法です。</p>
+                ①口からゆっくりと息を完全に吐き切ります<br/>
+                ②鼻から <b className="text-purple-700">4秒</b> かけて息を吸い、お腹を膨らませます<br/>
+                ③息を止めて <b className="text-purple-700">4秒間</b> キープします<br/>
+                ④口または鼻から <b className="text-purple-700">8秒</b> かけてゆっくり息を吐き出し、お腹をへこませます
               </div>
             )}
 
             {/* 呼吸ボール + 中央に姫が瞑想 */}
-            <div className="flex flex-col items-center justify-center pt-10 pb-4" style={{minHeight:"320px"}}>
+            <div className="flex flex-col items-center justify-center pt-12 pb-4" style={{minHeight:"380px"}}>
               {/* 呼吸ボール（姫を中央に内包） */}
-              <div className="relative w-56 h-56 flex items-center justify-center">
+              <div className="relative w-72 h-72 flex items-center justify-center">
                 {/* 後ろの呼吸ボール */}
-                <div className="absolute inset-0 flex items-center justify-center transition-all duration-[3500ms] ease-in-out"
-                  style={{transform:`scale(${scale})`}}>
-                  <div className="w-44 h-44 rounded-full"
+                <div className="absolute inset-0 flex items-center justify-center ease-in-out"
+                  style={{transform:`scale(${scale})`, transition:`transform ${transDuration}ms ease-in-out`}}>
+                  <div className="w-60 h-60 rounded-full"
                     style={{
                       background: `radial-gradient(circle at 30% 28%, #fff 0%, ${phaseColor} 80%)`,
-                      boxShadow:`0 0 40px ${phaseColor}aa, inset 0 -6px 14px rgba(255,255,255,0.4)`,
+                      boxShadow:`0 0 50px ${phaseColor}aa, inset 0 -6px 14px rgba(255,255,255,0.4)`,
                     }}/>
                 </div>
                 {/* 中央の瞑想する姫（一緒に呼吸） */}
-                <div className="relative transition-all duration-[3500ms] ease-in-out"
-                  style={{transform:`scale(${0.95 + (scale-1)*0.3})`}}>
+                <div className="relative ease-in-out"
+                  style={{transform:`scale(${0.95 + (scale-1)*0.3})`, transition:`transform ${transDuration}ms ease-in-out`}}>
                   <img src="./mindful.png" alt="瞑想する姫"
                     className="mindful-princess"
-                    style={{width:"150px", height:"auto"}}
+                    style={{width:"220px", height:"auto"}}
                     onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
                 </div>
               </div>
