@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+  <title>👑 ごきげん姫タイプ診断 ♡</title>
+  <meta name="description" content="あなたはどの元素のお姫様？火・水・風・地・空の5タイプ無料診断 ♡" />
+  <meta property="og:title" content="👑 ごきげん姫タイプ診断 ♡" />
+  <meta property="og:description" content="あなたはどの元素のお姫様？5元素タイプ無料診断 ♡" />
+  <meta property="og:image" content="../apple-touch-icon.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png" />
+  <meta name="theme-color" content="#fce7f3" />
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+  <style>
+    html, body, #root { height: 100%; margin: 0; padding: 0; }
+    body {
+      font-family: "Zen Maru Gothic","Hiragino Maru Gothic ProN","M PLUS Rounded 1c",system-ui,sans-serif;
+      background: linear-gradient(180deg,#fdf2f8 0%,#fdf4fb 50%,#f5f0fb 100%);
+      -webkit-font-smoothing: antialiased;
+      color: #4b1528;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .anim-fade { animation: fadeIn 0.5s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    .anim-slide { animation: slideIn 0.35s cubic-bezier(.16,1,.3,1); }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .anim-float { animation: float 3s ease-in-out infinite; }
+    .princess-btn {
+      background: linear-gradient(90deg, #ec4899, #d4537e);
+      color: white; border: none;
+      padding: 14px 36px; border-radius: 999px;
+      font-weight: 500; font-size: 16px;
+      box-shadow: 0 4px 14px rgba(217, 138, 163, 0.3);
+      cursor: pointer; transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .princess-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(217, 138, 163, 0.4); }
+    .princess-btn:active { transform: translateY(0); }
+    .option-btn {
+      background: white; border: 2px solid #fce7f3; border-radius: 16px;
+      padding: 14px 20px; width: 100%; text-align: left;
+      cursor: pointer; transition: all 0.2s; font-size: 15px;
+      color: #4b1528; margin-bottom: 8px; font-family: inherit;
+    }
+    .option-btn:hover { border-color: #ec4899; background: #fef3f7; transform: translateX(4px); }
+    .option-btn.selected {
+      border-color: #d4537e; background: linear-gradient(90deg, #fce7f3, #fdf2f8);
+      color: #9d174d; font-weight: 500;
+    }
+    .card {
+      background: white; border-radius: 24px;
+      padding: 1.75rem 1.5rem;
+      box-shadow: 0 6px 20px rgba(217,138,163,0.15);
+    }
+    .card-soft {
+      background: white; border-radius: 20px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 14px rgba(217,138,163,0.12);
+    }
+    input, textarea { font-family: inherit; }
+    ::selection { background: #fbcfe8; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 999px; }
+    @media (max-width: 480px) {
+      .card { padding: 1.25rem 1rem; border-radius: 20px; }
+      .card-soft { padding: 1rem; border-radius: 16px; }
+      .princess-btn { padding: 13px 28px; font-size: 15px; }
+      .option-btn { padding: 12px 16px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect } = React;
+
+    const QUESTIONS = [
+      { text: "思い立ったらすぐに行動したくなる", element: "fire" },
+      { text: "「やりたい！」と思うと止まれない情熱がある", element: "fire" },
+      { text: "何かに夢中になると、寝食を忘れて取り組む", element: "fire" },
+      { text: "新しいことを始めるとき、周りも巻き込むのが好き", element: "fire" },
+      { text: "人の感情を察するのが得意なほうだ", element: "water" },
+      { text: "周りの雰囲気に自然と合わせられる", element: "water" },
+      { text: "涙もろい・感情豊かなほうだ", element: "water" },
+      { text: "困っている人を見ると放っておけない", element: "water" },
+      { text: "新しいことや場所にすぐ興味を持つ", element: "wind" },
+      { text: "一つのことより、色々経験したい派", element: "wind" },
+      { text: "気分や考えがコロコロ変わることがある", element: "wind" },
+      { text: "旅やお出かけが好き", element: "wind" },
+      { text: "自分のペースとリズムを大切にしている", element: "earth" },
+      { text: "ルーティンや習慣を作るのが心地よい", element: "earth" },
+      { text: "約束や決めたことは最後までやり遂げる", element: "earth" },
+      { text: "計画的に物事を進めたい", element: "earth" },
+      { text: "1人で静かに過ごす時間が大切", element: "sky" },
+      { text: "直感やひらめきで動くことが多い", element: "sky" },
+      { text: "想像力や空想が豊かなほうだ", element: "sky" },
+      { text: "物事の全体や本質を見るのが好き", element: "sky" },
+    ];
+
+    const OPTIONS = [
+      { label: "とても当てはまる", value: 5 },
+      { label: "当てはまる", value: 4 },
+      { label: "どちらともいえない", value: 3 },
+      { label: "あまり当てはまらない", value: 2 },
+      { label: "当てはまらない", value: 1 },
+    ];
+
+    const TYPES = {
+      fire: {
+        name: '情熱の火の姫',
+        emoji: '🔥',
+        catch: '燃えるような情熱で、道を切り拓いていく人',
+        image: './fire.png',
+        desc: '立ち止まることを知らない、行動力あふれるお姫様。「やりたい！」と感じたら、迷わず一歩を踏み出せる勇気を持っています。炎のような情熱で目標に向かってまっすぐ進むその姿は、周りに新しい風を吹き込む力に満ちています。\n\n火のお姫様であるあなたは、停滞を嫌い、変化を恐れずに進み続ける存在。壁にぶつかっても、それを乗り越える工夫をしながら、自らの可能性を広げていく力を持っています。\n\nただ、燃やしすぎると自分自身が燃え尽きてしまうことも。燃やす時間と、整える時間、両方の循環が必要です ♡',
+        strengths: ['圧倒的な行動力とスピード感', '挑戦を恐れない勇敢さ', '限界を超える突破力とタフさ', '情熱で周りを照らす影響力', '「私が動く」という主体性'],
+        weaknesses: ['停滞した空気や、決断の遅い場面', '「もっとゆっくりして」と止められること', '結果に繋がらない無駄な時間', '動きの遅い人と歩調を合わせること', '細かい形式やルールに縛られる環境'],
+        shineWhen: ['新しいことを立ち上げるとき', '目標に向かって全力で走るとき', '周りに勇気と熱を伝染させるとき', '困難にチャレンジするとき', '自分の情熱を世界に発信するとき'],
+        room: '朝・夜のお姫様時間',
+        roomDesc: '燃焼と休息の循環を作る場所。朝に火をつけ、夜に静かに整える ♡',
+        message: '燃え尽きないでね。燃やす情熱と、整える静けさ。両方が、あなたを輝かせる ♡',
+        color: '#dc2626',
+        bgColor: '#fee2e2',
+        accentDark: '#991b1b',
+      },
+      water: {
+        name: 'しなやかな水の姫',
+        emoji: '💧',
+        catch: 'しなやかに流れる水のように、感情を浄化し、人と人をつなぐ人',
+        image: './water.png',
+        desc: '水のように柔らかく、流れるように生きるお姫様。人の気持ちにすっと寄り添える感受性と、感情を浄化する力を持っています。誰かが困っていたら手を差し伸べ、悲しみも喜びも一緒に感じることができる、優しさの化身のような存在です ♡\n\n水のお姫様であるあなたは、流れを作る人。まわりの空気を読みながら、安心できる関係性や調和を大切にしてきました。あなたがいるだけで、停滞していた感情も自然と流れ始め、みんなの心がすっと浄化されていきます。\n\nただ、流されすぎると自分を見失うことも。川にも岸辺があるように、あなたにも「ここまで」という境界線が必要 ♡',
+        strengths: ['人の気持ちに寄り添える共感力', '感情を浄化し循環させる癒しの力', 'どんな環境にも溶け込むしなやかさ', '相手を優先できる包容力', '調和を生み出す聞き上手なコミュニケーション'],
+        weaknesses: ['急な変化や慌ただしい空気', '人と人がぶつかり合うような場面', '数字や成果だけで評価される競争的な環境', '強引な押し付けや支配的な態度', '自分の本音を強く主張しなければならない場面'],
+        shineWhen: ['誰かに寄り添い話を聞くとき', '場の調和を作るとき', '停滞した感情を流れに変えるとき', '誰かの心をそっと癒すとき', 'チームに優しい空気を運ぶとき'],
+        room: 'セルフトーク',
+        roomDesc: '流れる感情を、自分の本音に降ろす場所 ♡',
+        message: 'あなたの清らかな流れに、たくさんの人が癒されている。その水を、自分自身にも注いであげて ♡',
+        color: '#0284c7',
+        bgColor: '#e0f2fe',
+        accentDark: '#075985',
+      },
+      wind: {
+        name: 'そよぐ風の姫',
+        emoji: '🍃',
+        catch: '軽やかな好奇心で、世界を旅する人',
+        image: './wind.png',
+        desc: '新しいことに目を輝かせる、感性豊かな好奇心の旅人。ひとつの場所に留まるよりも、いろんな世界に触れて感じることが大好きな、自由なお姫様 ♡\n\n風のお姫様であるあなたは、変化を楽しむ柔軟性と、新しい風を運ぶ力を持つ存在。アイデアと感性の宝箱を持っていて、どこでも誰とでも馴染める適応力が魅力です。\n\nただ、興味があちこちに飛んでしまって、ひとつのことが続かないと自己嫌悪に陥ることも。風にも戻ってこられる場所があるように、リズムを作ると芯が育ちます ♡',
+        strengths: ['なんでも面白がれる好奇心', 'どこでも誰とでも馴染める適応力', '既成の枠を超える自由な発想', '軽やかなフットワーク', '新しい風を周りに運ぶ力'],
+        weaknesses: ['同じことの繰り返しや停滞感', '細かいルールや制約', '長時間ひとつのことに集中すること', '重い空気や深刻すぎる場面', '自由を縛られる環境'],
+        shineWhen: ['新しい場所・人・体験に出会うとき', '変化を楽しめる環境にいるとき', '自由に動ける時間があるとき', '軽やかなアイデアを生み出すとき', '場に新しい風を吹き込むとき'],
+        room: 'デイリー習慣',
+        roomDesc: '軽やかさに「リズム」と「芯」を育てる場所 ♡',
+        message: '自由を愛するあなたへ。小さな日課が、翼に芯を与えてくれる ♡',
+        color: '#059669',
+        bgColor: '#d1fae5',
+        accentDark: '#065f46',
+      },
+      earth: {
+        name: '凛と立つ地の姫',
+        emoji: '🌎',
+        catch: '大樹のような安定感で、頼られる人',
+        image: './green.png',
+        desc: '自分のペースとリズムを大切にできる、頼もしいお姫様。計画的で、約束を守る誠実さが周りに安心を与えます。地のような安定感と、芯のある強さが魅力です。\n\n地のお姫様であるあなたは、急がず焦らず、自分のリズムで積み重ねていける人。一度始めたら最後までやり遂げる継続力と、ぶれない自分軸が信頼を集めます。周りから「しっかりしてる」「頼れる」と言われることも多いはず。\n\nただ、安定しすぎると、新しい風を受け入れにくくなることも。大地に根を張りながらも、空に向かって新しい枝を伸ばせる柔軟さも大切に ♡',
+        strengths: ['どっしりとした安定感', '約束を守る誠実さと信頼感', 'コツコツ続けられる継続力', '計画的に物事を進める力', 'ぶれない芯のある自分軸'],
+        weaknesses: ['計画の急な変更や混沌', 'ルールのない自由すぎる環境', '想像だけで動くこと', '衝動的で計画性のない行動', 'スピード重視で結果を急かされる場面'],
+        shineWhen: ['計画的に物事を進めるとき', '長期的に何かを育てるとき', '周りを安心させる存在になるとき', 'コツコツの努力が形になるとき', '信頼を寄せられて頼られるとき'],
+        room: 'わたしの世界',
+        roomDesc: '新しい自分を想像して、未来の物語を編む場所 ♡',
+        message: '安定の中に、想像の翼を ♡ 新しい風も、あなたを育ててくれる ♡',
+        color: '#ca8a04',
+        bgColor: '#fef3c7',
+        accentDark: '#854d0e',
+      },
+      sky: {
+        name: 'きらめく空の姫',
+        emoji: '🌌',
+        catch: '静けさの中で、本質を見抜く人',
+        image: './sky.png',
+        desc: '1人時間を愛し、静けさの中に深い感性を持つお姫様。直感が鋭く、物事の本質を見抜く独自の視点を持っています。空のような広がりと、想像力の翼が魅力です。\n\n「なぜ？」「本当のところは？」と考える力。常識を疑い、自分だけの視点で世界を見つめる感性。あなたの中には、誰も気づかなかった真実を見つけ出す力があります。\n\n空のお姫様であるあなたは、無から有を生み出すアーティスト性と、すべてを受け入れる包容力を持つ存在。ただ、内に閉じこもりすぎて行動に移しにくいことも。広がる宇宙の中の星のように、想像を具体的な形にしていく勇気が必要 ♡',
+        strengths: ['物事の本質を見抜く洞察力', '言葉にならないものを感じる直感', '無から有を生み出す創造性', 'すべてを受け入れる包容力', '1人で深く思考できる集中力'],
+        weaknesses: ['表面的な会話や意味のない時間', '急かされること、騒がしい環境', '「普通はこう」と決めつけられること', '常に群れていなければならない空気感', '直感や感性を否定されること'],
+        shineWhen: ['1人で集中して何かを生み出すとき', '本質を見抜いて言語化するとき', '直感を信じて動くとき', '静かな環境で深く思考するとき', '独自の視点で世界を表現するとき'],
+        room: 'プリンセスケア',
+        roomDesc: '想像を、体を通して具体的な形にしていく場所 ♡',
+        message: 'あなたの直感は宝物。想像の翼を、現実の地にも着地させてみて ♡',
+        color: '#7c3aed',
+        bgColor: '#ede9fe',
+        accentDark: '#5b21b6',
+      },
+    };
+
+    const ELEMENT_ORDER = ['fire', 'water', 'wind', 'earth', 'sky'];
+
+    function calcElementScores(answers) {
+      const scores = { fire: 0, water: 0, wind: 0, earth: 0, sky: 0 };
+      QUESTIONS.forEach((q, i) => {
+        const val = answers[i] || 3;
+        scores[q.element] += val;
+      });
+      return scores;
+    }
+
+    function getTopElement(scores) {
+      let top = 'sky';
+      let max = -1;
+      ELEMENT_ORDER.forEach(el => {
+        if (scores[el] > max) { max = scores[el]; top = el; }
+      });
+      return top;
+    }
+
+    function App() {
+      const [stage, setStage] = useState('intro');
+      const [currentQ, setCurrentQ] = useState(0);
+      const [answers, setAnswers] = useState({});
+
+      const scores = calcElementScores(answers);
+      const topElement = getTopElement(scores);
+      const r = TYPES[topElement];
+
+      function selectAnswer(value) {
+        const newAnswers = { ...answers, [currentQ]: value };
+        setAnswers(newAnswers);
+        if (currentQ < QUESTIONS.length - 1) {
+          setTimeout(() => setCurrentQ(currentQ + 1), 280);
+        } else {
+          setTimeout(() => {
+            setStage('result');
+            window.scrollTo(0, 0);
+          }, 280);
+        }
+      }
+
+      function restart() {
+        setStage('intro');
+        setCurrentQ(0);
+        setAnswers({});
+        window.scrollTo(0, 0);
+      }
+
+      function startQuiz() {
+        setStage('quiz');
+        setCurrentQ(0);
+        setAnswers({});
+        window.scrollTo(0, 0);
+      }
+
+      if (stage === 'intro') {
+        return (
+          <div className="anim-fade" style={{maxWidth:600, margin:'0 auto', padding:'2.5rem 1.25rem 4rem', textAlign:'center'}}>
+            <div className="anim-float" style={{fontSize:72, marginBottom:16, lineHeight:1}}>👑</div>
+            <p style={{fontSize:12, color:'#d4537e', letterSpacing:'0.3em', margin:'0 0 8px'}}>
+              — Gokigen Hime Diagnosis —
+            </p>
+            <h1 style={{fontSize:32, color:'#9d174d', fontWeight:500, margin:'0 0 6px', letterSpacing:'0.05em'}}>
+              ごきげん姫
+            </h1>
+            <h1 style={{fontSize:24, color:'#9d174d', fontWeight:500, margin:'0 0 16px', letterSpacing:'0.05em'}}>
+              タイプ診断
+            </h1>
+            <p style={{fontSize:15, color:'#6b7280', lineHeight:2, margin:'8px 0 12px', textAlign:'center'}}>
+              いくつかの質問に答えるだけ。<br/>
+              あなたの "ごきげん度" と<br/>
+              "自分軸" の傾向を診断します ♡
+            </p>
+
+            <div style={{textAlign:'center', margin:'0 -2rem 8px'}}>
+              <img src="../world_hero.png" alt="ごきげん姫の世界" style={{width:'100%', maxWidth:600, height:'auto', display:'block', margin:'0 auto', mixBlendMode:'multiply'}} onError={(e)=>{e.target.style.display='none'}} />
+            </div>
+
+            <p style={{fontSize:11, color:'#9ca3af', margin:'0 0 20px', textAlign:'center'}}>
+              全20問・約3〜5分　／　完全匿名 ♡
+            </p>
+
+            <div style={{display:'flex', justifyContent:'center', marginBottom:16}}>
+              <button className="princess-btn" onClick={() => startQuiz()} style={{width:'100%', maxWidth:300}}>
+                診断をはじめる
+              </button>
+            </div>
+
+            <p style={{fontSize:11, color:'#9ca3af', marginTop:24}}>
+              ♡ ごきげん姫の自分軸 ♡
+            </p>
+          </div>
+        );
+      }
+
+      if (stage === 'quiz') {
+        const q = QUESTIONS[currentQ];
+        const progress = ((currentQ + 1) / QUESTIONS.length) * 100;
+        return (
+          <div style={{maxWidth:600, margin:'0 auto', padding:'2rem 1.25rem 3rem'}}>
+            <div style={{marginBottom:20}}>
+              <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:'#9d174d', marginBottom:6}}>
+                <span>質問 {currentQ + 1} / {QUESTIONS.length}</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <div style={{background:'#fce7f3', borderRadius:999, height:6, overflow:'hidden'}}>
+                <div style={{
+                  background:'linear-gradient(90deg, #ec4899, #d4537e)',
+                  height:'100%', width:`${progress}%`,
+                  transition:'width 0.4s ease'
+                }}></div>
+              </div>
+            </div>
+
+            <div className="anim-slide card" key={currentQ} style={{marginBottom:16}}>
+              <div style={{fontSize:12, color:'#d4537e', marginBottom:8, letterSpacing:'0.15em'}}>
+                — Q{currentQ + 1} —
+              </div>
+              <p style={{fontSize:17, color:'#4b1528', lineHeight:1.7, margin:'0 0 22px', fontWeight:500}}>
+                {q.text}
+              </p>
+
+              <div>
+                {OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    className={'option-btn ' + (answers[currentQ] === opt.value ? 'selected' : '')}
+                    onClick={() => selectAnswer(opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {currentQ > 0 && (
+              <div style={{textAlign:'center', marginTop:12}}>
+                <button onClick={() => setCurrentQ(currentQ - 1)}
+                  style={{background:'none', border:'none', color:'#9d174d', fontSize:13, cursor:'pointer', padding:'8px 12px'}}>
+                  ← 前の質問に戻る
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      if (stage === 'result' && r) {
+        const appUrl = "../lp/";
+        const shareUrl = window.location.href;
+        const shareText = `私は【${r.emoji} ${r.name}】でした ♡\nあなたを彩る元素は？\n\n#ごきげん姫タイプ診断 #ごきげん姫の自分軸`;
+        const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+
+        return (
+          <div className="anim-fade" style={{maxWidth:600, margin:'0 auto', padding:'2rem 1.25rem 3rem'}}>
+            <div style={{textAlign:'center', marginBottom:16}}>
+              <p style={{fontSize:12, color:'#d4537e', letterSpacing:'0.3em', margin:0}}>
+                — あなたの診断結果 —
+              </p>
+            </div>
+
+            <div className="card" style={{marginBottom:14, textAlign:'center', border:`2px solid ${r.bgColor}`}}>
+              <div style={{display:'inline-block', padding:'6px 18px', background:r.bgColor, borderRadius:999, color:r.accentDark, fontSize:12, letterSpacing:'0.15em', marginBottom:14, fontWeight:500}}>
+                {r.emoji} あなたは
+              </div>
+              <h1 style={{fontSize:26, color:'#9d174d', fontWeight:500, margin:'0 0 6px', lineHeight:1.4}}>
+                {r.name}
+              </h1>
+              <p style={{fontSize:13, color:r.color, marginBottom:20, letterSpacing:'0.05em'}}>
+                〜 {r.catch} 〜
+              </p>
+
+              <div style={{width:160, height:160, margin:'0 auto 20px', background:r.bgColor, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', boxShadow:`0 4px 20px ${r.color}33`}}>
+                <img src={r.image} alt={r.name} style={{width:'100%', height:'100%', objectFit:'cover'}} onError={(e)=>{e.target.style.display='none'}} />
+              </div>
+
+              <div style={{textAlign:'left', background:'#fef9fb', padding:'16px 18px', borderRadius:14}}>
+                {r.desc.split('\n\n').map((para, i) => (
+                  <p key={i} style={{fontSize:14, color:'#4b1528', lineHeight:1.9, margin: i===0 ? '0 0 12px' : '0 0 12px'}}>
+                    {para}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <div className="card-soft" style={{marginBottom:10}}>
+              <p style={{fontSize:13, color:'#d4537e', fontWeight:500, margin:'0 0 10px', letterSpacing:'0.15em'}}>
+                ✨ あなたの強み
+              </p>
+              {r.strengths.map((s,i) => (
+                <p key={i} style={{fontSize:14, color:'#4b1528', margin:'6px 0', display:'flex', alignItems:'flex-start'}}>
+                  <span style={{color:r.color, marginRight:10, fontSize:13, lineHeight:1.6}}>♡</span> <span>{s}</span>
+                </p>
+              ))}
+            </div>
+
+            <div className="card-soft" style={{marginBottom:10}}>
+              <p style={{fontSize:13, color:'#d4537e', fontWeight:500, margin:'0 0 10px', letterSpacing:'0.15em'}}>
+                🌸 これは勘弁、と感じること
+              </p>
+              {r.weaknesses.map((s,i) => (
+                <p key={i} style={{fontSize:14, color:'#4b1528', margin:'6px 0', display:'flex', alignItems:'flex-start'}}>
+                  <span style={{color:r.color, marginRight:10, fontSize:13, lineHeight:1.6}}>♡</span> <span>{s}</span>
+                </p>
+              ))}
+            </div>
+
+            <div className="card-soft" style={{marginBottom:14}}>
+              <p style={{fontSize:13, color:'#d4537e', fontWeight:500, margin:'0 0 10px', letterSpacing:'0.15em'}}>
+                💎 あなたらしく輝けるとき
+              </p>
+              {r.shineWhen.map((s,i) => (
+                <p key={i} style={{fontSize:14, color:'#4b1528', margin:'6px 0', display:'flex', alignItems:'flex-start'}}>
+                  <span style={{color:r.color, marginRight:10, fontSize:13, lineHeight:1.6}}>♡</span> <span>{s}</span>
+                </p>
+              ))}
+            </div>
+
+            <div className="card-soft" style={{marginBottom:14, background:'#fef9fb'}}>
+              <p style={{fontSize:13, color:'#d4537e', fontWeight:500, margin:'0 0 10px', letterSpacing:'0.15em'}}>
+                🌟 元素バランス
+              </p>
+              {ELEMENT_ORDER.map(el => {
+                const t = TYPES[el];
+                const score = scores[el];
+                const pct = (score / 20) * 100;
+                return (
+                  <div key={el} style={{marginBottom:8}}>
+                    <div style={{display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:3, color:t.accentDark}}>
+                      <span>{t.emoji} {t.name.replace('の姫','').replace('の','')}</span>
+                      <span>{score}/20</span>
+                    </div>
+                    <div style={{background:'#f3e8ed', borderRadius:999, height:5, overflow:'hidden'}}>
+                      <div style={{background:t.color, height:'100%', width:`${pct}%`, transition:'width 0.6s ease'}}></div>
+                    </div>
+                  </div>
+                );
+              })}
+              <p style={{fontSize:11, color:'#9ca3af', marginTop:12, textAlign:'center'}}>
+                5つの元素はすべてあなたの中にあるよ ♡
+              </p>
+            </div>
+
+            <div style={{background:`linear-gradient(135deg, ${r.bgColor} 0%, #fff 100%)`, borderRadius:20, padding:'1.5rem 1.25rem', boxShadow:'0 6px 20px rgba(217,138,163,0.18)', marginBottom:14, border:`1.5px solid ${r.color}33`}}>
+              <p style={{fontSize:12, color:r.accentDark, fontWeight:500, margin:'0 0 12px', letterSpacing:'0.2em', textAlign:'center'}}>
+                — 🌹 あなたへのおすすめ —
+              </p>
+              <h2 style={{fontSize:22, color:'#9d174d', fontWeight:500, margin:'0 0 8px', textAlign:'center', letterSpacing:'0.05em'}}>
+                {r.room}
+              </h2>
+              <p style={{fontSize:14, color:'#4b1528', lineHeight:1.8, margin:'0 0 18px', textAlign:'center'}}>
+                {r.roomDesc}
+              </p>
+              <div style={{textAlign:'center'}}>
+                <a href={appUrl} target="_blank" rel="noopener" className="princess-btn" style={{display:'inline-block', textDecoration:'none'}}>
+                  💎 もっと詳しく知る ♡
+                </a>
+              </div>
+            </div>
+
+            <div style={{background:`linear-gradient(135deg, #fef9fb, ${r.bgColor}66, #fef9fb)`, borderRadius:20, padding:'1.5rem 1.25rem', boxShadow:'0 4px 14px rgba(217,138,163,0.12)', marginBottom:14, textAlign:'center'}}>
+              <p style={{fontSize:12, color:r.accentDark, fontWeight:500, margin:'0 0 12px', letterSpacing:'0.2em'}}>
+                — 💌 あなたへ贈るメッセージ —
+              </p>
+              <p style={{fontSize:14, color:'#4b1528', lineHeight:2, margin:0, fontStyle:'italic'}}>
+                {r.message}
+              </p>
+            </div>
+
+            <div className="card-soft" style={{textAlign:'center', marginBottom:14}}>
+              <p style={{fontSize:13, color:'#d4537e', margin:'0 0 14px', letterSpacing:'0.15em'}}>
+                💗 友達にも教えてあげる ♡
+              </p>
+              <div style={{display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap'}}>
+                <a href={xUrl} target="_blank" rel="noopener" style={{
+                  display:'inline-block', padding:'10px 24px', background:'#000', color:'#fff',
+                  borderRadius:999, textDecoration:'none', fontSize:13, fontWeight:500
+                }}>𝕏 でシェア</a>
+                <a href={lineUrl} target="_blank" rel="noopener" style={{
+                  display:'inline-block', padding:'10px 24px', background:'#06c755', color:'#fff',
+                  borderRadius:999, textDecoration:'none', fontSize:13, fontWeight:500
+                }}>LINE でシェア</a>
+              </div>
+            </div>
+
+            <div style={{textAlign:'center', marginTop:14}}>
+              <button onClick={restart} style={{background:'none', border:'none', color:'#9d174d', fontSize:13, cursor:'pointer', padding:'8px 12px'}}>
+                ↻ もう一度診断する
+              </button>
+            </div>
+
+            <div style={{textAlign:'center', marginTop:30, fontSize:11, color:'#9ca3af', letterSpacing:'0.15em'}}>
+              ♡ ・ ♡ ・ ♡ ・ ♡<br/>
+              ごきげん姫の自分軸
+            </div>
+          </div>
+        );
+      }
+
+      return null;
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App/>);
+  </script>
+</body>
+</html>
