@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+  <title>👑 ごきげん姫の自分軸 ♡ アプリ案内</title>
+  <meta name="description" content="自分の機嫌を自分でとる。お姫様気分のセルフケア・ダイアリーアプリ。他人軸から自分軸を育み、自分らしくごきげんで過ごす ♡" />
+  <meta property="og:title" content="👑 ごきげん姫の自分軸 ♡" />
+  <meta property="og:description" content="他人軸から自分軸を育む、お姫様気分のセルフケア・ダイアリー ♡" />
+  <meta property="og:image" content="../apple-touch-icon.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png" />
+  <meta name="theme-color" content="#fce7f3" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Zen Maru Gothic","Hiragino Maru Gothic ProN","M PLUS Rounded 1c",system-ui,sans-serif;
+      background: linear-gradient(180deg,#fdf2f8 0%,#fdf4fb 50%,#f5f0fb 100%);
+      -webkit-font-smoothing: antialiased;
+      color: #4b1528;
+      line-height: 1.7;
+    }
+    img { max-width: 100%; height: auto; display: block; }
+    a { color: inherit; }
+    ::selection { background: #fbcfe8; }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 0 1.25rem; }
+    .hero { text-align: center; padding: 3rem 1.25rem 2rem; }
+    .hero-crown { font-size: 60px; line-height: 1; margin-bottom: 12px; }
+    .hero-label { font-size: 11px; color: #d4537e; letter-spacing: 0.3em; margin: 0 0 6px; }
+    .hero-title { font-size: 34px; color: #9d174d; font-weight: 500; margin: 0 0 6px; letter-spacing: 0.05em; line-height: 1.3; }
+    .hero-sub { font-size: 14px; color: #d4537e; letter-spacing: 0.1em; margin: 0 0 24px; }
+    .hero-img { max-width: 480px; margin: 0 auto 20px; mix-blend-mode: multiply; }
+    .hero-tagline { font-size: 17px; color: #9d174d; font-weight: 500; margin: 16px 0 10px; line-height: 1.8; }
+    .hero-desc { font-size: 14px; color: #6b7280; line-height: 1.9; margin: 0 auto 24px; max-width: 480px; }
+
+    .cta-btn {
+      display: inline-block;
+      background: linear-gradient(90deg, #ec4899, #d4537e);
+      color: white !important;
+      text-decoration: none;
+      padding: 16px 44px;
+      border-radius: 999px;
+      font-weight: 500;
+      font-size: 16px;
+      box-shadow: 0 6px 20px rgba(217, 138, 163, 0.35);
+      letter-spacing: 0.05em;
+      transition: transform 0.2s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); }
+
+    .section { padding: 2.5rem 1.25rem; }
+    .section-title {
+      text-align: center;
+      font-size: 32px;
+      color: #9d174d;
+      font-weight: 500;
+      margin: 0 0 28px;
+      letter-spacing: 0.05em;
+      line-height: 1.4;
+    }
+    .section-lead { display: none; }
+    .section-divider {
+      text-align: center;
+      color: #fbcfe8;
+      letter-spacing: 0.5em;
+      font-size: 12px;
+      margin: 1.5rem 0;
+    }
+
+    .pain-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 22px;
+      box-shadow: 0 4px 12px rgba(217,138,163,0.1);
+      margin-bottom: 10px;
+      border-left: 3px solid #f9a8d4;
+    }
+    .pain-card p { margin: 0; font-size: 14px; line-height: 1.7; color: #4b1528; }
+
+    .concept-card {
+      background: white;
+      border-radius: 24px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 6px 20px rgba(217,138,163,0.15);
+      text-align: center;
+    }
+    .concept-card .quote {
+      font-size: 18px;
+      color: #9d174d;
+      font-style: italic;
+      margin: 0 0 12px;
+      letter-spacing: 0.05em;
+    }
+    .concept-card .accent {
+      font-size: 13px;
+      color: #d4537e;
+      letter-spacing: 0.15em;
+      margin: 12px 0;
+    }
+    .concept-card .accent-divider { color: #f9a8d4; margin: 0 8px; }
+
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .room-card {
+      background: white;
+      border-radius: 18px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 12px rgba(217,138,163,0.12);
+      border: 1.5px solid #fce7f3;
+    }
+    .room-card h3 { font-size: 16px; color: #9d174d; margin: 0 0 6px; font-weight: 500; }
+    .room-card .room-no { font-size: 11px; color: #d4537e; letter-spacing: 0.2em; margin: 0 0 4px; }
+    .room-card .room-desc { font-size: 13px; color: #6b7280; line-height: 1.7; margin: 0; }
+    .room-card .room-img-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, #fef9fb, #fce7f3);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .room-card .room-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      mix-blend-mode: multiply;
+    }
+
+    .voice-card {
+      background: white;
+      border-radius: 18px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 12px rgba(217,138,163,0.12);
+      margin-bottom: 12px;
+    }
+    .voice-card .voice-quote { font-size: 14px; color: #4b1528; line-height: 1.8; margin: 0 0 10px; font-style: italic; }
+    .voice-card .voice-author { font-size: 12px; color: #d4537e; text-align: right; margin: 0; }
+
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 560px) {
+      .plan-grid { grid-template-columns: 1fr; }
+    }
+    .plan-card {
+      background: white;
+      border-radius: 20px;
+      padding: 1.5rem 1.25rem;
+      box-shadow: 0 6px 18px rgba(217,138,163,0.15);
+      text-align: center;
+      border: 1.5px solid #fce7f3;
+      position: relative;
+    }
+    .plan-card.recommended { border: 2.5px solid #d4537e; }
+    .plan-card .plan-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #d4537e;
+      color: white;
+      font-size: 11px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      letter-spacing: 0.1em;
+    }
+    .plan-card h3 { font-size: 18px; color: #9d174d; margin: 0 0 4px; font-weight: 500; }
+    .plan-card .plan-tag { font-size: 11px; color: #d4537e; letter-spacing: 0.15em; margin: 0 0 14px; }
+    .plan-card .plan-price { font-size: 24px; color: #9d174d; font-weight: 500; margin: 0 0 4px; }
+    .plan-card .plan-period { font-size: 12px; color: #6b7280; margin: 0 0 16px; }
+    .plan-card ul { text-align: left; padding-left: 0; list-style: none; margin: 0 0 16px; }
+    .plan-card ul li { font-size: 13px; color: #4b1528; padding: 6px 0; padding-left: 18px; position: relative; line-height: 1.6; }
+    .plan-card ul li::before { content: "・"; color: #d4537e; position: absolute; left: 0; }
+
+    .faq-item {
+      background: white;
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 3px 10px rgba(217,138,163,0.08);
+      margin-bottom: 10px;
+    }
+    .faq-item .faq-q { font-size: 14px; color: #9d174d; font-weight: 500; margin: 0 0 6px; }
+    .faq-item .faq-a { font-size: 13px; color: #4b1528; line-height: 1.8; margin: 0; }
+
+    .creator-card {
+      background: linear-gradient(135deg, #fce7f3, #fdf2f8, #ede9fe);
+      border-radius: 20px;
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+    }
+    .creator-card .creator-img {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      background: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px;
+      box-shadow: 0 4px 14px rgba(217,138,163,0.2);
+    }
+    .creator-card h3 { font-size: 16px; color: #9d174d; margin: 0 0 4px; font-weight: 500; }
+    .creator-card .creator-handle { font-size: 12px; color: #d4537e; margin: 0 0 12px; }
+    .creator-card p { font-size: 13px; color: #4b1528; line-height: 1.8; margin: 0; text-align: left; }
+
+    .footer-cta {
+      background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%);
+      padding: 3rem 1.25rem;
+      text-align: center;
+      border-radius: 24px 24px 0 0;
+      margin-top: 2rem;
+    }
+    .footer-cta h2 { font-size: 22px; color: #9d174d; margin: 0 0 8px; font-weight: 500; }
+    .footer-cta p { font-size: 14px; color: #6b7280; margin: 0 0 24px; line-height: 1.9; }
+
+    .footer { text-align: center; padding: 2rem 1.25rem 3rem; font-size: 11px; color: #9ca3af; }
+    .footer a { color: #d4537e; text-decoration: none; }
+
+    @media (max-width: 480px) {
+      .hero-title { font-size: 26px; }
+      .section-title { font-size: 24px; margin-bottom: 22px; }
+      .section { padding: 2rem 1rem; }
+      .concept-card { padding: 1.5rem 1rem; }
+      .plan-card, .room-card, .voice-card { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="hero-crown">👑</div>
+    <p class="hero-label">— Gokigen Hime Diary —</p>
+    <h1 class="hero-title">ごきげん姫の自分軸</h1>
+    <p class="hero-sub">〜 お姫様気分のセルフケア・ダイアリー 〜</p>
+    <img src="../world_hero.png" alt="ごきげん姫の世界" class="hero-img" onerror="this.style.display='none'" />
+    <p class="hero-tagline">「自分の機嫌を自分でとる」</p>
+    <p class="hero-desc">
+      落ち込んだ朝も、頑張りすぎた夜も──<br/>
+      執事ルシアンが、そっと寄り添ってくれる。<br/>
+      他人軸から自分軸を育み、自分らしくごきげんで過ごす。
+    </p>
+    <a href="#plans" class="cta-btn">プランを見る</a>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— こんなお悩みありませんか？ —</p>
+      <h2 class="section-title">心当たり、ありますか？</h2>
+      <div style="max-width: 540px; margin: 0 auto;">
+        <div class="pain-card">
+          <p>頑張りすぎて、心と体が疲れている</p>
+        </div>
+        <div class="pain-card">
+          <p>「私らしさ」って何だっけ？と分からなくなる</p>
+        </div>
+        <div class="pain-card">
+          <p>セルフケアを続けたいのに、三日坊主になりがち</p>
+        </div>
+        <div class="pain-card">
+          <p>つい他人軸で動いて、自分を後回しにしている</p>
+        </div>
+        <div class="pain-card">
+          <p>SNSを開くたび、「私なんて…」とモヤってしまう</p>
+        </div>
+        <div class="pain-card">
+          <p>自分の機嫌が、その日の天気みたいに揺れる</p>
+        </div>
+        <div class="pain-card">
+          <p>鏡を見ても、自分を好きになれない瞬間がある</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— ごきげん姫アプリは —</p>
+      <h2 class="section-title">あなたの自分軸を育てる、お姫様気分のお部屋</h2>
+      <div class="concept-card" style="margin-top: 20px;">
+        <p class="quote">「自分の機嫌を自分でとる」</p>
+        <p class="accent">❀ <span class="accent-divider">·</span> 他人軸から自分軸を育み <span class="accent-divider">·</span> ❀</p>
+        <p class="accent">自分らしく ごきげんで過ごす</p>
+        <p style="font-size: 14px; color: #6b7280; line-height: 1.9; margin: 16px 0 0;">
+          毎日のちょっとした時間で、自分と向き合う場所。<br/>
+          6つのお姫様のお部屋を巡って、<strong style="color:#9d174d">心・体・食事・理想の自分</strong>まで総合ケア。<br/>
+          ヨガ哲学の<strong style="color:#9d174d">五大元素（地・水・火・風・空）</strong>を取り入れた設計で、<br/>
+          続けやすく、自分軸が自然と育っていきます。<br/>
+          <br/>
+          朝の挨拶から夜のおやすみまで、<br/>
+          執事ルシアンが、あなたにそっと寄り添います。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— 6つのお部屋 —</p>
+      <h2 class="section-title">あなただけのお城を、巡ろう</h2>
+      <div class="room-grid" style="margin-top: 20px;">
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room01.png" alt="朝・夜のお姫様時間" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 01 —</p>
+          <h3>♡ 朝・夜のお姫様時間</h3>
+          <p class="room-desc">モーニング・イブニングページで、一日の始まりと終わりに自分にやさしく挨拶を。6つの気分から今日のごきげん度をタップして、執事ルシアンの優しいメッセージを受け取る。夜はふんわり振り返って、自分に「お疲れさま」を。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room02.png" alt="デイリー習慣" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 02 —</p>
+          <h3>♡ デイリー習慣</h3>
+          <p class="room-desc">朝・昼・夜の三つの儀式で、1日のリズムを姫らしく整える。白湯・深呼吸・香り・ハーブティーなど、お姫様気分のセルフケアをカスタム可能。連続記録の炎マークで、続けるのが楽しくなる仕組み。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room03.png" alt="セルフトーク" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 03 —</p>
+          <h3>♡ セルフトーク</h3>
+          <p class="room-desc">気持ちと向き合う4ステップループ＋3つの深さのタブで本音を整理。毎日・ふかぼり・変身ワークの3階層で、気軽な気分整理から深い自己探求まで自由に選べる。執事ルシアンが、本音への気づきをサポート。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room04.png" alt="プリンセスケア" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 04 —</p>
+          <h3>♡ プリンセスケア</h3>
+          <p class="room-desc">心・体・食事・理想の姿を総合ケア。ダイエットプラン自動計算（基礎代謝×活動量）、食材100品＋ドリンク14種から1タップで食事ログ、週次ビューティ指標まで。なりたい姫像へ、確実に近づく仕組み。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room05.png" alt="わたしの世界" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 05 —</p>
+          <h3>♡ わたしの世界</h3>
+          <p class="room-desc">なりたい自分を叶える、自由律のホームベース。マイプリンセスのプロフィール、やりたいこと50個リスト、未来の自分への手紙、感謝日記など、自分だけの物語を紡ぐお部屋。読み返すたび、新しい自分に出会える。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room06.png" alt="マンスリー振り返り" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 06 —</p>
+          <h3>♡ マンスリー振り返り</h3>
+          <p class="room-desc">月の主人公として、人生をデザインするお部屋。月初に「今月のお姫様像」を設定し、月末にしっかり振り返り。1ヶ月単位で自分を見つめ直すから、日々に流されず、自分の芯が育っていきます。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— 体験者の声 —</p>
+      <h2 class="section-title">使ってくださった方から</h2>
+      <div style="max-width: 560px; margin: 20px auto 0;">
+        <div class="voice-card">
+          <p class="voice-quote">「執事ルシアンの存在感が想像以上に大きくて、朝のメッセージで救われる日が何度もありました。」</p>
+          <p class="voice-author">— 30代・あーたんさん</p>
+        </div>
+        <div class="voice-card">
+          <p class="voice-quote">「自分の気分を毎日タップするだけなのに、1週間で『あれ、私こんなに気分の波あったんだ』って気づけた」</p>
+          <p class="voice-author">— 30代・H.M さん</p>
+        </div>
+        <div class="voice-card">
+          <p class="voice-quote">「『なりたい姫像』を書き出してから、毎日の選択が変わった気がします。続けたい。」</p>
+          <p class="voice-author">— 30代・Y.T さん</p>
+        </div>
+        <div class="voice-card">
+          <p class="voice-quote">「朝の白湯と深呼吸の儀式を始めたら、午前中の気分が驚くほど穏やかになりました。」</p>
+          <p class="voice-author">— 40代・K.M さん</p>
+        </div>
+        <div class="voice-card">
+          <p class="voice-quote">「食事ログがスタンプみたいで楽しい。三日坊主だった私が、1ヶ月続いてます。」</p>
+          <p class="voice-author">— 30代・S.N さん</p>
+        </div>
+        <div class="voice-card">
+          <p class="voice-quote">「アプリを開くだけで気分が上がる。お姫様気分のデザインがとにかく可愛いです。」</p>
+          <p class="voice-author">— 20代・A.Y さん</p>
+        </div>
+        <div class="voice-card">
+          <p class="voice-quote">「他人の目ばかり気にしていた私が、『私はどうしたい？』と聞けるようになりました。」</p>
+          <p class="voice-author">— 40代・R.K さん</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <section class="section" id="plans">
+    <div class="container">
+      <p class="section-lead">— 料金プラン —</p>
+      <h2 class="section-title">あなたに合った育て方を</h2>
+      <div class="plan-grid" style="margin-top: 32px;">
+        <div class="plan-card">
+          <h3>🌸 Light</h3>
+          <p class="plan-tag">気軽に始めたい方へ</p>
+          <p class="plan-price">¥980</p>
+          <p class="plan-period">買い切り</p>
+          <ul>
+            <li>アプリ機能 全部</li>
+            <li>6つのお部屋すべて</li>
+            <li>執事ルシアンのメッセージ</li>
+            <li>無期限利用</li>
+          </ul>
+          <a href="#" class="cta-btn" style="font-size: 13px; padding: 10px 24px;">準備中</a>
+        </div>
+
+        <div class="plan-card recommended">
+          <span class="plan-badge">おすすめ ✨</span>
+          <h3>💗 Standard</h3>
+          <p class="plan-tag">じっくり育てたい方へ</p>
+          <p class="plan-price">¥1,980<span style="font-size:14px;">/月</span></p>
+          <p class="plan-period">サブスク</p>
+          <ul>
+            <li>アプリ機能 全部</li>
+            <li>ヨガ・瞑想動画 見放題</li>
+            <li>コミュニティ参加</li>
+            <li>月替わりの新コンテンツ</li>
+          </ul>
+          <a href="#" class="cta-btn" style="font-size: 13px; padding: 10px 24px;">準備中</a>
+        </div>
+
+        <div class="plan-card">
+          <h3>👑 Premium</h3>
+          <p class="plan-tag">本気で変わりたい方へ</p>
+          <p class="plan-price">¥5,980<span style="font-size:14px;">/月</span></p>
+          <p class="plan-period">サブスク（先着10名）</p>
+          <ul>
+            <li>Standard 全機能</li>
+            <li>月1回 個別セッション（30分）</li>
+            <li>チャットでaya に質問</li>
+            <li>VIPコミュニティ</li>
+          </ul>
+          <a href="#" class="cta-btn" style="font-size: 13px; padding: 10px 24px;">準備中</a>
+        </div>
+      </div>
+      <p style="text-align: center; font-size: 12px; color: #9ca3af; margin-top: 20px;">
+        ※ 価格は予定です。正式リリース時に変更の可能性があります。
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— よくあるご質問 —</p>
+      <h2 class="section-title">FAQ</h2>
+      <div style="max-width: 560px; margin: 20px auto 0;">
+        <div class="faq-item">
+          <p class="faq-q">Q. スマホアプリですか？</p>
+          <p class="faq-a">A. ウェブアプリです。iPhone でも Android でも、ホーム画面に追加すれば本物のアプリのように使えます。</p>
+        </div>
+        <div class="faq-item">
+          <p class="faq-q">Q. データはどこに保存されますか？</p>
+          <p class="faq-a">A. お嬢様の端末の中にだけ保存されます。サーバーには一切送信されないので、プライバシー◎です。</p>
+        </div>
+        <div class="faq-item">
+          <p class="faq-q">Q. 続けるのが苦手でも大丈夫？</p>
+          <p class="faq-a">A. 大丈夫です。1日1分から始められる小さな儀式が用意されています。執事ルシアンがいつも寄り添ってくれるから、続けやすい。</p>
+        </div>
+        <div class="faq-item">
+          <p class="faq-q">Q. 解約はできますか？（サブスクの場合）</p>
+          <p class="faq-a">A. いつでも解約OKです。縛りはありません。</p>
+        </div>
+        <div class="faq-item">
+          <p class="faq-q">Q. 機械が苦手でも使えますか？</p>
+          <p class="faq-a">A. もちろん大丈夫です。難しい操作はなく、タップするだけのシンプル設計。文字入力も最小限なので、ITが苦手な方でも安心して始められます。</p>
+        </div>
+        <div class="faq-item">
+          <p class="faq-q">Q. どのプランから始めたらいい？</p>
+          <p class="faq-a">A. まずは無料診断で、自分のタイプを知ることから始めるのがおすすめ。気軽に試したい方は「Light」、じっくり育てたい方は「Standard」、本気で変わりたい方は「Premium」が向いています。</p>
+        </div>
+        <div class="faq-item">
+          <p class="faq-q">Q. 1日にどれくらいの時間が必要？</p>
+          <p class="faq-a">A. 5分から始められます。朝の3分・夜の2分など、忙しい日でも続けやすい設計。お疲れの日は1分だけでもOKです。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— アプリを作った人 —</p>
+      <h2 class="section-title">こんにちは、aya です</h2>
+      <div class="creator-card" style="margin-top: 20px; max-width: 560px; margin-left: auto; margin-right: auto;">
+        <div class="creator-img">👸</div>
+        <h3>aya</h3>
+        <p class="creator-handle">@aya_yoganess</p>
+        <p>
+          ヨガネスを通して、女性の心と体を整えるお仕事をしています ♡<br/><br/>
+          「自分の機嫌は自分でとる」を、もっと気軽に、楽しく続けられる場所が欲しい — そんな想いから、ごきげん姫アプリは生まれました。<br/><br/>
+          ヨガ哲学の五大元素（地・水・火・風・空）をベースに、あなただけの自分軸を育てるお手伝いをします。執事ルシアンと一緒に、お姫様気分で ♡
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="footer-cta">
+    <h2>まずは無料診断から</h2>
+    <p>
+      あなたの「ごきげん姫タイプ」を知って、<br/>
+      自分らしく育てよう ♡
+    </p>
+    <a href="../shindan/" class="cta-btn" style="margin-bottom: 12px;">無料で診断する</a>
+    <p style="font-size: 11px; color: #9ca3af; margin: 16px 0 0;">
+      全20問・約5分　／　完全匿名 ♡
+    </p>
+  </section>
+
+  <footer class="footer">
+    <p>♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+    <p>ごきげん姫の自分軸<br/>aya（<a href="https://twitter.com/aya_yoganess" target="_blank">@aya_yoganess</a>）</p>
+    <p style="margin-top: 16px;">© 2026 Gokigen Hime ♡</p>
+  </footer>
+
+</body>
+</html>
