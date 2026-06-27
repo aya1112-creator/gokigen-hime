@@ -74,12 +74,18 @@
     .pain-card {
       background: white;
       border-radius: 16px;
-      padding: 16px 22px;
+      padding: 14px 22px;
       box-shadow: 0 4px 12px rgba(217,138,163,0.1);
       margin-bottom: 10px;
       border-left: 3px solid #f9a8d4;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
     }
-    .pain-card p { margin: 0; font-size: 14px; line-height: 1.7; color: #4b1528; }
+    .pain-card p { margin: 0; font-size: 14px; line-height: 1.6; color: #4b1528; }
+    @media (max-width: 480px) {
+      .pain-card p { font-size: 13px; }
+    }
 
     .concept-card {
       background: white;
@@ -134,6 +140,29 @@
       height: 100%;
       object-fit: cover;
       mix-blend-mode: multiply;
+    }
+
+    .benefit-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 22px;
+      box-shadow: 0 4px 12px rgba(217,138,163,0.1);
+      margin-bottom: 10px;
+      border-left: 3px solid #d4537e;
+    }
+    .benefit-card .before {
+      font-size: 13px;
+      color: #9ca3af;
+      margin: 0 0 6px;
+      text-decoration: line-through;
+      text-decoration-color: #fbcfe8;
+    }
+    .benefit-card .after {
+      font-size: 14px;
+      color: #9d174d;
+      font-weight: 500;
+      margin: 0;
+      line-height: 1.7;
     }
 
     .voice-card {
@@ -256,31 +285,144 @@
     <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
   </div>
 
+  <!-- ============ 並び替え後の新順序 ============ -->
+
+  <!-- ① ごきげん姫アプリとは？ -->
   <section class="section">
     <div class="container">
-      <p class="section-lead">— こんなお悩みありませんか？ —</p>
-      <h2 class="section-title">こんなお悩み、ありませんか？</h2>
-      <div style="max-width: 540px; margin: 0 auto;">
-        <div class="pain-card">
-          <p>頑張りすぎて、心と体が疲れている</p>
+      <p class="section-lead">— ごきげん姫アプリは —</p>
+      <h2 class="section-title">ごきげん姫アプリとは？</h2>
+      <div class="concept-card" style="margin-top: 20px;">
+        <div style="background: linear-gradient(135deg, #fce7f3, #fdf2f8); border-radius: 16px; padding: 26px 24px; margin: 0 0 28px; text-align: center; border: 1px solid #f9a8d4;">
+          <p style="font-size: 16px; color: #9d174d; margin: 0 0 16px; font-weight: 500;">頑張ってきた私へ。</p>
+          <p style="font-size: 14px; color: #4b1528; line-height: 2.1; margin: 0 0 16px;">
+            家族のため、職場のため、誰かのため、<br/>
+            人生の主役を譲り続けてきたあなたへ。<br/>
+            これからは、<strong style="color:#9d174d">あなた自身の人生を祝福する時間</strong>。
+          </p>
+          <p style="font-size: 16px; color: #9d174d; line-height: 1.7; margin: 0; font-weight: 500;">
+            人に合わせすぎる人生は、<br/>
+            今日で終わりにしよう。
+          </p>
         </div>
-        <div class="pain-card">
-          <p>「私らしさ」って何だっけ？と分からなくなる</p>
+
+        <p style="font-size: 14px; color: #4b1528; line-height: 2.1; margin: 0 0 26px; text-align: left;">
+          ごきげん姫アプリは、<strong style="color:#9d174d">自分の人生の主役になり、自分で脚本を書き換える</strong>ように、今の環境や思考から主体的な毎日へとシフトできます。他人の目や評価に振り回される「他人軸」を手放し、自分の意志で選択・行動する<strong style="color:#9d174d">「自分軸」</strong>を取り戻すことができます。<br/><br/>
+          自分が主人公であると自覚することで、幸福度や心理的欲求の満たされ方が大きく向上します。<br/><br/>
+          「自分軸」を取り戻すことで、日々の壁や失敗も、ドラマチックな物語を面白くするための<strong style="color:#9d174d">「試練」や「伏線」</strong>として捉え直すことができます。<br/><br/>
+          主役になる第一歩として、まずは日常のほんの小さなことから「<strong style="color:#9d174d">自分がどうしたいか</strong>」を問いかけ、自分の望む選択を一つずつ積み重ねていくことが大切です。<br/><br/>
+          このアプリでは、<strong style="color:#9d174d">6つのお部屋</strong>を巡りながら、自分軸を育み、自分らしくごきげんで過ごせるようになります。
+        </p>
+
+        <div style="background: #fef9fb; border-radius: 14px; padding: 18px 22px; margin: 0 0 12px; text-align: left; border: 1px solid #fce7f3;">
+          <p style="font-size: 15px; color: #9d174d; margin: 0 0 6px; font-weight: 500;">💗 自分を深く知るワーク</p>
+          <p style="font-size: 11px; color: #d4537e; letter-spacing: 0.1em; margin: 0 0 12px;">〜 思考整理・本音発見 〜</p>
+          <p style="font-size: 13px; color: #4b1528; line-height: 2; margin: 0;">
+            毎日の気分や本音にやさしく耳を傾けて、自分の感情のクセや「<strong style="color:#9d174d">本当に大切にしたいもの</strong>」を、少しずつ発見していきます。「私はどう感じている？」「何を望んでいる？」と問いかけながら、長い間忘れていた本当の声を、ゆっくり取り戻していく時間です。考えるのではなく、感じてみる。自分の内側に、ちゃんと答えがあったことに気づける場所です。
+          </p>
         </div>
-        <div class="pain-card">
-          <p>セルフケアを続けたいのに、三日坊主になりがち</p>
+
+        <div style="background: #fef9fb; border-radius: 14px; padding: 18px 22px; margin: 0 0 12px; text-align: left; border: 1px solid #fce7f3;">
+          <p style="font-size: 15px; color: #9d174d; margin: 0 0 6px; font-weight: 500;">🌸 自分らしい習慣をつくる</p>
+          <p style="font-size: 11px; color: #d4537e; letter-spacing: 0.1em; margin: 0 0 12px;">〜 ごきげんリズムを育む 〜</p>
+          <p style="font-size: 13px; color: #4b1528; line-height: 2; margin: 0;">
+            朝・昼・夜の小さな儀式や、お姫様気分のセルフケアを通して、<strong style="color:#9d174d">毎日のリズム</strong>を整え、ごきげんに過ごす力を育てていきます。白湯・深呼吸・香り・ハーブティーなど、自分が心地よく感じるものを自由にカスタム。無理せず、自分のペースで続けられるから、三日坊主だったあなたも、<strong style="color:#9d174d">続けられる自分</strong>に変わっていきます。
+          </p>
         </div>
-        <div class="pain-card">
-          <p>つい他人軸で動いて、自分を後回しにしている</p>
+
+        <div style="background: #fef9fb; border-radius: 14px; padding: 18px 22px; margin: 0 0 16px; text-align: left; border: 1px solid #fce7f3;">
+          <p style="font-size: 15px; color: #9d174d; margin: 0 0 6px; font-weight: 500;">👑 なりたい自分を叶える</p>
+          <p style="font-size: 11px; color: #d4537e; letter-spacing: 0.1em; margin: 0 0 12px;">〜 理想を描き、現実にしていく 〜</p>
+          <p style="font-size: 13px; color: #4b1528; line-height: 2; margin: 0;">
+            やりたいことや理想の姫像を描き、月ごとに振り返りながら、<strong style="color:#9d174d">未来の私</strong>を少しずつ現実にしていきます。「叶えたい夢」「ワクワクすること」「なりたい姫像」を自由に書き出して、月初に設定、月末にじっくり振り返り。流される毎日から、<strong style="color:#9d174d">自分の物語を紡ぐ毎日</strong>へ、少しずつ変わっていきます。
+          </p>
         </div>
-        <div class="pain-card">
-          <p>SNSを開くたび、「私なんて…」とモヤってしまう</p>
+
+        <div style="background: linear-gradient(135deg, #fdf2f8, #fce7f3); border-radius: 14px; padding: 20px 24px; margin: 0 0 26px; text-align: center; border: 1px solid #f9a8d4;">
+          <p style="font-size: 14px; color: #4b1528; line-height: 2; margin: 0;">
+            そんなあなたの毎日に、<br/>
+            <strong style="color:#9d174d">執事ルシアン＝グレイ</strong>が、<br/>
+            朝の挨拶から夜のおやすみまで、<br/>
+            やさしいメッセージでそっと寄り添い続けます ♡
+          </p>
         </div>
-        <div class="pain-card">
-          <p>自分の機嫌が、その日の天気みたいに揺れる</p>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <!-- ②-b こんな方におすすめ -->
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— Recommended for you —</p>
+      <h2 class="section-title">こんな方におすすめ</h2>
+      <div style="max-width: 540px; margin: 24px auto 0; background: linear-gradient(135deg, #fdf2f8, #fce7f3); border-radius: 20px; padding: 26px 28px; border: 1px solid #f9a8d4;">
+        <p style="font-size: 14px; color: #4b1528; line-height: 2.2; margin: 0;">
+          ✓ 家族や周りを優先して生きてきた方<br/>
+          ✓ 頑張ることが当たり前になっている方<br/>
+          ✓ 自分を後回しにしてきた方<br/>
+          ✓ 自分の本音を知りたい方<br/>
+          ✓ 自分らしく生きたい方<br/>
+          ✓ 人生をもっと楽しみたい方<br/>
+          ✓ 人生の主役として生きたい方
+        </p>
+      </div>
+      <p style="text-align: center; font-size: 14px; color: #9d174d; line-height: 1.9; margin: 24px auto 0; max-width: 540px; font-style: italic;">
+        ひとつでも当てはまったら、<br/>
+        ごきげん姫があなたを待っています ♡
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <!-- ③ 6つのお部屋紹介 -->
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— 6つのお部屋 —</p>
+      <h2 class="section-title">6つのお部屋紹介</h2>
+      <div class="room-grid" style="margin-top: 20px;">
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room01.png" alt="朝・夜のお姫様時間" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 01 —</p>
+          <h3>♡ 朝・夜のお姫様時間</h3>
+          <p class="room-desc">モーニング・イブニングページで、一日の始まりと終わりに自分にやさしく挨拶できます。6つの気分から今日のごきげん度をタップすると、執事ルシアンの優しいメッセージが届きます。夜はふんわり振り返って、自分に「お疲れさま」を伝えられます。</p>
         </div>
-        <div class="pain-card">
-          <p>鏡を見ても、自分を好きになれない瞬間がある</p>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room02.png" alt="デイリー習慣" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 02 —</p>
+          <h3>♡ デイリー習慣</h3>
+          <p class="room-desc">朝・昼・夜の三つの儀式で、1日のリズムを姫らしく整えます。白湯・深呼吸・香り・ハーブティーなど、お姫様気分のセルフケアを自由にカスタムできます。連続記録の炎マークで、続けるのがどんどん楽しくなります。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room03.png" alt="セルフトーク" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 03 —</p>
+          <h3>♡ セルフトーク</h3>
+          <p class="room-desc">気持ちと向き合う4ステップループ＋3つの深さのタブで、本音を整理できます。毎日・ふかぼり・変身ワークの3階層で、気軽な気分整理から深い自己探求まで自由に選べます。執事ルシアンが、本音への気づきをそっとサポートします。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room04.png" alt="プリンセスケア" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 04 —</p>
+          <h3>♡ プリンセスケア</h3>
+          <p class="room-desc">心・体・食事・理想の姿まで、お姫様を総合的にケアします。ダイエットプラン自動計算（基礎代謝×活動量）、食材100品＋ドリンク14種から1タップで食事ログ、週次ビューティ指標までしっかり揃っています。なりたい姫像へ、確実に近づけます。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room05.png" alt="わたしの世界" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 05 —</p>
+          <h3>♡ わたしの世界</h3>
+          <p class="room-desc">なりたい自分を叶える、自由律のホームベースです。マイプリンセスのプロフィール、やりたいこと50個リスト、未来の自分への手紙、感謝日記など、自分だけの物語を紡げます。読み返すたびに、新しい自分と出会えます。</p>
+        </div>
+        <div class="room-card">
+          <div class="room-img-wrap"><img src="./room06.png" alt="マンスリー振り返り" onerror="this.style.display='none'" /></div>
+          <p class="room-no">— Room 06 —</p>
+          <h3>♡ マンスリー振り返り</h3>
+          <p class="room-desc">月の主人公として、人生をデザインするお部屋です。月初に「今月のお姫様像」を設定し、月末にじっくり振り返ります。1ヶ月単位で自分を見つめ直せるから、日々に流されず、自分の芯が育っていきます。</p>
         </div>
       </div>
     </div>
@@ -290,22 +432,72 @@
     <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
   </div>
 
+  <!-- ③ 自己紹介 -->
   <section class="section">
     <div class="container">
-      <p class="section-lead">— ごきげん姫アプリは —</p>
-      <h2 class="section-title">ごきげん姫アプリとは？</h2>
-      <div class="concept-card" style="margin-top: 20px;">
-        <p class="quote">「自分の機嫌を自分でとる」</p>
-        <p class="accent">❀ <span class="accent-divider">·</span> 他人軸から自分軸を育み <span class="accent-divider">·</span> ❀</p>
-        <p class="accent">自分らしく ごきげんで過ごす</p>
-        <p style="font-size: 14px; color: #6b7280; line-height: 1.9; margin: 16px 0 0;">
-          毎日のちょっとした時間で、自分と向き合う場所。<br/>
-          6つのお姫様のお部屋を巡って、<strong style="color:#9d174d">心・体・食事・理想の自分</strong>まで総合ケア。<br/>
-          ヨガ哲学の<strong style="color:#9d174d">五大元素（地・水・火・風・空）</strong>を取り入れた設計で、<br/>
-          続けやすく、自分軸が自然と育っていきます。<br/>
-          <br/>
-          朝の挨拶から夜のおやすみまで、<br/>
-          執事ルシアンが、あなたにそっと寄り添います。
+      <p class="section-lead">— アプリを作った人 —</p>
+      <h2 class="section-title">自己紹介</h2>
+      <div class="creator-card" style="margin-top: 20px; max-width: 560px; margin-left: auto; margin-right: auto;">
+        <div class="creator-img">👸</div>
+        <h3>aya</h3>
+        <p class="creator-handle">@aya_yoganess</p>
+        <p>
+          ヨガを通して、女性の心と体を整えるお仕事をしています ♡<br/><br/>
+          「自分の機嫌は自分でとる」を、もっと気軽に、楽しく続けられる場所が欲しい — そんな想いから、ごきげん姫アプリは生まれました。<br/><br/>
+          ヨガ哲学の五大元素（地・水・火・風・空）をベースに、あなただけの自分軸を育てるお手伝いをします。執事ルシアンと一緒に、お姫様気分で ♡
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
+  </div>
+
+  <!-- ④ お悩み -->
+  <section class="section">
+    <div class="container">
+      <p class="section-lead">— こんなお悩みありませんか？ —</p>
+      <h2 class="section-title">こんなお悩み、ありませんか？</h2>
+      <div style="max-width: 540px; margin: 0 auto;">
+        <div class="pain-card">
+          <p>好きなこと、やりたいことが見つからない</p>
+        </div>
+        <div class="pain-card">
+          <p>周囲の評価が気になってしまう</p>
+        </div>
+        <div class="pain-card">
+          <p>人の顔色やご機嫌を優先にしてしまう</p>
+        </div>
+        <div class="pain-card">
+          <p>つい「何でもいい」と周りに合わせてしまう</p>
+        </div>
+        <div class="pain-card">
+          <p>頼まれごとを、つい全部引き受けてしまう</p>
+        </div>
+        <div class="pain-card">
+          <p>自分に自信が持てない</p>
+        </div>
+        <div class="pain-card">
+          <p>周りの一言で、その日の気分が決まってしまう</p>
+        </div>
+      </div>
+
+      <div style="max-width: 540px; margin: 28px auto 0; text-align: left;">
+        <p style="font-size: 14px; color: #4b1528; line-height: 2.1; margin: 0 0 22px;">
+          いつも周りを優先して、気づけば自分のことは後回し。<br/>
+          頑張っているのに、なぜか満たされない。<br/>
+          やりたいことが分からないわけじゃない。<br/>
+          でも、<strong style="color:#9d174d">本当にこれでいいのかな</strong>と、どこかで感じている。
+        </p>
+
+        <p style="font-size: 16px; color: #9d174d; line-height: 1.9; margin: 0 0 22px; text-align: center; font-style: italic;">
+          そんなふうに思うことは、ありませんか？
+        </p>
+
+        <p style="font-size: 14px; color: #4b1528; line-height: 2.1; margin: 0;">
+          私たちは長い間、周りの期待や役割を優先して生きていると、<br/>
+          <strong style="color:#9d174d">自分の本当の気持ち</strong>が、分からなくなってしまうことがあります。
         </p>
       </div>
     </div>
@@ -317,44 +509,31 @@
 
   <section class="section">
     <div class="container">
-      <p class="section-lead">— 6つのお部屋 —</p>
-      <h2 class="section-title">6つのお部屋紹介</h2>
-      <div class="room-grid" style="margin-top: 20px;">
-        <div class="room-card">
-          <div class="room-img-wrap"><img src="./room01.png" alt="朝・夜のお姫様時間" onerror="this.style.display='none'" /></div>
-          <p class="room-no">— Room 01 —</p>
-          <h3>♡ 朝・夜のお姫様時間</h3>
-          <p class="room-desc">モーニング・イブニングページで、一日の始まりと終わりに自分にやさしく挨拶を。6つの気分から今日のごきげん度をタップして、執事ルシアンの優しいメッセージを受け取る。夜はふんわり振り返って、自分に「お疲れさま」を。</p>
+      <h2 class="section-title">未来のあなた</h2>
+      <p style="text-align: center; font-size: 14px; color: #6b7280; line-height: 1.9; margin: -16px auto 28px; max-width: 540px;">
+        ごきげん姫と過ごす時間で、こんな未来が待っています ♡
+      </p>
+      <div style="max-width: 540px; margin: 0 auto;">
+        <div class="benefit-card">
+          <p class="after">✅ 自分に<strong>自信を持てる</strong>ようになって、自分を<strong>好きになれる</strong></p>
         </div>
-        <div class="room-card">
-          <div class="room-img-wrap"><img src="./room02.png" alt="デイリー習慣" onerror="this.style.display='none'" /></div>
-          <p class="room-no">— Room 02 —</p>
-          <h3>♡ デイリー習慣</h3>
-          <p class="room-desc">朝・昼・夜の三つの儀式で、1日のリズムを姫らしく整える。白湯・深呼吸・香り・ハーブティーなど、お姫様気分のセルフケアをカスタム可能。連続記録の炎マークで、続けるのが楽しくなる仕組み。</p>
+        <div class="benefit-card">
+          <p class="after">✅ 自分の機嫌を、<strong>自分でとれる</strong>ようになる</p>
         </div>
-        <div class="room-card">
-          <div class="room-img-wrap"><img src="./room03.png" alt="セルフトーク" onerror="this.style.display='none'" /></div>
-          <p class="room-no">— Room 03 —</p>
-          <h3>♡ セルフトーク</h3>
-          <p class="room-desc">気持ちと向き合う4ステップループ＋3つの深さのタブで本音を整理。毎日・ふかぼり・変身ワークの3階層で、気軽な気分整理から深い自己探求まで自由に選べる。執事ルシアンが、本音への気づきをサポート。</p>
+        <div class="benefit-card">
+          <p class="after">✅ 相手の機嫌より、<strong>自分の本音</strong>を大切にできる</p>
         </div>
-        <div class="room-card">
-          <div class="room-img-wrap"><img src="./room04.png" alt="プリンセスケア" onerror="this.style.display='none'" /></div>
-          <p class="room-no">— Room 04 —</p>
-          <h3>♡ プリンセスケア</h3>
-          <p class="room-desc">心・体・食事・理想の姿を総合ケア。ダイエットプラン自動計算（基礎代謝×活動量）、食材100品＋ドリンク14種から1タップで食事ログ、週次ビューティ指標まで。なりたい姫像へ、確実に近づく仕組み。</p>
+        <div class="benefit-card">
+          <p class="after">✅ 「<strong>NO</strong>」も言える安心感が持てる</p>
         </div>
-        <div class="room-card">
-          <div class="room-img-wrap"><img src="./room05.png" alt="わたしの世界" onerror="this.style.display='none'" /></div>
-          <p class="room-no">— Room 05 —</p>
-          <h3>♡ わたしの世界</h3>
-          <p class="room-desc">なりたい自分を叶える、自由律のホームベース。マイプリンセスのプロフィール、やりたいこと50個リスト、未来の自分への手紙、感謝日記など、自分だけの物語を紡ぐお部屋。読み返すたび、新しい自分に出会える。</p>
+        <div class="benefit-card">
+          <p class="after">✅ やりたいことに<strong>一歩踏み出せる私</strong>へ戻れる</p>
         </div>
-        <div class="room-card">
-          <div class="room-img-wrap"><img src="./room06.png" alt="マンスリー振り返り" onerror="this.style.display='none'" /></div>
-          <p class="room-no">— Room 06 —</p>
-          <h3>♡ マンスリー振り返り</h3>
-          <p class="room-desc">月の主人公として、人生をデザインするお部屋。月初に「今月のお姫様像」を設定し、月末にしっかり振り返り。1ヶ月単位で自分を見つめ直すから、日々に流されず、自分の芯が育っていきます。</p>
+        <div class="benefit-card">
+          <p class="after">✅ 「嫌われるかも」から「<strong>私はこう思う</strong>」に変わる</p>
+        </div>
+        <div class="benefit-card">
+          <p class="after">✅ <strong>本音でつながる人間関係</strong>がつくれる</p>
         </div>
       </div>
     </div>
@@ -416,10 +595,15 @@
           <p class="plan-price">¥980</p>
           <p class="plan-period">買い切り</p>
           <ul>
-            <li>アプリ機能 全部</li>
-            <li>6つのお部屋すべて</li>
-            <li>執事ルシアンのメッセージ</li>
-            <li>無期限利用</li>
+            <li>6つのお部屋すべて使い放題</li>
+            <li>執事ルシアンの優しいメッセージ</li>
+            <li>朝・昼・夜の儀式を自由にカスタム</li>
+            <li>食材100品＋ドリンク14種で食事ログ</li>
+            <li>マイプリンセス＆やりたいこと50リスト</li>
+            <li>連続記録の炎マークで続くのが楽しい</li>
+            <li>五大元素タイプ診断つき</li>
+            <li>データは端末内だけで安心</li>
+            <li>買い切りで、ずっと使える ♡</li>
           </ul>
           <a href="#" class="cta-btn" style="font-size: 13px; padding: 10px 24px;">準備中</a>
         </div>
@@ -431,10 +615,14 @@
           <p class="plan-price">¥1,980<span style="font-size:14px;">/月</span></p>
           <p class="plan-period">サブスク</p>
           <ul>
-            <li>アプリ機能 全部</li>
-            <li>ヨガ・瞑想動画 見放題</li>
-            <li>コミュニティ参加</li>
-            <li>月替わりの新コンテンツ</li>
+            <li>Light の全機能</li>
+            <li>aya オリジナル ヨガ・瞑想動画 見放題</li>
+            <li>月替わりの新コンテンツ・特別ワーク</li>
+            <li>お姫様サロン（コミュニティ）参加</li>
+            <li>ayaの月1ライブ配信</li>
+            <li>五大元素タイプ別 パーソナル提案</li>
+            <li>季節のスペシャル儀式</li>
+            <li>新機能 早期アクセス</li>
           </ul>
           <a href="#" class="cta-btn" style="font-size: 13px; padding: 10px 24px;">準備中</a>
         </div>
@@ -445,10 +633,13 @@
           <p class="plan-price">¥5,980<span style="font-size:14px;">/月</span></p>
           <p class="plan-period">サブスク（先着10名）</p>
           <ul>
-            <li>Standard 全機能</li>
-            <li>月1回 個別セッション（30分）</li>
-            <li>チャットでaya に質問</li>
-            <li>VIPコミュニティ</li>
+            <li>Standard の全機能</li>
+            <li>aya との月1個別セッション（30分／オンライン）</li>
+            <li>チャットで aya に質問し放題</li>
+            <li>少人数制 VIPコミュニティ</li>
+            <li>あなた専用 自分軸ロードマップ作成</li>
+            <li>毎月のパーソナルフィードバック</li>
+            <li>お誕生月の特別ギフト ♡</li>
           </ul>
           <a href="#" class="cta-btn" style="font-size: 13px; padding: 10px 24px;">準備中</a>
         </div>
@@ -496,27 +687,6 @@
           <p class="faq-q">Q. 1日にどれくらいの時間が必要？</p>
           <p class="faq-a">A. 5分から始められます。朝の3分・夜の2分など、忙しい日でも続けやすい設計。お疲れの日は1分だけでもOKです。</p>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="container">
-    <p class="section-divider">♡ ・ ♡ ・ ♡ ・ ♡ ・ ♡</p>
-  </div>
-
-  <section class="section">
-    <div class="container">
-      <p class="section-lead">— アプリを作った人 —</p>
-      <h2 class="section-title">自己紹介</h2>
-      <div class="creator-card" style="margin-top: 20px; max-width: 560px; margin-left: auto; margin-right: auto;">
-        <div class="creator-img">👸</div>
-        <h3>aya</h3>
-        <p class="creator-handle">@aya_yoganess</p>
-        <p>
-          ヨガネスを通して、女性の心と体を整えるお仕事をしています ♡<br/><br/>
-          「自分の機嫌は自分でとる」を、もっと気軽に、楽しく続けられる場所が欲しい — そんな想いから、ごきげん姫アプリは生まれました。<br/><br/>
-          ヨガ哲学の五大元素（地・水・火・風・空）をベースに、あなただけの自分軸を育てるお手伝いをします。執事ルシアンと一緒に、お姫様気分で ♡
-        </p>
       </div>
     </div>
   </section>
