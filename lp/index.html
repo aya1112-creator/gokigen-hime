@@ -172,7 +172,7 @@
       box-shadow: 0 4px 12px rgba(217,138,163,0.12);
       margin-bottom: 12px;
     }
-    .voice-card .voice-quote { font-size: 14px; color: #4b1528; line-height: 1.8; margin: 0 0 10px; font-style: italic; }
+    .voice-card .voice-quote { font-size: 14px; color: #4b1528; line-height: 1.8; margin: 0 0 10px; }
     .voice-card .voice-author { font-size: 12px; color: #d4537e; text-align: right; margin: 0; }
 
     .plan-grid {
@@ -191,6 +191,11 @@
       text-align: center;
       border: 1.5px solid #fce7f3;
       position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .plan-card ul {
+      flex: 1;
     }
     .plan-card.recommended { border: 2.5px solid #d4537e; }
     .plan-card .plan-badge {
@@ -536,6 +541,32 @@
           <p class="after">✅ <strong>本音でつながる人間関係</strong>がつくれる</p>
         </div>
       </div>
+
+      <!-- 未来のストーリー（一つのピンク枠にまとめる） -->
+      <div style="max-width: 540px; margin: 36px auto 0;">
+        <div style="background: linear-gradient(135deg, #fce7f3, #fdf2f8); border-radius: 20px; padding: 28px 26px; text-align: left; border: 1px solid #f9a8d4;">
+          <p style="font-size: 14px; color: #4b1528; line-height: 2.1; margin: 0 0 18px;">
+            最初は「<strong style="color:#9d174d">私はどうしたい？</strong>」と問いかけるだけでも、戸惑うかもしれません。<br/>
+            でも、毎日少しずつ、自分の声にやさしく耳を澄ませて、「私はこうしたい」を選び続けるうちに──。
+          </p>
+
+          <p style="font-size: 14px; color: #4b1528; line-height: 2.1; margin: 0 0 18px;">
+            小さな選択の積み重ねが、いつの間にか<strong style="color:#9d174d">「自分軸の私」</strong>を育てていきます。<br/>
+            周りの目より、<strong style="color:#9d174d">自分の心が真ん中にある毎日</strong>。<br/>
+            ありのままの自分でいられる安心感に、ふんわり包まれて。
+          </p>
+
+          <p style="font-size: 14px; color: #4b1528; line-height: 2.1; margin: 0 0 22px;">
+            気がつけば、毎日が<strong style="color:#9d174d">あなた自身の物語の主役</strong>になっている──。<br/>
+            そんな未来が、もう少し先で待っています。
+          </p>
+
+          <p style="font-size: 15px; color: #9d174d; line-height: 1.9; margin: 0; text-align: center; font-weight: 500;">
+            さあ、今日から一緒に、<br/>
+            <strong>あなたの人生の主役</strong>を取り戻しに行きましょう ✨
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -600,9 +631,7 @@
             <li>朝・昼・夜の儀式を自由にカスタム</li>
             <li>食材100品＋ドリンク14種で食事ログ</li>
             <li>マイプリンセス＆やりたいこと50リスト</li>
-            <li>連続記録の炎マークで続くのが楽しい</li>
             <li>五大元素タイプ診断つき</li>
-            <li>データは端末内だけで安心</li>
             <li>買い切りで、ずっと使える ♡</li>
           </ul>
           <a href="#" class="cta-btn" style="font-size: 13px; padding: 10px 24px;">準備中</a>
@@ -622,7 +651,6 @@
             <li>ayaの月1ライブ配信</li>
             <li>五大元素タイプ別 パーソナル提案</li>
             <li>季節のスペシャル儀式</li>
-            <li>新機能 早期アクセス</li>
           </ul>
           <a href="#" class="cta-btn" style="font-size: 13px; padding: 10px 24px;">準備中</a>
         </div>
