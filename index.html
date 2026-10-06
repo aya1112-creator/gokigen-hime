@@ -6812,9 +6812,9 @@
       const addMoodBoardSlots = () => setMoodBoard([...moodBoard, null, null, null]);
 
       const subs = [
-        {k:"body", label:"身体",     banner:"./banner_body-care.png"},
-        {k:"food", label:"食事",     banner:"./banner_food-care.png"},
-        {k:"image",label:"理想の姿", banner:"./banner_ideal-self.png"},
+        {k:"body", label:"身体",     banner:"./banner_body-care.png?v=20261006"},
+        {k:"food", label:"食事",     banner:"./banner_food-care.png?v=20261006"},
+        {k:"image",label:"理想の姿", banner:"./banner_ideal-self.png?v=20261006"},
       ];
 
       /* 体組成 & エステカルテ ── 初期値は0、ユーザーが自分の数値を入力する */
@@ -7875,7 +7875,7 @@
       {key:"profile",  emoji:"👸", title:"マイプリンセス",       sub:"プロフィール",       accent:"from-pink-200/70 to-rose-100/70",   banner:"./banner_my-princess.png"},
       {key:"sparkle",  emoji:"💎", title:"やりたいこと50",       sub:"12/50 集め中",       accent:"from-yellow-100/70 to-pink-100/70", banner:"./banner_wish-list.png"},
       {key:"favorites",emoji:"🌸", title:"ごきげんになれるモノ", sub:"12個のおまもり",     accent:"from-purple-200/60 to-pink-100/70", banner:"./banner_my-favorites.png"},
-      {key:"heroine",  emoji:"👑", title:"今月の主人公設定",     sub:"どんな姫になりたい",  accent:"from-amber-100/70 to-pink-100/70",  banner:"./banner_monthly-princess.png"},
+      {key:"heroine",  emoji:"👑", title:"今月の主人公設定",     sub:"どんな姫になりたい",  accent:"from-amber-100/70 to-pink-100/70",  banner:"./banner_monthly-princess.png?v=20261006"},
       {key:"imaging",  emoji:"✨", title:"イメージングワーク",   sub:"叶った未来を感じる",  accent:"from-purple-100/70 to-blue-100/70", banner:"./banner_visualization.png"},
       {key:"letter",   emoji:"💌", title:"未来レター",           sub:"未来のわたしへ",     accent:"from-blue-100/60 to-pink-100/70",   banner:"./banner_future-letter.png"},
     ];
@@ -7912,6 +7912,8 @@
             </div>
           </section>
 
+          <div className="px-5 mt-4"><ButlerCard message="お嬢様の世界は、お嬢様の書く言葉で丁寧に育ちます。"/></div>
+
           {/* 2列カードグリッド（バナー画像をそのまま／トリミングなし＋＞バッジ） */}
           <section className="px-3 mt-8">
             <div className="grid grid-cols-2 gap-5">
@@ -7934,8 +7936,6 @@
               ))}
             </div>
           </section>
-
-          <div className="px-5 mt-8"><ButlerCard message="お嬢様の世界は、お嬢様の書く言葉で丁寧に育ちます。"/></div>
           </>
         ) : (
           <div className="px-5 pt-5">
@@ -7947,6 +7947,18 @@
               <img src={openCard?.banner} alt={openCard?.title} aria-hidden
                 className="w-full h-auto block"
                 onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
+            </div>
+
+            {/* 部屋ごとの執事のひとこと */}
+            <div className="mb-4">
+              <ButlerCard message={({
+                profile:   "お嬢様のことを、ゆっくり教えてくださいませ。",
+                sparkle:   "叶えたい願いを、ひとつずつ書き留めてまいりましょう。",
+                favorites: "お嬢様を笑顔にするものを、そっと集めておきましょう。",
+                heroine:   "今月のお嬢様は、どんな姫でいらっしゃいますか？",
+                imaging:   "叶った未来を、目を閉じてそっと感じてみましょう。",
+                letter:    "未来のお嬢様へ、心を込めてお手紙を書きましょう。",
+              })[open] || "お嬢様の世界は、お嬢様の書く言葉で丁寧に育ちます。"}/>
             </div>
 
             <div className="relative rounded-[24px] p-5 backdrop-blur-sm"
@@ -8201,8 +8213,6 @@
                   </div>
                 )}
             </div>
-
-            <div className="mt-5"><ButlerCard message="お嬢様の世界は、お嬢様の書く言葉で丁寧に育ちます。"/></div>
           </div>
         )}
         </div>
