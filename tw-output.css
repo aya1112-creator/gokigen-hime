@@ -3592,3 +3592,26 @@ body { overscroll-behavior-y: none; }
   100% { transform: scale(1); filter: brightness(1); }
 }
 .jewel-glow { animation: jewelGlow 0.8s ease-out; }
+
+/* 呼吸法ワークの姫イラスト ── 背景に自然になじむ */
+.mindful-princess {
+  mix-blend-mode: multiply;
+  -webkit-mask-image: radial-gradient(ellipse 75% 80% at 50% 50%, #000 50%, rgba(0,0,0,0.75) 75%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 80% at 50% 50%, #000 50%, rgba(0,0,0,0.75) 75%, transparent 100%);
+}
+
+/* mindful-princess の上書き ── 白背景を強めに抜く */
+.mindful-princess {
+  mix-blend-mode: multiply !important;
+  opacity: 0.95 !important;
+  -webkit-mask-image: radial-gradient(ellipse 62% 70% at 50% 50%, #000 25%, rgba(0,0,0,0.88) 50%, rgba(0,0,0,0.5) 75%, rgba(0,0,0,0.15) 92%, transparent 100%) !important;
+  mask-image: radial-gradient(ellipse 62% 70% at 50% 50%, #000 25%, rgba(0,0,0,0.88) 50%, rgba(0,0,0,0.5) 75%, rgba(0,0,0,0.15) 92%, transparent 100%) !important;
+}
+
+/* mindful-princess の最終調整 ── 白背景を強めに透過 */
+.mindful-princess {
+  mix-blend-mode: darken !important;
+  opacity: 0.92 !important;
+  -webkit-mask-image: radial-gradient(ellipse 55% 62% at 50% 50%, #000 15%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.45) 70%, rgba(0,0,0,0.12) 88%, transparent 100%) !important;
+  mask-image: radial-gradient(ellipse 55% 62% at 50% 50%, #000 15%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.45) 70%, rgba(0,0,0,0.12) 88%, transparent 100%) !important;
+}
