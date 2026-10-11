@@ -217,6 +217,55 @@
       return [v, setV];
     };
 
+    // ===== 一回だけ実行：以前のバージョンが「見本の初期値」を毎日の記録として保存していた分を、未記録(0)に戻す =====
+    // 旧バージョンは身体ケアのゲージを 散歩50・ヨガ45・ボディメイク20・ストレッチ10・瞑想10・水分6・睡眠7 で開始して保存していた。
+    // 同じ日の記録のうち、この旧初期値と一致するものが4つ以上ある日は「触っていない初期値」とみなして0に戻す（実際に動かした値は残す）。
+    (function migrateOldCareDefaults(){
+      try {
+        if (localStorage.getItem("gokigen_migr_care_defaults_v1")) return;
+        var oldDefaults = {walk:50, yoga:45, bodyMin:20, gym:0, water:6, sleep:7, stretch:10, meditation:10};
+        var byDate = {};
+        for (var i=0; i<localStorage.length; i++) {
+          var k = localStorage.key(i);
+          var m = k && k.match(/^gokigen_day_(\d{4}-\d{2}-\d{2})_(walk|yoga|bodyMin|gym|water|sleep|stretch|meditation)$/);
+          if (m) { (byDate[m[1]] = byDate[m[1]] || {})[m[2]] = k; }
+        }
+        Object.keys(byDate).forEach(function(date){
+          var keys = byDate[date], matches = 0;
+          Object.keys(keys).forEach(function(name){
+            try { if (JSON.parse(localStorage.getItem(keys[name])) === oldDefaults[name]) matches++; } catch(e){}
+          });
+          if (matches >= 4) {
+            Object.keys(keys).forEach(function(name){
+              try { if (JSON.parse(localStorage.getItem(keys[name])) === oldDefaults[name]) localStorage.setItem(keys[name], JSON.stringify(0)); } catch(e){}
+            });
+          }
+        });
+        localStorage.setItem("gokigen_migr_care_defaults_v1", "1");
+      } catch(e){}
+    })();
+
+    // ===== 一回だけ実行：以前のバージョンの「自動推定」で入ってしまった体脂肪率（5%未満＝現実にありえない値）を未入力(0)に戻す =====
+    (function migrateOldFatEstimate(){
+      try {
+        if (localStorage.getItem("gokigen_migr_fat_v1")) return;
+        var fix = function(st){ if (st && typeof st.fat === "number" && st.fat > 0 && st.fat < 5) { st.fat = 0; return true; } return false; };
+        // 設定として保存されている最新値
+        try {
+          var raw = localStorage.getItem("gokigen_body_v1");
+          if (raw) { var d = JSON.parse(raw); if (d && fix(d.bodyStats)) localStorage.setItem("gokigen_body_v1", JSON.stringify(d)); }
+        } catch(e){}
+        // 日付ごとのスナップショット
+        for (var i=0; i<localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && /^gokigen_day_\d{4}-\d{2}-\d{2}_bodyStats$/.test(k)) {
+            try { var s = JSON.parse(localStorage.getItem(k)); if (fix(s)) localStorage.setItem(k, JSON.stringify(s)); } catch(e){}
+          }
+        }
+        localStorage.setItem("gokigen_migr_fat_v1", "1");
+      } catch(e){}
+    })();
+
     // ===== 履歴読み取りヘルパー =====
     // 指定日のレコードを取得（{key: value} 形式）
     const getDayRecord = (dateStr) => {
@@ -250,20 +299,14 @@
       }
       return result;
     };
-    // 連続記録日数（今日から遡って何日連続で記録があるか）
+    // 連続日数：朝・昼・夜の習慣を1つでも守れた日が続いた数（今日がまだなら昨日から数える）
     const getStreak = () => {
-      var dates = getRecordedDates();
-      if (dates.length === 0) return 0;
+      var cnt = function(ds){ var r = getDayRecord(ds); return (r.morningDone===true?1:0)+(r.noonDone===true?1:0)+(r.nightDone===true?1:0); };
+      var t = new Date();
       var streak = 0;
-      var d = new Date();
-      for (var i=0; i<365; i++) {
-        var ds = todayKey(d);
-        if (dates.indexOf(ds) >= 0) {
-          streak++;
-          d = new Date(d.getFullYear(), d.getMonth(), d.getDate()-1);
-        } else {
-          break;
-        }
+      for (var i = (cnt(todayKey(t)) > 0 ? 0 : 1); i < 365; i++) {
+        var ds = todayKey(new Date(t.getFullYear(), t.getMonth(), t.getDate()-i));
+        if (cnt(ds) > 0) streak++; else break;
       }
       return streak;
     };
@@ -614,9 +657,9 @@
     /* =================================================
      *  共通
      * ================================================= */
-    const SectionTitle = ({children, icon}) => (
+    const SectionTitleBase = ({children, icon, ribbon=true}) => (
       <div className="flex items-center gap-2 mb-3 pl-1">
-        <Ribbon className="w-5 h-3 flex-shrink-0" />
+        {ribbon && <Ribbon className="w-5 h-3 flex-shrink-0" />}
         {icon}
         <h2 className="text-[13px]"
           style={{...wishHeading, fontFamily:'"Shippori Mincho","Noto Serif JP",serif', letterSpacing:"0.18em"}}>
@@ -626,6 +669,10 @@
       </div>
     );
 
+    const SectionTitle = (props) => <SectionTitleBase {...props}/>;
+    // プリンセスケアの部屋ではリボンを付けず、アイコン1つだけにする
+    const CareSectionTitle = (props) => <SectionTitleBase ribbon={false} {...props}/>;
+
     const SectionCard = ({children, className="", style}) => (
       <div className={`relative rounded-[24px] p-5 border border-white/70 bg-gradient-to-br from-white/75 via-pink-50/50 to-white/70 backdrop-blur-sm ${className}`}
         style={{boxShadow:"0 4px 14px rgba(249,168,212,0.09)", ...style}}>
@@ -634,28 +681,42 @@
     );
 
     // 数値を1項目ずつ記録できる編集ボックス（他の項目に影響しない／自由に数字入力できる）
+    // 日本語入力（IME）で打った全角の数字・小数点も、半角に直して受け付ける
+    const normNum = (s) => String(s)
+      .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+      .replace(/[．。､,，]/g, ".")
+      .replace(/[^0-9.]/g, "");
+
     const EditableStat = ({label, icon, value, unit, decimals=1, onSave, readOnly=false, note, children, className="", boxClassName="rounded-2xl bg-white/80 border border-pink-100"}) => {
       const [editing, setEditing] = useState(false);
+      const composing = useRef(false);
       const [draft, setDraft] = useState(String(value));
       useEffect(()=>{ if(!editing) setDraft(String(value)); }, [value, editing]);
       const commit = () => {
-        onSave(draft);
+        onSave(normNum(draft));
         setEditing(false);
       };
       return (
         <div className={`relative p-2.5 ${boxClassName} ${className}`}>
-          {!readOnly && (
-            <button onClick={()=>{ if(editing){ commit(); } else { setDraft(String(value)); setEditing(true); } }}
-              className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[9px] text-white active:scale-90 transition"
-              style={{background:"linear-gradient(135deg,#fb7185,#f9a8d4)", boxShadow:"0 2px 5px rgba(244,114,182,0.4)"}}>
-              {editing ? "✓" : "✎"}
-            </button>
-          )}
-          {icon && <div className="text-[13px] mb-0.5">{icon}</div>}
-          <div className="text-[8.5px]" style={{...wishHeading, letterSpacing:"0.12em"}}>{label}</div>
+          {/* アイコン・ラベルは左、鉛筆ボタンは右（インラインstyleで確実に配置） */}
+          <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", gap:"4px"}}>
+            <div style={{display:"flex", alignItems:"center", gap:"3px", minWidth:0}}>
+              <span className="text-[8.5px]" style={{...wishHeading, letterSpacing:"0.12em"}}>{label}</span>
+            </div>
+            {!readOnly && (
+              <button onClick={()=>{ if(editing){ commit(); } else { setDraft(String(value)); setEditing(true); } }}
+                style={{flexShrink:0, width:"24px", height:"24px", borderRadius:"9999px", display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize:"11px", color:"#fff", border:"none", cursor:"pointer",
+                  background:"linear-gradient(135deg,#fb7185,#f9a8d4)", boxShadow:"0 2px 5px rgba(244,114,182,0.4)"}}>
+                {editing ? "✓" : "✎"}
+              </button>
+            )}
+          </div>
           {editing ? (
             <input type="text" inputMode="decimal" value={draft} autoFocus
-              onChange={e=>setDraft(e.target.value.replace(/[^0-9.]/g,""))}
+              onChange={e=>setDraft(composing.current ? e.target.value : normNum(e.target.value))}
+              onCompositionStart={()=>{ composing.current = true; }}
+              onCompositionEnd={e=>{ composing.current = false; setDraft(normNum(e.target.value)); }}
               onBlur={commit}
               onKeyDown={e=>{ if(e.key==="Enter"){ e.currentTarget.blur(); } }}
               className="w-full text-[14px] text-rose-700 bg-white border border-pink-300 rounded px-1 mt-0.5 focus:outline-none focus:border-pink-500"
@@ -846,7 +907,9 @@
       const ys = data.map(v => P + innerH * (1 - (v-min)/(max-min)));
       const path = xs.map((x,i)=> `${i===0?"M":"L"}${x},${ys[i]}`).join(" ");
       const goalY = goalLine!=null ? P + innerH * (1 - (goalLine-min)/(max-min)) : null;
-      const avg = (data.reduce((a,b)=>a+b,0)/data.length);
+      // 平均は「記録のある日」だけで計算（未記録の日を0として混ぜない）
+      const recorded = data.filter(v => v > 0);
+      const avg = recorded.length ? recorded.reduce((a,b)=>a+b,0)/recorded.length : 0;
       return (
         <div className="bg-white/55 rounded-[22px] p-3 border border-white/70 backdrop-blur-sm" style={{boxShadow:"0 2px 8px rgba(249,168,212,0.08)"}}>
           <svg viewBox={`0 0 ${W} ${H+12}`} className="w-full" style={{height:"118px"}}>
@@ -858,7 +921,6 @@
             {goalY != null && (
               <g>
                 <line x1={P} x2={W-P} y1={goalY} y2={goalY} stroke="#fbbf24" strokeDasharray="3 3" strokeWidth="1" opacity="0.7"/>
-                <text x={W-P+2} y={goalY+3} fontSize="8" fill="#f59e0b">{goalLabel}</text>
               </g>
             )}
             {/* グラデーションエリア */}
@@ -874,7 +936,7 @@
             <path d={path} fill="none" stroke={lineColor} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
             {/* データポイント */}
             {xs.map((x,i)=>(
-              <circle key={i} cx={x} cy={ys[i]} r="3" fill={lineColor}/>
+              <circle key={i} cx={x} cy={ys[i]} r={data.length>14?"1.8":"3"} fill={lineColor}/>
             ))}
             {/* 曜日ラベル */}
             {days.map((d,i)=>(
@@ -927,14 +989,226 @@
       </SectionCard>
     );
 
-    const WeightChart = () => {
-      // 過去7日間の体重を実データから取得（記録のない日は前後の値で補完）
-      const recent = getRecentDays(7, "bodyStats");
-      const dayLabels = ["月","火","水","木","金","土","日"];
-      const days = recent.map(r => dayLabels[(r.dateObj.getDay()+6)%7]);
+
+    // 写真を読み込んで縮小してから保存（スマホの大きな写真でブラウザの保存容量があふれないように）
+    const readImageDownscaled = (file, cb, maxSize) => {
+      maxSize = maxSize || 900;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+            const c = document.createElement("canvas");
+            c.width = Math.round(img.width * scale);
+            c.height = Math.round(img.height * scale);
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            cb(c.toDataURL("image/jpeg", 0.82));
+          } catch(e) { cb(ev.target.result); }
+        };
+        img.onerror = () => cb(ev.target.result);
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    /* =================================================
+     *  週ごとの振り返りセクション（週が変わると新しく書ける／過去の週は残る）
+     *  金・土・日に未記入なら執事がそっと声をかける
+     * ================================================= */
+    const weekMonday = (d) => {
+      d = d || new Date();
+      const off = (d.getDay()+6)%7; // 月曜始まり
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate()-off);
+    };
+    const fmtMD = (d) => (d.getMonth()+1) + "/" + d.getDate();
+    const WeeklyReviewSection = ({prefix, legacy, placeholders, nudgeMessage}) => {
+      const mon = weekMonday();
+      const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate()+6);
+      const monKey = todayKey(mon);
+      const storageKey = "gokigen_week_" + monKey + "_" + prefix;
+      const [data, setData] = useState(function(){
+        try {
+          var raw = localStorage.getItem(storageKey);
+          if (raw !== null) return JSON.parse(raw);
+          // 以前の「週をまたいで同じ内容が残る」保存分を、最初の1回だけ今週に引き継ぐ
+          var flag = "gokigen_weeklyMigrated_" + prefix;
+          if (localStorage.getItem(flag) === null) {
+            var g = function(s){ try { var r = localStorage.getItem("gokigen_" + legacy + s); return r !== null ? JSON.parse(r) : ""; } catch(e){ return ""; } };
+            var old = {insight:g("Insight"), improve:g("Improve"), challenge:g("Challenge")};
+            localStorage.setItem(flag, "1");
+            if (old.insight || old.improve || old.challenge) return old;
+          }
+        } catch(e){}
+        return {insight:"", improve:"", challenge:""};
+      });
+      useEffect(function(){
+        try { localStorage.setItem(storageKey, JSON.stringify(data)); } catch(e){}
+      }, [data]);
+      const [showPast, setShowPast] = useState(false);
+      const day = new Date().getDay();
+      const isNudgeDay = (day === 5 || day === 6 || day === 0);
+      const isEmpty = !data.insight && !data.improve && !data.challenge;
+      // 過去の週（今週より前で、何か書いてあるもの）
+      const loadPast = () => {
+        const list = [];
+        try {
+          for (var i=0; i<localStorage.length; i++) {
+            var k = localStorage.key(i);
+            var m = k && k.match(/^gokigen_week_(\d{4}-\d{2}-\d{2})_(.+)$/);
+            if (m && m[2] === prefix && m[1] < monKey) {
+              var v = JSON.parse(localStorage.getItem(k));
+              if (v && (v.insight || v.improve || v.challenge)) list.push({week:m[1], v:v});
+            }
+          }
+        } catch(e){}
+        list.sort((a,b)=> a.week < b.week ? 1 : -1);
+        return list.slice(0, 8);
+      };
+      return (
+        <>
+          <div className="text-[9px] mb-1.5 text-right" style={{...wishHeading, letterSpacing:"0.1em"}}>
+            今週（{fmtMD(mon)}〜{fmtMD(sun)}）
+          </div>
+          {isNudgeDay && isEmpty && (
+            <div className="mb-3"><ButlerCard message={nudgeMessage}/></div>
+          )}
+          <WeeklyReviewCard
+            insight={data.insight}     setInsight={(v)=>setData({...data, insight:v})}
+            improve={data.improve}     setImprove={(v)=>setData({...data, improve:v})}
+            challenge={data.challenge} setChallenge={(v)=>setData({...data, challenge:v})}
+            placeholders={placeholders}/>
+          <div className="mt-2 text-center">
+            <button onClick={()=>setShowPast(!showPast)}
+              style={{fontSize:"10px", color:"#be185d", background:"none", border:"none", textDecoration:"underline", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+              {showPast ? "過去の振り返りを閉じる" : "過去の振り返りを見る"}
+            </button>
+          </div>
+          {showPast && (() => {
+            const past = loadPast();
+            if (past.length === 0) {
+              return <div className="mt-2 text-center text-[10px] text-rose-300">まだ過去の振り返りはありません</div>;
+            }
+            return (
+              <div className="mt-2 space-y-2">
+                {past.map(p => {
+                  const pm = new Date(p.week + "T00:00:00");
+                  const ps = new Date(pm.getFullYear(), pm.getMonth(), pm.getDate()+6);
+                  return (
+                    <div key={p.week} className="rounded-xl bg-white/70 border border-pink-100 p-2.5">
+                      <div className="text-[9px] mb-1" style={{...wishHeading, letterSpacing:"0.08em"}}>{fmtMD(pm)}〜{fmtMD(ps)}</div>
+                      {p.v.insight && <div className="text-[10px] text-gray-600 leading-relaxed mb-1">🌸 {p.v.insight}</div>}
+                      {p.v.improve && <div className="text-[10px] text-gray-600 leading-relaxed mb-1">🌿 {p.v.improve}</div>}
+                      {p.v.challenge && <div className="text-[10px] text-gray-600 leading-relaxed">✨ {p.v.challenge}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </>
+      );
+    };
+
+    /* =================================================
+     *  数値入力行：いつでも直接入力できる欄 ＋ 右側の小さな上下矢印で上げ下げ
+     *  ・手入力：欄をタップしてそのまま数字を打つ（Delete/Backspaceで消せる）
+     *  ・矢印：▲▼ で 0.5 ずつ（押し続けると加速）。0 のときの最初の▲で目安の数値へジャンプ
+     * ================================================= */
+    const StepperRow = ({label, value, unit, onChange, startValue, bg, border, strong}) => {
+      const valRef = useRef(value);
+      const cbRef = useRef(onChange);
+      const timers = useRef({t:null, i:null});
+      const [text, setText] = useState(Number(value) > 0 ? String(value) : "");
+      const [focused, setFocused] = useState(false);
+      const composing = useRef(false);
+      useEffect(()=>{ valRef.current = value; cbRef.current = onChange; });
+      // 入力中でないときだけ、外からの値の変化（矢印など）を欄に反映
+      useEffect(()=>{ if (!focused) setText(Number(value) > 0 ? String(value) : ""); }, [value, focused]);
+      const stop = () => {
+        if (timers.current.t) clearTimeout(timers.current.t);
+        if (timers.current.i) clearInterval(timers.current.i);
+        timers.current = {t:null, i:null};
+      };
+      useEffect(()=>stop, []);
+      const commitTyped = () => {
+        let v = parseFloat(normNum(text));
+        if (isNaN(v)) v = 0;
+        v = Math.max(0, Math.min(300, Math.round(v*10)/10));
+        valRef.current = v;
+        cbRef.current(v);
+        setFocused(false);
+        setText(v > 0 ? String(v) : "");
+      };
+      const apply = (dir, ticks) => {
+        let v = Number(valRef.current) || 0;
+        if (v <= 0 && dir > 0) {
+          v = startValue || 50;           // 最初の▲で目安の数値へ
+        } else {
+          const step = ticks > 30 ? 5 : (ticks > 12 ? 1 : 0.5);
+          v = Math.round((v + dir*step) * 10) / 10;
+        }
+        v = Math.max(0, Math.min(300, v));
+        valRef.current = v;
+        cbRef.current(v);
+        if (!focused) setText(v > 0 ? String(v) : "");
+      };
+      const start = (dir) => (e) => {
+        e.preventDefault();   // 入力欄のフォーカスを奪わない
+        stop();
+        let ticks = 0;
+        apply(dir, ticks);
+        timers.current.t = setTimeout(() => {
+          timers.current.i = setInterval(() => { ticks++; apply(dir, ticks); }, 90);
+        }, 380);
+      };
+      const arrow = {width:"20px", height:"13px", border:"1px solid #f9a8d4", background:"#fff", color:"#ec4899",
+        fontSize:"7px", lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer",
+        touchAction:"none", userSelect:"none", WebkitUserSelect:"none", padding:0};
+      return (
+        <div className={`rounded-xl ${bg} border ${border} px-2 py-1 flex items-center justify-between`} style={{gap:"4px"}}>
+          <span className="text-[8px] text-rose-400" style={{letterSpacing:"0.08em", whiteSpace:"nowrap", flexShrink:0}}>{label}</span>
+          <span style={{display:"flex", alignItems:"center", gap:"3px", minWidth:0}}>
+            <input type="text" inputMode="decimal" value={text} placeholder="0.0"
+              onFocus={(e)=>{ setFocused(true); e.target.select(); }}
+              onChange={(e)=>setText(composing.current ? e.target.value : normNum(e.target.value))}
+              onCompositionStart={()=>{ composing.current = true; }}
+              onCompositionEnd={(e)=>{ composing.current = false; setText(normNum(e.target.value)); }}
+              onBlur={commitTyped}
+              onKeyDown={(e)=>{
+                if (e.key === "Enter") { e.currentTarget.blur(); }
+                else if (e.key === "ArrowUp")   { e.preventDefault(); apply(1, 0); }
+                else if (e.key === "ArrowDown") { e.preventDefault(); apply(-1, 0); }
+              }}
+              style={{width:"50px", minWidth:0, fontSize:"14px", textAlign:"right", color: strong?"#be123c":"#e11d48",
+                fontWeight: strong?600:400, background:"transparent", border:"none", borderBottom:"1px dashed #f9a8d4",
+                borderRadius:0, padding:"1px 2px", outline:"none", fontFamily:'"Shippori Mincho",serif'}}/>
+            <span className="text-[9px] text-rose-400" style={{flexShrink:0}}>{unit}</span>
+            {/* 上下の小さな矢印 */}
+            <span style={{display:"flex", flexDirection:"column", gap:"1px", marginLeft:"2px"}}>
+              <button type="button" aria-label="上げる" style={{...arrow, borderRadius:"5px 5px 2px 2px"}}
+                onPointerDown={start(1)} onPointerUp={stop} onPointerLeave={stop} onPointerCancel={stop}>▲</button>
+              <button type="button" aria-label="下げる" style={{...arrow, borderRadius:"2px 2px 5px 5px"}}
+                onPointerDown={start(-1)} onPointerUp={stop} onPointerLeave={stop} onPointerCancel={stop}>▼</button>
+            </span>
+          </span>
+        </div>
+      );
+    };
+
+    const WeightChart = ({period=7}) => {
+      // 過去N日間（7日/30日）の体重を実データから取得（記録のない日は前後の値で補完）
+      const recent = getRecentDays(period, "bodyStats");
+      const loggedFlags = getRecentDays(period, "weightLogged");
+      const dayLabels = ["日","月","火","水","木","金","土"];
+      const days = recent.map((r,i) => period===7
+        ? dayLabels[r.dateObj.getDay()]
+        : ((i%6===0 || i===period-1) ? (r.dateObj.getMonth()+1)+"/"+r.dateObj.getDate() : ""));
       let lastWeight = null;
-      const data = recent.map(r => {
-        if (r.value && typeof r.value.weight === "number" && r.value.weight > 0) {
+      const data = recent.map((r, idx) => {
+        // 「前日の値を引き継いだだけ」の日(weightLogged=false)は実測としてカウントしない
+        const measured = !(loggedFlags[idx] && loggedFlags[idx].value === false);
+        if (measured && r.value && typeof r.value.weight === "number" && r.value.weight > 0) {
           lastWeight = r.value.weight;
           return r.value.weight;
         }
@@ -947,7 +1221,7 @@
           <div className="bg-white/55 rounded-[22px] p-4 border border-white/70 backdrop-blur-sm text-center" style={{boxShadow:"0 2px 8px rgba(249,168,212,0.08)"}}>
             <div className="text-[10px] text-rose-300 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
               まだ体重の記録がありません<br/>
-              プリンセスケア → 理想の姿で記録してね ♡
+              上の「今日のボディログ」で体重を記録してね ♡
             </div>
           </div>
         );
@@ -5769,7 +6043,7 @@
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] w-12" style={{color:"#7c2d12", fontWeight:600}}>日数</span>
                   <input type="number" inputMode="numeric" value={newDays} onChange={e=>setNewDays(e.target.value)}
-                    placeholder="例：21"
+                    
                     className="flex-1 bg-white border border-pink-100 rounded-md px-2 py-1 text-[11px] placeholder:text-pink-300 focus:outline-none focus:border-pink-300"
                     style={{fontFamily:'"Shippori Mincho",serif', color:"#7c2d12", fontWeight:600}}/>
                   <span className="text-[9px]" style={{color:"#7c2d12", fontWeight:600}}>日達成で</span>
@@ -5777,7 +6051,7 @@
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] w-12" style={{color:"#7c2d12", fontWeight:600}}>ご褒美</span>
                   <input type="text" value={newReward} onChange={e=>setNewReward(e.target.value)}
-                    placeholder="例：好きな雑誌を1冊買う"
+                    
                     className="flex-1 bg-white border border-pink-100 rounded-md px-2 py-1 text-[11px] placeholder:text-pink-300 focus:outline-none focus:border-pink-300"
                     style={{fontFamily:'"Shippori Mincho",serif', color:"#7c2d12", fontWeight:600}}/>
                 </div>
@@ -5904,7 +6178,16 @@
       <div className={className} {...props} style={{display:'flex', alignItems:'center', justifyContent:'center', fontSize:32}}>🌙</div>
     );
 
-    const DailyScreen = () => {
+    // 文字量に合わせて高さが広がるテキストエリア
+    const AutoTA = ({value, onChange, minH=0, style, ...rest}) => {
+      const ref = React.useRef(null);
+      const fit = () => { const el = ref.current; if (!el) return; el.style.height = "auto"; el.style.height = Math.max(el.scrollHeight, minH) + "px"; };
+      React.useLayoutEffect(fit, [value]);
+      React.useEffect(() => { const t = setTimeout(fit, 120); return () => clearTimeout(t); }, []);
+      return <textarea ref={ref} rows={1} value={value} onChange={onChange} style={{overflow:"hidden", resize:"none", ...style}} {...rest}/>;
+    };
+
+    const DailyScreen = ({goCare}) => {
       const today = new Date();
       const todayStr = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
       const dowJP = ["日","月","火","水","木","金","土"][today.getDay()];
@@ -5926,6 +6209,14 @@
       const [morningDone,setMorningDone] = useDaily("morningDone", false);
       const [noonDone,setNoonDone]       = useDaily("noonDone",    false);
       const [nightDone,setNightDone]     = useDaily("nightDone",   false);
+      // 項目ごとのチェック（日ごと）
+      const [morningChecks,setMorningChecks] = useDaily("morningChecks", []);
+      const [noonChecks,setNoonChecks]       = useDaily("noonChecks",    []);
+      const [nightChecks,setNightChecks]     = useDaily("nightChecks",   []);
+      // 保存表示（入力のたびに「保存しました」を一瞬表示）
+      const [savedFlash,setSavedFlash] = React.useState(false);
+      const [showAllGratitude,setShowAllGratitude] = React.useState(false);
+      const _firstSave = React.useRef(true);
       // 今日のひとこと（時間帯ごと）
       const [morningMemo,setMorningMemo] = useDaily("morningMemo", "");
       const [noonMemo,setNoonMemo]       = useDaily("noonMemo",    "");
@@ -5945,6 +6236,17 @@
       // カレンダーのメモ（スケジュール管理）
       const [calendarMemos,setCalendarMemos] = useLocal("calendarMemos", {});
       const [selectedDate,setSelectedDate] = useState(calToday);
+      // メモは「年-月-日」で保存（月が変わっても前の月の予定が混ざらない）
+      const memoKey = (d) => calYear + "-" + String(calMonth).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+      // 旧形式（日付だけのキー）を今月分として一度だけ変換
+      React.useEffect(() => {
+        const oldKeys = Object.keys(calendarMemos).filter(k => /^\d{1,2}$/.test(k));
+        if (oldKeys.length === 0) return;
+        const next = {};
+        Object.keys(calendarMemos).forEach(k => { if (!/^\d{1,2}$/.test(k)) next[k] = calendarMemos[k]; });
+        oldKeys.forEach(k => { next[memoKey(k)] = calendarMemos[k]; });
+        setCalendarMemos(next);
+      }, []);
       // 行の更新・追加・削除ヘルパー
       const updateItem = (items, setter, idx, val) => setter(items.map((it,i)=>i===idx?val:it));
       const addItem = (items, setter) => setter([...items, ""]);
@@ -5962,12 +6264,29 @@
       const totalTasks  = 3;
       const perfect     = totalDone === totalTasks;
 
+      // 入力のたびに「保存しました」を表示
+      React.useEffect(() => {
+        if (_firstSave.current) { _firstSave.current = false; return; }
+        setSavedFlash(true);
+        const tm = setTimeout(() => setSavedFlash(false), 1600);
+        return () => clearTimeout(tm);
+      }, [changeHabit, smallStep, futureMe, JSON.stringify(gratitudeToday), JSON.stringify(morningItems), JSON.stringify(noonItems), JSON.stringify(nightItems), JSON.stringify(morningChecks), JSON.stringify(noonChecks), JSON.stringify(nightChecks), morningMemo, noonMemo, nightMemo]);
+
       // 過去7日のミニカレンダー（モック）
-      const weekDots = [3,5,2,4,5,3,5]; // 過去7日の達成数（最後が今日）
-      weekDots[6] = totalDone;
+      const _cnt = (rec) => (rec.morningDone===true?1:0)+(rec.noonDone===true?1:0)+(rec.nightDone===true?1:0);
+      const weekDots = getRecentDays(7, "morningDone").map((r,i,arr)=> i===arr.length-1 ? totalDone : _cnt(getDayRecord(r.date)));
+      // 連続日数：今日（まだ0なら昨日から）遡って、1つ以上守れた日が続いた数
+      let habitStreak = 0;
+      { const _t = new Date();
+        for (let i = (totalDone>0 ? 0 : 1); i < 365; i++) {
+          const ds = todayKey(new Date(_t.getFullYear(), _t.getMonth(), _t.getDate()-i));
+          const c = i===0 ? totalDone : _cnt(getDayRecord(ds));
+          if (c > 0) habitStreak++; else break;
+        } }
 
       return (
         <div className="relative pb-40 anim-fade">
+          <div style={{position:"fixed", top:"14px", left:"50%", transform:"translateX(-50%)", zIndex:60, pointerEvents:"none", opacity: savedFlash ? 1 : 0, transition:"opacity .3s", background:"rgba(255,255,255,0.95)", border:"1px solid #f9a8d4", color:"#be185d", fontSize:"11px", fontWeight:700, padding:"5px 14px", borderRadius:"999px", boxShadow:"0 2px 8px rgba(236,72,153,0.25)", fontFamily:'"Shippori Mincho",serif'}}>✓ 自動で保存しました</div>
           {/* ヘッダー（habit_hero.png バナー） */}
           <section className="px-3 pt-5">
             <div className="relative rounded-[24px] overflow-hidden border border-white/80"
@@ -5975,15 +6294,15 @@
               <img src="./habit_hero.png" alt="毎日のごきげん習慣"
                 className="w-full h-auto block"
                 onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
-              {/* 右上に日付 */}
-              <div className="absolute top-2 right-2">
-                <div className="rounded-md border border-rose-300 px-2 py-1 text-center"
+              {/* 左上に日付（1行・姫に被らない位置） */}
+              <div className="absolute left-2" style={{top:"14px"}}>
+                <div className="rounded-full border border-rose-300 px-3 py-[3px] text-center whitespace-nowrap"
                   style={{
                     background:"linear-gradient(135deg, #ffffff, #fdf2f8)",
-                    boxShadow:"0 2px 6px rgba(190,24,93,0.25)"
+                    boxShadow:"0 2px 6px rgba(190,24,93,0.25)",
+                    fontFamily:'"Shippori Mincho",serif', fontWeight:700, fontSize:"10.5px", color:"#be185d", letterSpacing:"0.05em"
                   }}>
-                  <div className="text-[8.5px] text-rose-500" style={{letterSpacing:"0.1em"}}>{todayStr}</div>
-                  <div className="text-[10px] text-rose-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700}}>{dowJP}曜日</div>
+                  {today.getFullYear()}.{String(today.getMonth()+1).padStart(2,"0")}.{String(today.getDate()).padStart(2,"0")}（{dowJP}）
                 </div>
               </div>
             </div>
@@ -6016,9 +6335,9 @@
           {/* 今月変えたい習慣・小さな一歩（背景画像の中にコンテンツを配置） */}
           <section className="px-5 mt-5">
             <div style={{position:"relative", borderRadius:22, overflow:"hidden", boxShadow:"0 4px 14px rgba(196,181,253,0.25)"}}>
-              {/* 背景の姫フレーム画像（自然な高さ） */}
+              {/* 背景の姫フレーム画像（内容が増えたら縦に伸びる） */}
               <img src="./monthly-habit-small-step.png" alt="" aria-hidden
-                style={{width:"100%", height:"auto", display:"block"}}
+                style={{position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"fill", display:"block"}}
                 onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
 
               {/* タイトル（背景バナーの上部・空の部分にオーバーレイ・2行のみ） */}
@@ -6056,30 +6375,31 @@
 
               {/* 入力欄を画像の空きスペース（中央下部）に絶対配置 */}
               <div style={{
-                position:"absolute",
-                top:"27%",
-                left:"7%",
-                right:"7%",
-                bottom:"10%",
-                overflow:"auto"
+                position:"relative",
+                aspectRatio:"1086/1448",
+                boxSizing:"border-box",
+                padding:"36% 7% 14% 7%"
               }}>
-                <p className="text-[10.5px] mb-1.5" style={{fontFamily:'"Shippori Mincho",serif', color:"#7c2d12", fontWeight:600}}>♢ 今月、変えたい習慣</p>
-                <textarea value={changeHabit} onChange={e=>setChangeHabit(e.target.value)}
-                  placeholder="例：早く寝る習慣、SNSの時間を減らす"
+                <p className="text-[10.5px] mb-0.5" style={{fontFamily:'"Shippori Mincho",serif', color:"#7c2d12", fontWeight:600}}>♢ 今月、変えたい習慣</p>
+                <p className="text-[9.5px] mb-1.5" style={{fontFamily:'"Shippori Mincho",serif', color:"#9a6b50"}}>月のはじめに書けば、そのまま残ります</p>
+                <AutoTA minH={70} value={changeHabit} onChange={e=>setChangeHabit(e.target.value)}
+                  
                   className="w-full bg-white/90 border border-pink-200 rounded-lg p-2 text-[11px] placeholder:text-rose-300 focus:outline-none focus:border-pink-400 resize-none"
-                  style={{fontFamily:'"Shippori Mincho",serif', color:"#1e293b", lineHeight:1.6, height:70}}/>
+                  style={{fontFamily:'"Shippori Mincho",serif', color:"#1e293b", lineHeight:1.6}}/>
 
-                <p className="text-[10.5px] mb-1.5 mt-5" style={{fontFamily:'"Shippori Mincho",serif', color:"#7c2d12", fontWeight:600}}>♢ 今日、できる小さな一歩</p>
-                <textarea value={smallStep} onChange={e=>setSmallStep(e.target.value)}
-                  placeholder="例：今夜30分早く布団に入る"
+                <p className="text-[10.5px] mb-0.5 mt-5" style={{fontFamily:'"Shippori Mincho",serif', color:"#7c2d12", fontWeight:600}}>♢ 未来のわたしから</p>
+                <p className="text-[9.5px] mb-1.5" style={{fontFamily:'"Shippori Mincho",serif', color:"#9a6b50"}}>こちらも、一度書けばそのまま残ります</p>
+                <AutoTA minH={70} value={futureMe} onChange={e=>setFutureMe(e.target.value)}
+                  
                   className="w-full bg-white/90 border border-pink-200 rounded-lg p-2 text-[11px] placeholder:text-rose-300 focus:outline-none focus:border-pink-400 resize-none"
-                  style={{fontFamily:'"Shippori Mincho",serif', color:"#1e293b", lineHeight:1.6, height:70}}/>
+                  style={{fontFamily:'"Shippori Mincho",serif', color:"#1e293b", lineHeight:1.6}}/>
 
-                <p className="text-[10.5px] mb-1.5 mt-5" style={{fontFamily:'"Shippori Mincho",serif', color:"#7c2d12", fontWeight:600}}>♢ 未来のわたしから</p>
-                <textarea value={futureMe} onChange={e=>setFutureMe(e.target.value)}
-                  placeholder="例：焦らなくていい。少しずつでいいよ ♡"
+                <p className="text-[10.5px] mb-0.5 mt-5" style={{fontFamily:'"Shippori Mincho",serif', color:"#7c2d12", fontWeight:600}}>♢ 今日、できる小さな一歩<span style={{marginLeft:6, fontSize:"9.5px", fontWeight:700, color:"#fff", background:"#ec4899", borderRadius:999, padding:"1px 8px"}}>毎日書く</span></p>
+                <p className="text-[9.5px] mb-1.5" style={{fontFamily:'"Shippori Mincho",serif', color:"#be185d", fontWeight:600}}>日が変わると空になります。毎日、新しく書きましょう</p>
+                <AutoTA minH={70} value={smallStep} onChange={e=>setSmallStep(e.target.value)}
+                  
                   className="w-full bg-white/90 border border-pink-200 rounded-lg p-2 text-[11px] placeholder:text-rose-300 focus:outline-none focus:border-pink-400 resize-none"
-                  style={{fontFamily:'"Shippori Mincho",serif', color:"#1e293b", lineHeight:1.6, height:70}}/>
+                  style={{fontFamily:'"Shippori Mincho",serif', color:"#1e293b", lineHeight:1.6}}/>
               </div>
             </div>
           </section>
@@ -6103,10 +6423,10 @@
                   <div className="text-[9px] text-rose-400" style={{letterSpacing:"0.2em"}}>STREAK</div>
                   <div className="flex items-baseline justify-end gap-1 mt-0.5">
                     <span className="text-[18px]">🔥</span>
-                    <span className="text-[20px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>12</span>
+                    <span className="text-[20px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>{habitStreak}</span>
                     <span className="text-[10px] text-rose-400">日</span>
                   </div>
-                  <div className="text-[8px] text-rose-300 mt-0.5">連続で約束を守れてます</div>
+                  <div className="text-[8px] text-rose-300 mt-0.5">{habitStreak>0 ? "連続で約束を守れてます" : "今日の約束から始めましょう"}</div>
                 </div>
               </div>
               {/* 進捗バー */}
@@ -6120,9 +6440,9 @@
                 <div className="flex gap-1">
                   {weekDots.map((n,i)=>(
                     <div key={i} className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] ${
-                      n>=7?"bg-gradient-to-br from-amber-300 to-pink-400 text-white":
-                      n>=5?"bg-gradient-to-br from-pink-300 to-rose-400 text-white":
-                      n>=3?"bg-pink-200 text-rose-500":
+                      n>=3?"bg-gradient-to-br from-amber-300 to-pink-400 text-white":
+                      n>=2?"bg-gradient-to-br from-pink-300 to-rose-400 text-white":
+                      n>=1?"bg-pink-200 text-rose-500":
                       "bg-pink-50 border border-pink-200 text-pink-300"
                     }`}>{n}</div>
                   ))}
@@ -6164,7 +6484,7 @@
             <div className="grid grid-cols-3 gap-2">
               {[
                 {title:"朝の儀式", time:"5-9時", Illus:MorningBagIllus,
-                  items:morningItems, setItems:setMorningItems, done:morningDone, setDone:setMorningDone,
+                  items:morningItems, setItems:setMorningItems, done:morningDone, setDone:setMorningDone, checks:morningChecks, setChecks:setMorningChecks,
                   memo:morningMemo, setMemo:setMorningMemo, reminder:morningReminder, setReminder:setMorningReminder,
                   placeholders:["白湯を飲む","深呼吸 5回","香りを楽しむ"],
                   theme:{
@@ -6195,7 +6515,7 @@
                     shadow:"0 4px 14px rgba(245,158,11,0.22)"
                   }},
                 {title:"昼のたしなみ", time:"12-15時", Illus:NoonUnicornIllus,
-                  items:noonItems, setItems:setNoonItems, done:noonDone, setDone:setNoonDone,
+                  items:noonItems, setItems:setNoonItems, done:noonDone, setDone:setNoonDone, checks:noonChecks, setChecks:setNoonChecks,
                   memo:noonMemo, setMemo:setNoonMemo, reminder:noonReminder, setReminder:setNoonReminder,
                   placeholders:["お散歩","お茶時間","軽いストレッチ"],
                   theme:{
@@ -6226,7 +6546,7 @@
                     shadow:"0 4px 14px rgba(59,130,246,0.22)"
                   }},
                 {title:"夜のしつらえ", time:"18-23時", Illus:NightSweetsIllus,
-                  items:nightItems, setItems:setNightItems, done:nightDone, setDone:setNightDone,
+                  items:nightItems, setItems:setNightItems, done:nightDone, setDone:setNightDone, checks:nightChecks, setChecks:setNightChecks,
                   memo:nightMemo, setMemo:setNightMemo, reminder:nightReminder, setReminder:setNightReminder,
                   placeholders:["ハーブティー","読書","ゆっくり入浴"],
                   theme:{
@@ -6258,6 +6578,14 @@
                   }},
               ].map(card => {
                 const t = card.theme;
+                const isChecked = (i) => !!(card.checks && card.checks[i]);
+                const toggleCheck = (i) => {
+                  const arr = card.items.map((_,k)=> k===i ? !isChecked(k) : isChecked(k));
+                  card.setChecks(arr);
+                  card.setDone(arr.some((c,k)=> c && card.items[k] && card.items[k].trim()));
+                };
+                const doneCount = card.items.filter((it,k)=> it && it.trim() && isChecked(k)).length;
+                const totalCount = card.items.filter(it=> it && it.trim()).length;
                 return (
                 <div key={card.title} className="relative rounded-[18px] flex flex-col overflow-hidden min-w-0"
                   style={{minHeight:380, background:t.cardBg, border:`1.5px solid ${t.cardBorder}`, boxShadow:t.shadow}}>
@@ -6283,17 +6611,18 @@
                   <div className="relative mx-2 mt-2 mb-1 space-y-1">
                     {card.items.map((item,i)=>(
                       <div key={i} className="group flex items-start gap-1 min-w-0">
-                        <span className="text-[9px] mt-1.5" style={{color:t.bulletColor}}>♡</span>
-                        <textarea value={item} rows={1}
+                        <button onClick={()=>toggleCheck(i)} aria-label="できた"
+                          style={{fontSize:"14px", lineHeight:1, marginTop:"3px", width:"16px", flexShrink:0, background:"none", border:"none", padding:0, color: isChecked(i) ? "#ec4899" : t.bulletColor, opacity: isChecked(i) ? 1 : 0.55, transform: isChecked(i) ? "scale(1.15)" : "none", transition:"all .15s"}}>
+                          {isChecked(i) ? "💮" : "♡"}
+                        </button>
+                        <AutoTA value={item}
                           onChange={e=>updateItem(card.items, card.setItems, i, e.target.value)}
-                          placeholder={card.placeholders[i] || "自由に書く…"}
-                          className="flex-1 min-w-0 rounded-md px-1.5 py-1 text-[10.5px] focus:outline-none resize-none leading-snug"
-                          style={{fontFamily:'"Shippori Mincho",serif', wordBreak:"break-word", overflowWrap:"break-word", background:t.inputBg, border:`1px solid ${t.inputBorder}`, color:t.inputText, fontWeight:500}}
+                          className="flex-1 min-w-0 rounded-md px-1.5 py-1 text-[10.5px] focus:outline-none leading-snug"
+                          style={{fontFamily:'"Shippori Mincho",serif', wordBreak:"break-word", overflowWrap:"break-word", background: isChecked(i) ? "rgba(253,242,248,0.9)" : t.inputBg, border:`1px solid ${isChecked(i) ? "#f9a8d4" : t.inputBorder}`, color:t.inputText, fontWeight:500, textDecoration: isChecked(i) ? "line-through" : "none", textDecorationColor:"#f9a8d4"}}
                           onFocus={e=>{e.target.style.borderColor=t.inputFocusBorder;e.target.style.borderWidth="1.5px";}}
-                          onBlur={e=>{e.target.style.borderColor=t.inputBorder;e.target.style.borderWidth="1px";}}
-                          onInput={e=>{ e.target.style.height='auto'; e.target.style.height=Math.min(e.target.scrollHeight,40)+'px'; }}/>
+                          onBlur={e=>{e.target.style.borderColor=t.inputBorder;e.target.style.borderWidth="1px";}}/>
                         {card.items.length > 1 && (
-                          <button onClick={()=>removeItem(card.items, card.setItems, i)}
+                          <button onClick={()=>{ card.setChecks((card.checks||[]).filter((_,k)=>k!==i)); removeItem(card.items, card.setItems, i); }}
                             className="text-[10px] w-3 mt-1 transition" style={{color:t.placeholderColor}}>×</button>
                         )}
                       </div>
@@ -6307,18 +6636,16 @@
                   </div>
                   {/* 完了ボタン */}
                   <div className="relative px-2 pb-1 mt-1 flex justify-center">
-                    <button onClick={()=>card.setDone(!card.done)}
-                      className="text-[9.5px] px-3 py-[4px] rounded-full transition active:scale-95"
-                      style={card.done
-                        ? {background:t.doneBg, color:"#ffffff", boxShadow:t.doneShadow, fontWeight:700}
-                        : {background:"rgba(255,255,255,0.85)", border:`1px solid ${t.idleBorder}`, color:t.idleText, fontWeight:600}}>
-                      {card.done ? "✓ 約束を守った" : "今日やった？"}
-                    </button>
+                    <span className="text-[9.5px] px-3 py-[3px] rounded-full"
+                      style={totalCount > 0 && doneCount === totalCount
+                        ? {background:t.doneBg, color:"#ffffff", boxShadow:t.doneShadow, fontWeight:700, fontFamily:'"Shippori Mincho",serif'}
+                        : {background:"rgba(255,255,255,0.85)", border:`1px solid ${t.idleBorder}`, color:t.idleText, fontWeight:600, fontFamily:'"Shippori Mincho",serif'}}>
+                      {totalCount > 0 && doneCount === totalCount ? "💮 全部できました" : `♡ ${doneCount} / ${totalCount}`}
+                    </span>
                   </div>
                   {/* 今日のひとこと */}
                   <div className="relative px-2.5 pb-1.5">
                     <input type="text" value={card.memo} onChange={e=>card.setMemo(e.target.value)}
-                      placeholder="💭 今日のひとこと…"
                       className="w-full rounded-md px-1.5 py-1 text-[9.5px] focus:outline-none"
                       style={{fontFamily:'"Shippori Mincho",serif', background:t.inputBg, border:`1px solid ${t.inputBorder}`, color:t.inputText}}
                       onFocus={e=>{e.target.style.borderColor=t.inputFocusBorder;e.target.style.borderWidth="1.5px";}}
@@ -6386,8 +6713,8 @@
                     {gratitudeToday.slice(0,6).map((g, i) => {
                       const isLeft = i < 3;
                       const rowIdx = i % 3;
-                      const top = 18 + rowIdx * 22;
-                      const leftPos = isLeft ? 9 : 53;
+                      const top = [20.0, 39.1, 58.1][rowIdx];
+                      const leftPos = isLeft ? 10.9 : 53.0;
                       const isEmpty = !g || !g.trim();
                       const unlocked = isUnlocked(i);
                       const isLocked = !unlocked;
@@ -6396,15 +6723,16 @@
                           position:"absolute",
                           top:`${top}%`,
                           left:`${leftPos}%`,
-                          width:"38%",
-                          height:"18%",
+                          width:"36%",
+                          minHeight:"16.4%",
+                          boxSizing:"border-box",
+                          zIndex: isEmpty ? 1 : 2,
                           display:"flex",
                           alignItems:"flex-start",
                           padding:"4px"
                         }}>
                           <span style={{fontSize:"10px", marginRight:"3px", marginTop:"3px", opacity: isLocked ? 0.3 : (isEmpty ? 0.7 : 0.4), flexShrink:0}}>🪶</span>
-                          <textarea value={g}
-                            rows={2}
+                          <AutoTA value={g} minH={38}
                             readOnly={isLocked}
                             disabled={isLocked}
                             onChange={e=>{
@@ -6419,9 +6747,8 @@
                             style={{
                               flex:1,
                               minWidth:0,
-                              height:"100%",
-                              background: isLocked ? "rgba(251,191,36,0.04)" : (isEmpty ? "rgba(251,191,36,0.08)" : "transparent"),
-                              border: isLocked ? "1px dashed rgba(120,53,15,0.25)" : (isEmpty ? "1px dashed rgba(120,53,15,0.4)" : "none"),
+                              background:"transparent",
+                              border:"none",
                               borderRadius:"4px",
                               outline:"none",
                               padding:"3px 5px",
@@ -6432,20 +6759,13 @@
                               fontWeight:500,
                               textAlign:"left",
                               resize:"none",
-                              overflowY:"auto",
-                              overflowX:"hidden",
                               wordBreak:"break-word",
                               overflowWrap:"break-word",
                               whiteSpace:"pre-wrap",
                               cursor: isLocked ? "not-allowed" : "text"
                             }}
-                            onFocus={(e)=>{ if(isLocked) return; e.target.style.background="rgba(251,191,36,0.15)"; e.target.style.border="1px solid rgba(120,53,15,0.55)"; }}
-                            onBlur={(e)=>{
-                              if(isLocked) return;
-                              const empty = !e.target.value.trim();
-                              e.target.style.background = empty ? "rgba(251,191,36,0.08)" : "transparent";
-                              e.target.style.border = empty ? "1px dashed rgba(120,53,15,0.4)" : "none";
-                            }}
+                            onFocus={(e)=>{ if(isLocked) return; e.target.style.background="rgba(255,255,255,0.55)"; }}
+                            onBlur={(e)=>{ e.target.style.background="transparent"; }}
                             />
                         </div>
                       );
@@ -6460,6 +6780,47 @@
 
             </div>
           </section>
+
+          {/* 過去の感謝日記 */}
+          {(() => {
+            const todayStr2 = todayKey();
+            const past = getRecordedDates().filter(ds => ds !== todayStr2).reverse().map(ds => {
+              const arr = (getDayRecord(ds).gratitudeToday || []).filter(x => x && String(x).trim());
+              return { ds, arr };
+            }).filter(x => x.arr.length > 0);
+            if (past.length === 0) return null;
+            const shown = showAllGratitude ? past : past.slice(0, 5);
+            const dowJ = ["日","月","火","水","木","金","土"];
+            return (
+              <section className="px-5 mt-3">
+                <div className="rounded-[18px] p-3.5" style={{background:"linear-gradient(135deg,#fffbeb,#fff)", border:"1px solid #fde68a"}}>
+                  <div style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, color:"#7c2d12", fontSize:"13px", letterSpacing:"0.08em"}}>📖 過去の感謝日記</div>
+                  <div className="mt-2 space-y-2">
+                    {shown.map(({ds, arr}) => {
+                      const dt = new Date(ds + "T00:00:00");
+                      return (
+                        <div key={ds} className="rounded-xl px-3 py-2" style={{background:"rgba(255,255,255,0.9)", border:"1px solid #fef3c7"}}>
+                          <div style={{fontFamily:'"Shippori Mincho",serif', fontSize:"10px", fontWeight:700, color:"#b45309"}}>
+                            {dt.getFullYear()}.{String(dt.getMonth()+1).padStart(2,"0")}.{String(dt.getDate()).padStart(2,"0")}（{dowJ[dt.getDay()]}）
+                          </div>
+                          {arr.map((g, k) => (
+                            <div key={k} style={{fontFamily:'"Shippori Mincho",serif', fontSize:"10.5px", color:"#1e293b", lineHeight:1.6, marginTop:2, whiteSpace:"pre-wrap", wordBreak:"break-word"}}>🪶 {g}</div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {past.length > 5 && (
+                    <button onClick={()=>setShowAllGratitude(!showAllGratitude)}
+                      className="w-full mt-2 text-[10px] py-1 rounded-full"
+                      style={{color:"#92400e", border:"1px dashed #f59e0b", background:"#fffbeb", fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
+                      {showAllGratitude ? "たたむ" : `もっと見る（あと${past.length-5}日分）`}
+                    </button>
+                  )}
+                </div>
+              </section>
+            );
+          })()}
 
           {/* 今週の歩み — 朝・昼・夜の達成率（ミニドーナツ・時間帯別カラー） */}
           <section className="px-5 mt-5">
@@ -6528,9 +6889,9 @@
           <section className="px-5 mt-5">
             <div className="rounded-2xl p-3.5"
               style={{background:"linear-gradient(180deg, #fff7ed 0%, #fef3c7 100%)", border:"1.5px solid #fbbf24", boxShadow:"0 4px 14px rgba(245,158,11,0.18)"}}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px]" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.15em", color:"#7c2d12", fontWeight:700}}>今月のスケジュール</span>
-                <span className="text-[9px]" style={{color:"#7c2d12", fontWeight:600}}>{calYear} / {String(calMonth).padStart(2,'0')}　タップで予定を書く</span>
+              <div className="mb-2 text-center">
+                <div style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.1em", color:"#7c2d12", fontWeight:700, fontSize:"22px"}}>{calYear}年{calMonth}月</div>
+                <div style={{fontFamily:'"Shippori Mincho",serif', color:"#92400e", fontWeight:600, fontSize:"10.5px", marginTop:2}}>💡 日付をタップして、自由にご予定を書き込めます</div>
               </div>
               <div className="grid grid-cols-7 gap-1 mb-1">
                 {["月","火","水","木","金","土","日"].map(d=>(
@@ -6558,7 +6919,7 @@
                   }
                   const isToday = day === calToday;
                   const isSelected = day === selectedDate;
-                  const hasMemo = !!calendarMemos[day];
+                  const hasMemo = !!calendarMemos[memoKey(day)];
                   const cellBg =
                     v===3 ? "linear-gradient(135deg,#fbbf24,#f97316)" :
                     v===2 ? "linear-gradient(135deg,#fcd34d,#fbbf24)" :
@@ -6599,28 +6960,25 @@
                 style={{background:"rgba(255,255,255,0.85)", border:"1.5px solid #fcd34d"}}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10.5px]" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.08em", color:"#7c2d12"}}>
-                    📌 {calMonth}/{selectedDate} ({["日","月","火","水","木","金","土"][((new Date(calYear,calMonth-1,selectedDate)).getDay())]}) のお予定
+                    📌 {calMonth}/{selectedDate} ({["日","月","火","水","木","金","土"][((new Date(calYear,calMonth-1,selectedDate)).getDay())]}) のご予定
                   </span>
-                  {calendarMemos[selectedDate] && (
+                  {calendarMemos[memoKey(selectedDate)] && (
                     <button onClick={()=>{
                       const newMemos = {...calendarMemos};
-                      delete newMemos[selectedDate];
+                      delete newMemos[memoKey(selectedDate)];
                       setCalendarMemos(newMemos);
                     }}
                       className="text-[9px]" style={{color:"#7c2d12", fontWeight:600}}>削除</button>
                   )}
                 </div>
                 <textarea
-                  value={calendarMemos[selectedDate] || ""}
-                  onChange={e=>setCalendarMemos({...calendarMemos, [selectedDate]:e.target.value})}
-                  placeholder="お茶会、ヨガレッスン、自分の時間…"
+                  value={calendarMemos[memoKey(selectedDate)] || ""}
+                  onChange={e=>setCalendarMemos({...calendarMemos, [memoKey(selectedDate)]:e.target.value})}
+                  
                   rows={2}
                   className="w-full rounded-lg p-2 text-[10.5px] focus:outline-none resize-none leading-relaxed"
                   style={{fontFamily:'"Shippori Mincho",serif', background:"#fffbeb", border:"1px solid #fcd34d", color:"#7c2d12", fontWeight:500}}
                 />
-                <div className="text-[9px] mt-1.5" style={{letterSpacing:"0.05em", color:"#7c2d12", fontWeight:600}}>
-                  💡 タップして日付を切り替え、自由にお予定を書き込めます
-                </div>
               </div>
             </div>
           </section>
@@ -6631,7 +6989,14 @@
               ─ もっと細かく記録するなら ─
             </div>
             <div className="text-center text-[10px] text-rose-400 mt-1">
-              プリンセスケアタブで詳しい記録ができます
+              体重・食事・睡眠などは、プリンセスケアで記録できます
+            </div>
+            <div className="flex justify-center mt-2.5">
+              <button onClick={()=>goCare && goCare()}
+                className="active:scale-95 transition"
+                style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, fontSize:"12px", color:"#be185d", background:"linear-gradient(135deg,#ffffff,#fdf2f8)", border:"1.5px solid #f9a8d4", borderRadius:999, padding:"8px 20px", boxShadow:"0 3px 8px rgba(249,168,212,0.3)", letterSpacing:"0.08em"}}>
+                👑 プリンセスケアへ ›
+              </button>
             </div>
           </section>
         </div>
@@ -6652,6 +7017,7 @@
     };
 
     const CareScreen = () => {
+      const SectionTitle = CareSectionTitle;
       const [sub,setSub] = useState("body");
       // 心のケア
       const [mindWeather,setMindWeather] = useState("☀️");
@@ -6685,30 +7051,26 @@
       const [bodyWeeklyInsight,setBodyWeeklyInsight] = useState("");
       const [bodyWeeklyImprove,setBodyWeeklyImprove] = useState("");
       const [bodyNextChallenge,setBodyNextChallenge] = useState("");
-      const [sleepInsight,setSleepInsight] = useState(""); // 睡眠の気づき
       // 食事の週間振り返り
       const [foodWeeklyInsight,setFoodWeeklyInsight] = useState("");
       const [foodWeeklyImprove,setFoodWeeklyImprove] = useState("");
       const [foodNextChallenge,setFoodNextChallenge] = useState("");
       // 身体・食事 それぞれ独立した週間振り返り（重複を避けてタブごとに分離）
-      const [bodyReviewInsight,setBodyReviewInsight]     = useLocal("careBodyReviewInsight",   "");
-      const [bodyReviewImprove,setBodyReviewImprove]     = useLocal("careBodyReviewImprove",   "");
-      const [bodyReviewChallenge,setBodyReviewChallenge] = useLocal("careBodyReviewChallenge", "");
-      const [foodReviewInsight,setFoodReviewInsight]     = useLocal("careFoodReviewInsight",   "");
-      const [foodReviewImprove,setFoodReviewImprove]     = useLocal("careFoodReviewImprove",   "");
-      const [foodReviewChallenge,setFoodReviewChallenge] = useLocal("careFoodReviewChallenge", "");
       // アコーディオン開閉状態
       const [activityOpen,setActivityOpen] = useState(false);
       const [sleepOpen,setSleepOpen] = useState(false);
       // 身体ケアの数値（日ごとに記録：活動量・水分・睡眠・運動）
-      const [walk,setWalk]   = useDaily("walk",   50);  // 分（理想 80分＝約8,000歩）
-      const [yoga,setYoga]   = useDaily("yoga",   45);  // 分（理想 60分）
-      const [body,setBody]   = useDaily("bodyMin",20);  // 分（理想 30分）
-      const [gym,setGym]     = useDaily("gym",    0);   // 分
-      const [water,setWater] = useDaily("water",  6);   // 杯
-      const [sleep,setSleep] = useDaily("sleep",  7);   // 時間
-      const [stretch,setStretch]       = useDaily("stretch",   10); // 分
-      const [meditation,setMeditation] = useDaily("meditation",10); // 分
+      // 新しい日は0（未記録）から始まり、その日の分だけ保存される。過去の日付の記録は残り、週・月のグラフに使われる
+      const [walk,setWalk]   = useDaily("walk",   0);  // 分（理想 80分＝約8,000歩）
+      const [yoga,setYoga]   = useDaily("yoga",   0);  // 分（理想 60分）
+      const [body,setBody]   = useDaily("bodyMin",0);  // 分（理想 30分）
+      const [gym,setGym]     = useDaily("gym",    0);  // 分
+      const [water,setWater] = useDaily("water",  0);  // 杯
+      const [sleep,setSleep] = useDaily("sleep",  0);  // 時間
+      const [stretch,setStretch]       = useDaily("stretch",   0); // 分
+      const [meditation,setMeditation] = useDaily("meditation",0); // 分
+      // 振り返りグラフの期間（7日 / 30日）
+      const [carePeriod,setCarePeriod] = useState(7);
       const meals = [
         {key:"朝", emoji:"🌅", time:"7:40"},
         {key:"昼", emoji:"☀️", time:"12:30"},
@@ -6801,15 +7163,19 @@
         setCustomKwInput("");
       };
       const customImageKws = imageKws.filter(k => !imageKwCandidates.includes(k));
-      // ムードボード（3×3）：理想の自分をイメージする写真を9枚まで保存
+      // ビジョンボード：理想の自分をイメージする写真（3枚単位で増やせる）
       const [moodBoard, setMoodBoard] = useLocal("moodboard_images", Array(9).fill(null));
+      // 写真をタップしたときに開く大きな表示（差し替え・削除はここから）
+      const [visionView, setVisionView] = useState(null);
+      // 食事の写真をタップしたときの大きな表示（どの食事か）
+      const [mealPhotoView, setMealPhotoView] = useState(null); // {key, idx}
+      // ボードの枠を手動で増やした行数（1行=3枠）
+      const [visionExtraRows, setVisionExtraRows] = useLocal("vision_extra_rows", 0);
       const setMoodBoardSlot = (i, dataUrl) => {
         const next = moodBoard.slice();
         next[i] = dataUrl;
         setMoodBoard(next);
       };
-      // 枠が足りない人のために、3枚単位で自由に増やせるように
-      const addMoodBoardSlots = () => setMoodBoard([...moodBoard, null, null, null]);
 
       const subs = [
         {k:"body", label:"身体",     banner:"./banner_body-care.png?v=20261006"},
@@ -6859,6 +7225,31 @@
         {k:"ふくらはぎ", cur:0, goal:0, unit:"cm", emoji:"🌷"},
         {k:"足首",       cur:0, goal:0, unit:"cm", emoji:"✨"},
       ]);
+      // エステカルテの記録履歴（日付つきスナップショット）
+      const [measHistory,setMeasHistory] = useLocal("measurement_history", []);
+      const [showMeasHistory,setShowMeasHistory] = useState(false);
+      const [measSaved,setMeasSaved] = useState(false);
+      // 「現在」の数値を入力するたびに、今日の日付で自動保存（同じ日は上書き）
+      const saveMeasurementSnapshot = function(meas){
+        var today = todayKey();
+        var values = {};
+        (meas || measurements).forEach(function(m){ values[m.k] = m.cur; });
+        var next = measHistory.filter(function(s){ return s.date !== today; }).concat([{date:today, values:values}]);
+        next.sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+        setMeasHistory(next);
+        setMeasSaved(true);
+        setTimeout(function(){ setMeasSaved(false); }, 2500);
+      };
+      const lastSnap = measHistory.length ? measHistory[measHistory.length-1] : null;
+      // 比較用：今日より前の最新の記録
+      const prevSnap = (function(){
+        var t = todayKey(); var c = null;
+        measHistory.forEach(function(s){ if (s.date < t) c = s; });
+        return c;
+      })();
+      const daysSinceLastSnap = lastSnap
+        ? Math.floor((new Date(todayKey()+"T00:00:00") - new Date(lastSnap.date+"T00:00:00")) / 86400000)
+        : null;
       // 歩数（手入力）
       const [todaySteps,setTodaySteps] = useState(0);
       // 編集モード（インライン・項目ごと）
@@ -6867,6 +7258,23 @@
       const [goalEdit,setGoalEdit] = useState({});
       const [goalDraft,setGoalDraft] = useState({});
       const [lastUpdated,setLastUpdated] = useState("");
+      // 体重は「日ごとの記録」：今日すでに体重を記録したか／前回の記録日と体重
+      const [weightLoggedToday,setWeightLoggedToday] = useState(false);
+      const [weightInfo,setWeightInfo] = useState({prevDate:"", prevWeight:0});
+      const computeWeightInfo = function(){
+        try{
+          var today = todayKey();
+          var dates = getRecordedDates().filter(function(d){ return d < today; }).reverse();
+          for (var i=0; i<dates.length && i<90; i++){
+            var r = getDayRecord(dates[i]);
+            // weightLogged が false の日は「前日の値を引き継いだだけ」なので除外（旧データは記録済みとみなす）
+            if (r.bodyStats && r.bodyStats.weight > 0 && r.weightLogged !== false){
+              return {prevDate:dates[i], prevWeight:r.bodyStats.weight};
+            }
+          }
+        }catch(e){}
+        return {prevDate:"", prevWeight:0};
+      };
       // localStorageから初期値ロード（settings + 今日の値）
       useEffect(function(){
         try{
@@ -6884,6 +7292,8 @@
           if (rec.bodyStats) setBodyStats(rec.bodyStats);
           if (rec.measurements) setMeasurements(rec.measurements);
           if (rec.lastUpdated) setLastUpdated(rec.lastUpdated);
+          setWeightLoggedToday(rec.weightLogged === true && !!(rec.bodyStats && rec.bodyStats.weight > 0));
+          setWeightInfo(computeWeightInfo());
         }catch(e){}
       },[]);
       // 保存ヘルパー（最新値の設定保存 + 日付スナップショット）
@@ -6901,6 +7311,10 @@
           localStorage.setItem("gokigen_day_"+today+"_measurements", JSON.stringify(meas));
           localStorage.setItem("gokigen_day_"+today+"_todaySteps", JSON.stringify(steps));
           localStorage.setItem("gokigen_day_"+today+"_lastUpdated", JSON.stringify(now));
+          // 体重を今日測ったかどうか（他の項目だけ保存した日は false にして、前日の値の引き継ぎと区別する）
+          if (localStorage.getItem("gokigen_day_"+today+"_weightLogged") !== "true") {
+            localStorage.setItem("gokigen_day_"+today+"_weightLogged", "false");
+          }
           var dates = JSON.parse(localStorage.getItem("gokigen_dates") || "[]");
           if (dates.indexOf(today) < 0) {
             dates.push(today);
@@ -6913,12 +7327,19 @@
         var next = Object.assign({}, bodyStats, {[k]: v===""?0:Number(v)});
         setBodyStats(next);
         persistBody(next, null, null);
+        if (k === "weight") {
+          // 0（未入力）にしたときは「今日の記録」とみなさない
+          var logged = Number(v) > 0;
+          try { localStorage.setItem("gokigen_day_"+todayKey()+"_weightLogged", logged ? "true" : "false"); } catch(e){}
+          setWeightLoggedToday(logged);
+        }
       };
       const updateMeasurement = function(idx, v){
         var next = measurements.slice();
         next[idx] = Object.assign({}, next[idx], {cur: v===""?0:Number(v)});
         setMeasurements(next);
         persistBody(null, next, null);
+        saveMeasurementSnapshot(next);
       };
       const updateMeasurementGoal = function(idx, v){
         var next = measurements.slice();
@@ -6971,22 +7392,39 @@
           {sub==="body" && (
             <section className="px-5 mt-5 space-y-3">
               {/* 今日のボディログ */}
-              <SectionTitle icon={<Scale className="w-4 h-4 text-pink-400"/>}>今日のボディログ</SectionTitle>
+              <SectionTitle icon={<span className="text-[15px] leading-none">🌿</span>}>今日のボディログ</SectionTitle>
               <SectionCard style={careTheme(2)}>
                 <div className="mb-3">
                   <div className="text-[9px]" style={{...wishHeading, letterSpacing:"0.18em"}}>TODAY'S RECORD</div>
                   <div className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>
                     {lastUpdated ? lastUpdated : "まだ記録がありません"}
                   </div>
-                  <div className="text-[8px] text-rose-300 mt-0.5">※ 右上の✎から項目ごとに記録できます</div>
+                  <div className="text-[8px] text-rose-300 mt-0.5">※ 各項目の右の✎から、項目ごとに記録できます</div>
                 </div>
 
                 {/* 身長・体重・年齢（基礎代謝の推定精度UP用） */}
                 <div className="grid grid-cols-3 gap-2">
-                  <EditableStat label="身長" icon="📏" value={bodyStats.height} unit="cm" decimals={0}
+                  <EditableStat label="身長" value={bodyStats.height} unit="cm" decimals={0}
                     onSave={(v)=>updateBodyStat("height", v)}/>
-                  <EditableStat label="今の体重" icon="⚖️" value={bodyStats.weight} unit="kg" decimals={1}
+                  <EditableStat label="体重" value={bodyStats.weight} unit="kg" decimals={1}
                     onSave={(v)=>updateBodyStat("weight", v)}>
+                    {/* 今日の記録状況・前回比 */}
+                    {weightLoggedToday ? (
+                      <div style={{fontSize:"8px", marginTop:"3px", color:"#059669"}}>
+                        ✓ 今日の記録
+                        {weightInfo.prevWeight > 0 && (() => {
+                          const dd = bodyStats.weight - weightInfo.prevWeight;
+                          return <span style={{marginLeft:"4px", color: dd>0 ? "#fb7185" : "#059669"}}>前回比 {dd>0?"+":""}{dd.toFixed(1)}kg</span>;
+                        })()}
+                      </div>
+                    ) : (
+                      /* 今日はまだ → 前回の記録日だけ小さく表示（記録がまだ一度もなければ何も出さない） */
+                      bodyStats.weight > 0 && weightInfo.prevDate ? (
+                        <div style={{fontSize:"8px", marginTop:"3px", color:"#fb7185", lineHeight:1.4}}>
+                          {weightInfo.prevDate.slice(5).replace("-","/")} の記録
+                        </div>
+                      ) : null
+                    )}
                     {bodyStats.weightGoal > 0 && (() => {
                       const diff = (bodyStats.weight - bodyStats.weightGoal).toFixed(1);
                       const progress = Math.max(0, Math.min(100, (1 - (bodyStats.weight - bodyStats.weightGoal) / (bodyStats.weight||1)) * 100));
@@ -7003,22 +7441,22 @@
                       );
                     })()}
                   </EditableStat>
-                  <EditableStat label="年齢" icon="🎂" value={bodyStats.age} unit="歳" decimals={0}
+                  <EditableStat label="年齢" value={bodyStats.age} unit="歳" decimals={0}
                     onSave={(v)=>updateBodyStat("age", v)}/>
                 </div>
 
                 {/* 体脂肪率は実測値を手入力（体組成計・体脂肪計で測った数値を記録） */}
                 <div className="mt-2.5">
-                  <EditableStat label="体脂肪率" icon="💗" value={bodyStats.fat} unit="%" decimals={1}
+                  <EditableStat label="体脂肪率" value={bodyStats.fat} unit="%" decimals={1}
                     onSave={(v)=>updateBodyStat("fat", v)}
                     boxClassName="rounded-2xl bg-gradient-to-br from-rose-50 to-pink-100 border border-white"/>
                 </div>
 
                 {/* 体組成 詳細 2 cols（筋肉量は実測値を手入力／基礎代謝は身長・体重・年齢から自動推定） */}
                 <div className="grid grid-cols-2 gap-2 mt-2.5">
-                  <EditableStat label="筋肉量" icon="🌿" value={bodyStats.muscle} unit="kg" decimals={1}
+                  <EditableStat label="筋肉量" value={bodyStats.muscle} unit="kg" decimals={1}
                     onSave={(v)=>updateBodyStat("muscle", v)}/>
-                  <EditableStat label="基礎代謝（推定）" icon="🔥" value={estimatedBasal} unit="kcal" decimals={0} readOnly/>
+                  <EditableStat label="基礎代謝（推定）" value={estimatedBasal} unit="kcal" decimals={0} readOnly/>
                 </div>
 
                 {/* BMI 帯 */}
@@ -7042,9 +7480,14 @@
 
               <SectionTitle icon={<Heart className="w-4 h-4 fill-pink-300 text-pink-300" filled/>}>身体のケア</SectionTitle>
               <div className="rounded-[22px] p-3 space-y-2" style={careTheme(1)}>
-              <p className="text-[9.5px] -mt-1" style={{...wishHeading, letterSpacing:"0.1em"}}>
-                ゲージをスライドして、今日の自分にフィットする位置へ
-              </p>
+              <div className="flex items-start justify-between gap-2 -mt-1">
+                <p className="text-[9.5px]" style={{...wishHeading, letterSpacing:"0.1em"}}>
+                  ゲージをスライドして、今日の自分にフィットする位置へ
+                </p>
+                <span className="text-[9.5px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', flexShrink:0, whiteSpace:"nowrap"}}>
+                  {(() => { const d = new Date(); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}（${["日","月","火","水","木","金","土"][d.getDay()]}）`; })()}
+                </span>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <MetricSlider label="散歩"       emoji="🚶‍♀️" unit="分"   max={100} ideal={80} value={walk}       onChange={setWalk}    leftLabel="軽め"   rightLabel="しっかり" subValue={`約${(walk*100).toLocaleString()}歩`}/>
                 <MetricSlider label="ヨガ"       emoji="🧘‍♀️" unit="分"   max={120} ideal={60} value={yoga}       onChange={setYoga}    leftLabel="軽め"   rightLabel="しっかり"/>
@@ -7095,110 +7538,138 @@
                     <div className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif'}}>{Math.round(walk*3.5 + yoga*3 + stretch*2 + body*5 + gym*5 + meditation*1)}<span className="text-[7.5px] text-rose-400 ml-0.5">kcal</span></div>
                   </div>
                 </div>
+                <div className="text-center mt-2">
+                  <button onClick={()=>{
+                      if (window.confirm("今日のゲージをすべて0に戻しますか？（過去の日の記録は変わりません）")) {
+                        setWalk(0); setYoga(0); setBody(0); setGym(0); setWater(0); setSleep(0); setStretch(0); setMeditation(0);
+                      }
+                    }}
+                    style={{fontSize:"9.5px", color:"#be185d", background:"none", border:"none", textDecoration:"underline", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+                    今日のゲージを0に戻す
+                  </button>
+                </div>
               </div>
               </div>
 
-              {/* ═══ 1週間の振り返り（活動量・睡眠・体重のグラフをまとめて表示） ═══ */}
-              <SectionTitle icon={<Heart className="w-4 h-4 fill-pink-300 text-pink-300" filled/>}>1週間の振り返り</SectionTitle>
+              {/* ═══ 週・月の振り返り（活動量・睡眠・体重のグラフをまとめて表示） ═══ */}
+              <SectionTitle icon={<span className="text-[15px] leading-none">📈</span>}>身体の記録グラフ</SectionTitle>
               <div className="rounded-[22px] p-3 space-y-3" style={careTheme(3)}>
 
-                {/* 1週間の活動量振り返り（折りたたみ） */}
+                {/* 期間の切り替え */}
+                <div className="flex bg-white/60 rounded-full p-1 border border-pink-100">
+                  {[{n:7,l:"1週間"},{n:30,l:"1ヶ月"}].map(o=>(
+                    <button key={o.n} onClick={()=>setCarePeriod(o.n)}
+                      className={`flex-1 py-1 rounded-full text-[10.5px] transition ${carePeriod===o.n?"bg-gradient-to-r from-pink-300 to-rose-300 text-white":""}`}
+                      style={carePeriod===o.n ? {fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.12em"} : {...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.12em"}}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 活動量（折りたたみ） */}
                 <div>
                   <button onClick={()=>setActivityOpen(!activityOpen)}
                     className="w-full flex items-center justify-between px-2 py-2 rounded-xl bg-white/60 border border-pink-100 active:scale-[0.99] transition">
                     <div className="flex items-center gap-2">
                       <Heart className="w-3.5 h-3.5 fill-pink-300 text-pink-300" filled/>
-                      <span className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.08em"}}>1週間の活動量</span>
+                      <span className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.08em"}}>{carePeriod===7 ? "1週間の活動量" : "1ヶ月の活動量"}</span>
                     </div>
                     <span className="text-[10px] text-rose-400">{activityOpen ? "▲ 閉じる" : "▼ 見る"}</span>
                   </button>
-                  {activityOpen && (
-                  <div className="rounded-2xl bg-white/70 border border-pink-100 p-3 mt-2 anim-fade">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[9px]" style={{...wishHeading, letterSpacing:"0.18em"}}>WEEKLY ACTIVITY</span>
-                      <span className="text-[10px]" style={wishHeading}>今週</span>
-                    </div>
-                    <WeekLineChart
-                      data={getRecentDays(7, "walk").map(r => {
-                        const w = typeof r.value === "number" ? r.value : 0;
-                        const y = (getDayRecord(r.date).yoga) || 0;
-                        const s = (getDayRecord(r.date).stretch) || 0;
-                        const b = (getDayRecord(r.date).bodyMin) || 0;
-                        const g = (getDayRecord(r.date).gym) || 0;
-                        const m = (getDayRecord(r.date).meditation) || 0;
-                        return w + y + s + b + g + m;
-                      })}
-                      unit="分"
-                      lineColor="#f472b6"
-                      goalLine={60}
-                      goalLabel="目安 60分"
-                      accentEmoji="🧘‍♀️"
-                    />
-                  </div>
-                  )}
+                  {activityOpen && (() => {
+                    const days = getRecentDays(carePeriod, "walk");
+                    const labels = days.map((r,i) => carePeriod===7
+                      ? ["日","月","火","水","木","金","土"][r.dateObj.getDay()]
+                      : ((i%6===0 || i===carePeriod-1) ? (r.dateObj.getMonth()+1)+"/"+r.dateObj.getDate() : ""));
+                    const data = days.map(r => {
+                      const rec = getDayRecord(r.date);
+                      return (rec.walk||0) + (rec.yoga||0) + (rec.stretch||0) + (rec.bodyMin||0) + (rec.gym||0) + (rec.meditation||0);
+                    });
+                    return (
+                      <div className="rounded-2xl bg-white/70 border border-pink-100 p-3 mt-2 anim-fade">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[9px]" style={{...wishHeading, letterSpacing:"0.18em"}}>{carePeriod===7 ? "WEEKLY ACTIVITY" : "MONTHLY ACTIVITY"}</span>
+                          <span className="text-[10px]" style={wishHeading}>{carePeriod===7 ? "直近7日" : "直近30日"}</span>
+                        </div>
+                        <WeekLineChart
+                          data={data}
+                          days={labels}
+                          unit="分"
+                          lineColor="#f472b6"
+                          goalLine={60}
+                          goalLabel="目安 60分"
+                          accentEmoji="🧘‍♀️"
+                        />
+                      </div>
+                    );
+                  })()}
                 </div>
 
-                {/* 1週間の睡眠（折りたたみ） */}
+                {/* 睡眠（折りたたみ） */}
                 <div>
                   <button onClick={()=>setSleepOpen(!sleepOpen)}
                     className="w-full flex items-center justify-between px-2 py-2 rounded-xl bg-white/60 border border-pink-100 active:scale-[0.99] transition">
                     <div className="flex items-center gap-2">
                       <Heart className="w-3.5 h-3.5 fill-pink-300 text-pink-300" filled/>
-                      <span className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.08em"}}>1週間の睡眠</span>
+                      <span className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.08em"}}>{carePeriod===7 ? "1週間の睡眠" : "1ヶ月の睡眠"}</span>
                     </div>
                     <span className="text-[10px] text-rose-400">{sleepOpen ? "▲ 閉じる" : "▼ 見る"}</span>
                   </button>
-                  {sleepOpen && (
-                  <div className="rounded-2xl bg-white/70 border border-pink-100 p-3 mt-2 anim-fade">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[9px]" style={{...wishHeading, letterSpacing:"0.18em"}}>WEEKLY SLEEP</span>
-                      <span className="text-[10px]" style={wishHeading}>今週</span>
-                    </div>
-                    <WeekLineChart
-                      data={getRecentDays(7, "sleep").map(r => typeof r.value === "number" ? r.value : 0)}
-                      unit="h"
-                      lineColor="#a78bfa"
-                      goalLine={7.5}
-                      goalLabel="理想 7.5h"
-                      accentEmoji="🌙"
-                    />
-                    {/* 睡眠ハイライト */}
-                    <div className="grid grid-cols-3 gap-1.5 mt-3">
-                      <div className="rounded-xl bg-purple-50/60 border border-purple-100 p-1.5 text-center">
-                        <div className="text-[8px] text-purple-400" style={{letterSpacing:"0.1em"}}>平均</div>
-                        <div className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}>7.1<span className="text-[7.5px] text-rose-400 ml-0.5">h</span></div>
+                  {sleepOpen && (() => {
+                    const days = getRecentDays(carePeriod, "sleep");
+                    const labels = days.map((r,i) => carePeriod===7
+                      ? ["日","月","火","水","木","金","土"][r.dateObj.getDay()]
+                      : ((i%6===0 || i===carePeriod-1) ? (r.dateObj.getMonth()+1)+"/"+r.dateObj.getDate() : ""));
+                    const data = days.map(r => typeof r.value === "number" ? r.value : 0);
+                    // 実データから 平均／ベスト／足りない夜 を計算（記録のある日だけ）
+                    const recs = days.map((r,i)=>({v:data[i], d:r.dateObj})).filter(x=>x.v>0);
+                    const avg = recs.length ? recs.reduce((a,x)=>a+x.v,0)/recs.length : null;
+                    const best = recs.length ? recs.reduce((a,x)=> x.v>a.v?x:a) : null;
+                    const low  = recs.length ? recs.reduce((a,x)=> x.v<a.v?x:a) : null;
+                    const dayName = (d) => carePeriod===7 ? ["日","月","火","水","木","金","土"][d.getDay()] : (d.getMonth()+1)+"/"+d.getDate();
+                    return (
+                      <div className="rounded-2xl bg-white/70 border border-pink-100 p-3 mt-2 anim-fade">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[9px]" style={{...wishHeading, letterSpacing:"0.18em"}}>{carePeriod===7 ? "WEEKLY SLEEP" : "MONTHLY SLEEP"}</span>
+                          <span className="text-[10px]" style={wishHeading}>{carePeriod===7 ? "直近7日" : "直近30日"}</span>
+                        </div>
+                        <WeekLineChart
+                          data={data}
+                          days={labels}
+                          unit="h"
+                          lineColor="#a78bfa"
+                          goalLine={7.5}
+                          goalLabel="理想 7.5h"
+                          accentEmoji="🌙"
+                        />
+                        {/* 睡眠ハイライト（実データ） */}
+                        <div className="grid grid-cols-3 gap-1.5 mt-3">
+                          <div className="rounded-xl bg-purple-50/60 border border-purple-100 p-1.5 text-center">
+                            <div className="text-[8px] text-purple-400" style={{letterSpacing:"0.1em"}}>平均</div>
+                            <div className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}>{avg!==null ? avg.toFixed(1) : "ー"}<span className="text-[7.5px] text-rose-400 ml-0.5">{avg!==null ? "h" : ""}</span></div>
+                          </div>
+                          <div className="rounded-xl bg-amber-50/60 border border-amber-100 p-1.5 text-center">
+                            <div className="text-[8px] text-amber-500" style={{letterSpacing:"0.1em"}}>ベストの夜</div>
+                            <div className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}>{best ? dayName(best.d) : "ー"}<span className="text-[7.5px] text-rose-400 ml-0.5">{best ? best.v.toFixed(1)+"h" : ""}</span></div>
+                          </div>
+                          <div className="rounded-xl bg-rose-50/60 border border-rose-100 p-1.5 text-center">
+                            <div className="text-[8px]" style={{...wishHeading, letterSpacing:"0.1em"}}>足りない夜</div>
+                            <div className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}>{low ? dayName(low.d) : "ー"}<span className="text-[7.5px] text-rose-400 ml-0.5">{low ? low.v.toFixed(1)+"h" : ""}</span></div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="rounded-xl bg-amber-50/60 border border-amber-100 p-1.5 text-center">
-                        <div className="text-[8px] text-amber-500" style={{letterSpacing:"0.1em"}}>ベストの夜</div>
-                        <div className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}>土<span className="text-[7.5px] text-rose-400 ml-0.5">8.5h</span></div>
-                      </div>
-                      <div className="rounded-xl bg-rose-50/60 border border-rose-100 p-1.5 text-center">
-                        <div className="text-[8px]" style={{...wishHeading, letterSpacing:"0.1em"}}>足りない夜</div>
-                        <div className="text-[12px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:500}}>木<span className="text-[7.5px] text-rose-400 ml-0.5">5.5h</span></div>
-                      </div>
-                    </div>
-                    {/* 睡眠の気づき */}
-                    <div className="mt-3">
-                      <p className="text-[10px] mb-1.5 flex items-center gap-1.5" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>
-                        <span className="text-[12px]">🌙</span> 睡眠の気づき
-                      </p>
-                      <textarea value={sleepInsight} onChange={e=>setSleepInsight(e.target.value)} rows={2}
-                        placeholder="例：早く寝た日は朝の身体が軽い。寝る前のスマホで眠りが浅くなる気がする。"
-                        className="w-full bg-white/80 border border-pink-100 rounded-xl p-2.5 text-[11px] text-gray-700 placeholder:text-pink-300 focus:outline-none focus:border-pink-300 resize-none leading-relaxed"
-                        style={{fontFamily:'"Shippori Mincho",serif'}}/>
-                    </div>
-                  </div>
-                  )}
+                    );
+                  })()}
                 </div>
 
                 {/* 体重のゆるやかな記録 */}
                 <div>
                   <div className="flex items-center justify-between mb-1 px-2 pt-1">
-                    <span className="text-[9px]" style={{...wishHeading, letterSpacing:"0.18em"}}>WEEKLY TREND</span>
-                    <span className="text-[10px]" style={wishHeading}>今週</span>
+                    <span className="text-[9px]" style={{...wishHeading, letterSpacing:"0.18em"}}>{carePeriod===7 ? "WEEKLY TREND" : "MONTHLY TREND"}</span>
+                    <span className="text-[10px]" style={wishHeading}>{carePeriod===7 ? "直近7日" : "直近30日"}</span>
                   </div>
                   <div className="rounded-2xl bg-white/70 border border-pink-100 p-3">
-                    <WeightChart/>
+                    <WeightChart period={carePeriod}/>
                   </div>
                 </div>
               </div>
@@ -7208,7 +7679,7 @@
           {/* 食 — 撮る→執事コメント→裏でダイエット計算 */}
           {sub==="food" && (
             <section className="px-5 mt-5 space-y-4">
-              <SectionTitle icon={<Flower2 className="w-4 h-4 text-pink-400"/>}>お嬢様のお献立</SectionTitle>
+              <SectionTitle icon={<Flower2 className="w-4 h-4 text-pink-400"/>}>お嬢様の献立</SectionTitle>
               <div className="rounded-[22px] p-3 space-y-3" style={careTheme(2)}>
 
               {/* お嬢様のダイエットプラン（体重・目標・1日kcal目安） */}
@@ -7333,14 +7804,93 @@
                         ))}
                       </div>
 
-                      {/* 写真 */}
-                      {log.photo && (
-                        <div className="px-3 pb-2">
-                          <img src={log.photo} alt="お食事の写真" className="w-full max-h-40 object-cover rounded-xl border border-pink-100"/>
-                          <button onClick={()=>setMealLog({...mealLog, [m.key]:{...log, photo:null}})}
-                            className="mt-1 text-[8.5px] text-rose-300 active:scale-95">写真を消す</button>
-                        </div>
-                      )}
+                      {/* 写真：1食につき最大4枚。空き枠をタップして追加（複数枚まとめて選べる）。写真をタップで大きく表示 */}
+                      {(() => {
+                        const photos = log.photos || (log.photo ? [log.photo] : []);
+                        const MAX = 4;
+                        const addFiles = (e) => {
+                          const files = Array.from(e.target.files || []).slice(0, MAX - photos.length);
+                          e.target.value = "";
+                          if (!files.length) return;
+                          const urls = [];
+                          let pending = files.length;
+                          files.forEach((f, idx) => {
+                            readImageDownscaled(f, (url) => {
+                              urls[idx] = url;
+                              pending--;
+                              if (pending === 0) {
+                                setMealLog(prev => {
+                                  const cur = (prev && prev[m.key]) || {items:[]};
+                                  const curPhotos = cur.photos || (cur.photo ? [cur.photo] : []);
+                                  return {...prev, [m.key]:{...cur, photo:null, photos:[...curPhotos, ...urls].slice(0, MAX)}};
+                                });
+                              }
+                            });
+                          });
+                        };
+                        const view = (mealPhotoView && mealPhotoView.key === m.key) ? mealPhotoView.idx : null;
+                        const setPhotos = (arr) => setMealLog(prev => {
+                          const cur = (prev && prev[m.key]) || {items:[]};
+                          return {...prev, [m.key]:{...cur, photo:null, photos:arr}};
+                        });
+                        return (
+                          <div className="px-3 pb-2">
+                            <div style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"4px"}}>
+                              {photos.map((ph, i) => (
+                                <div key={i} className="aspect-square overflow-hidden" style={{borderRadius:"8px", cursor:"pointer"}}
+                                  onClick={()=>setMealPhotoView({key:m.key, idx:i})}>
+                                  <img src={ph} alt="お食事の写真" className="w-full h-full object-cover"/>
+                                </div>
+                              ))}
+                              {Array.from({length: MAX - photos.length}).map((_, k) => (
+                                <label key={"e"+k} className="aspect-square flex flex-col items-center justify-center cursor-pointer active:scale-95 transition"
+                                  style={{background:"linear-gradient(135deg, rgba(255,255,255,0.75), rgba(255,228,238,0.75))", border:"1.5px dashed #f9a8d4", color:"#ec4899", borderRadius:"8px"}}>
+                                  <span style={{fontSize:"16px", lineHeight:1}}>＋</span>
+                                  {k===0 && photos.length===0 && <span style={{fontSize:"8px", marginTop:"2px", opacity:0.85}}>写真</span>}
+                                  <input type="file" accept="image/*" multiple className="hidden" onChange={addFiles}/>
+                                </label>
+                              ))}
+                            </div>
+                            {view !== null && photos[view] && ReactDOM.createPortal(
+                              <div onClick={()=>setMealPhotoView(null)}
+                                style={{position:"fixed", inset:0, zIndex:1000, background:"rgba(40,10,30,0.88)",
+                                  display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"20px"}}>
+                                <img src={photos[view]} alt="" onClick={(e)=>e.stopPropagation()}
+                                  style={{maxWidth:"100%", maxHeight:"70vh", borderRadius:"14px", objectFit:"contain", boxShadow:"0 8px 30px rgba(0,0,0,0.4)"}}/>
+                                <div onClick={(e)=>e.stopPropagation()} style={{display:"flex", gap:"10px", marginTop:"18px"}}>
+                                  <label style={{padding:"9px 18px", borderRadius:"9999px", background:"#fff", color:"#be185d", fontSize:"12px", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+                                    ✎ 差し替える
+                                    <input type="file" accept="image/*" className="hidden"
+                                      onChange={(e)=>{
+                                        const f = e.target.files && e.target.files[0];
+                                        if(!f) return;
+                                        const idx = view;
+                                        readImageDownscaled(f, (url)=>{
+                                          const next = photos.slice(); next[idx] = url; setPhotos(next); setMealPhotoView(null);
+                                        });
+                                        e.target.value = "";
+                                      }}/>
+                                  </label>
+                                  <button onClick={()=>{
+                                      if (window.confirm("この写真を削除しますか？")) {
+                                        setPhotos(photos.filter((_,j)=>j!==view));
+                                        setMealPhotoView(null);
+                                      }
+                                    }}
+                                    style={{padding:"9px 18px", borderRadius:"9999px", background:"rgba(255,255,255,0.15)", color:"#fff", fontSize:"12px", border:"1px solid rgba(255,255,255,0.5)", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+                                    削除
+                                  </button>
+                                  <button onClick={()=>setMealPhotoView(null)}
+                                    style={{padding:"9px 18px", borderRadius:"9999px", background:"rgba(255,255,255,0.15)", color:"#fff", fontSize:"12px", border:"1px solid rgba(255,255,255,0.5)", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+                                    閉じる
+                                  </button>
+                                </div>
+                              </div>,
+                              document.body
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       {/* アクションボタン */}
                       <div className="flex gap-2 px-3 pb-3">
@@ -7355,20 +7905,6 @@
                           style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow:isPickerOpen?"none":"0 3px 8px rgba(244,114,182,0.3)"}}>
                           {isPickerOpen ? "× 閉じる" : "＋ 食材を追加"}
                         </button>
-                        <label className="flex-1 py-2 rounded-full text-[10px] bg-white text-rose-500 border border-pink-200 active:scale-95 transition text-center cursor-pointer"
-                          style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
-                          📷 写真を残す
-                          <input type="file" accept="image/*" className="hidden"
-                            onChange={(e)=>{
-                              const f = e.target.files && e.target.files[0];
-                              if(!f) return;
-                              const reader = new FileReader();
-                              reader.onload = (ev) => {
-                                setMealLog({...mealLog, [m.key]:{...log, photo:ev.target.result}});
-                              };
-                              reader.readAsDataURL(f);
-                            }}/>
-                        </label>
                       </div>
 
                       {/* 食材ピッカー */}
@@ -7498,7 +8034,7 @@
               </div>
               {/* 1週間のお食事振り返り — 実データから計算 */}
               <div>
-                <SectionTitle icon={<Heart className="w-4 h-4 fill-pink-300 text-pink-300" filled/>}>1週間のお食事振り返り</SectionTitle>
+                <SectionTitle icon={<span className="text-[15px] leading-none">📈</span>}>食事の記録グラフ</SectionTitle>
                 <div className="rounded-2xl p-3" style={careTheme(3)}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[9px]" style={{...wishHeading, letterSpacing:"0.18em"}}>WEEKLY KCAL</span>
@@ -7517,6 +8053,7 @@
                       });
                       return Math.round(total);
                     })}
+                    days={getRecentDays(7, "meal_log_v2").map(r => ["日","月","火","水","木","金","土"][r.dateObj.getDay()])}
                     unit="kcal"
                     lineColor="#fb7185"
                     goalLine={goal.kcal || 1800}
@@ -7534,10 +8071,8 @@
             <section className="px-5 mt-5">
               <SectionTitle icon={<Crown className="w-4 h-4 text-pink-400"/>}>身体の振り返り</SectionTitle>
               <div className="rounded-[22px] p-3" style={careTheme(4)}>
-              <WeeklyReviewCard
-                insight={bodyReviewInsight} setInsight={setBodyReviewInsight}
-                improve={bodyReviewImprove} setImprove={setBodyReviewImprove}
-                challenge={bodyReviewChallenge} setChallenge={setBodyReviewChallenge}
+              <WeeklyReviewSection prefix="body" legacy="careBodyReview"
+                nudgeMessage="お嬢様、今週のお身体はいかがでしたか？週末になりました。ひとつだけ振り返って、来週の小さな一歩を決めてみませんか。"
                 placeholders={[
                   "例：週3でヨガを続けられた。朝の散歩で調子が良かった。",
                   "例：週末は活動量がゼロになりがち。睡眠が浅い日が続いた。",
@@ -7553,10 +8088,8 @@
             <section className="px-5 mt-5">
               <SectionTitle icon={<Crown className="w-4 h-4 text-pink-400"/>}>食事の振り返り</SectionTitle>
               <div className="rounded-[22px] p-3" style={careTheme(4)}>
-              <WeeklyReviewCard
-                insight={foodReviewInsight} setInsight={setFoodReviewInsight}
-                improve={foodReviewImprove} setImprove={setFoodReviewImprove}
-                challenge={foodReviewChallenge} setChallenge={setFoodReviewChallenge}
+              <WeeklyReviewSection prefix="food" legacy="careFoodReview"
+                nudgeMessage="お嬢様、今週のお食事はいかがでしたか？週末になりました。うまくいったことを思い出して、来週の目標を決めてみませんか。"
                 placeholders={[
                   "例：野菜を意識して摂れた週だった。間食が増えた日もあった。",
                   "例：夜遅い食事が続いた日は翌朝だるかった。",
@@ -7574,11 +8107,23 @@
               <section className="px-5 mt-5">
                 <SectionTitle icon={<Sparkles className="w-4 h-4 text-pink-400"/>}>サイズの記録 / エステカルテ</SectionTitle>
                 <SectionCard style={careTheme(3)}>
-                  <div className="mb-3">
-                    <p className="text-[10px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>
-                      からだの輪郭を、そっとお測りしましょう
-                    </p>
-                    <p className="text-[8px] text-rose-300 mt-0.5">※「理想」「現実」それぞれの数値をタップして記録できます</p>
+                  {/* 30日以上あいたら執事がそっと声をかける */}
+                  {daysSinceLastSnap !== null && daysSinceLastSnap >= 30 && (
+                    <div className="mb-3"><ButlerCard message="前回のご記録から1か月ほどたちました。そろそろ、今のお体のサイズをお測りしてみませんか？"/></div>
+                  )}
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-[10px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>
+                        からだの輪郭を、そっとお測りしましょう
+                      </p>
+                      <p className="text-[8px] text-rose-300 mt-0.5">※ 数字を直接入力するか、右の▲▼で上げ下げできます。「現在」は日付つきで自動保存されます</p>
+                    </div>
+                    <div className="text-right" style={{flexShrink:0}}>
+                      <div className="text-[8px]" style={{...wishHeading, letterSpacing:"0.08em"}}>{measSaved ? "✓ 保存しました" : "最終記録"}</div>
+                      <div className="text-[10px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>
+                        {lastSnap ? fmtMD(new Date(lastSnap.date+"T00:00:00")) : "まだありません"}
+                      </div>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {measurements.map((m,mi)=>{
@@ -7604,57 +8149,41 @@
                           <div className="flex items-center gap-1 mb-1.5">
                             <span className="text-[11px]">{m.emoji}</span>
                             <span className="text-[10px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>{m.k}</span>
-                            <span className={`ml-auto text-[8px] ${diff>0?"text-rose-400":"text-emerald-500"}`}>
-                              {diff===0?"ー":(diff>0?`+${diff}`:diff)}{m.unit}
+                            <span className={`ml-auto text-[8px] ${Number(diff)>0?"text-rose-400":"text-emerald-500"}`}>
+                              {(m.cur>0 && m.goal>0)
+                                ? (Number(diff)===0 ? "ー" : `目標まで ${Number(diff)>0?"+":""}${diff}${m.unit}`)
+                                : "ー"}
                             </span>
                           </div>
 
-                          {/* 目標 */}
-                          <div className="rounded-xl bg-rose-50/70 border border-rose-100 px-2 py-1 mb-1 flex items-center justify-between">
-                            <span className="text-[8px] text-rose-400" style={{letterSpacing:"0.08em"}}>目標</span>
-                            {goalEditing ? (
-                              <span className="flex items-center gap-1">
-                                <input type="text" inputMode="decimal" value={gDraft} autoFocus
-                                  onChange={e=>setGoalDraft(prev=>({...prev,[mi]:e.target.value.replace(/[^0-9.]/g,"")}))}
-                                  onBlur={commitGoal}
-                                  onKeyDown={e=>{ if(e.key==="Enter"){ e.currentTarget.blur(); } }}
-                                  className="w-[44px] text-[12px] text-right text-rose-700 bg-white border border-rose-300 rounded px-1 focus:outline-none focus:border-rose-500"
-                                  style={{fontFamily:'"Shippori Mincho",serif'}}/>
-                                <span className="text-[9px] text-rose-400">{m.unit}</span>
-                              </span>
-                            ) : (
-                              <button onClick={()=>{ setGoalDraft(prev=>({...prev,[mi]:String(m.goal)})); setGoalEdit(prev=>({...prev,[mi]:true})); }}
-                                className="flex items-baseline gap-0.5 active:scale-95">
-                                <span className="text-[14px] text-rose-600" style={{fontFamily:'"Shippori Mincho",serif'}}>{m.goal.toFixed(1)}</span>
-                                <span className="text-[9px] text-rose-400">{m.unit}</span>
-                                <span className="text-[8px] text-rose-300 ml-0.5">✎</span>
-                              </button>
-                            )}
-                          </div>
-
-                          {/* 現在 */}
-                          <div className="rounded-xl bg-white/80 border border-pink-100 px-2 py-1 flex items-center justify-between">
-                            <span className="text-[8px] text-rose-400" style={{letterSpacing:"0.08em"}}>現在</span>
-                            {editing ? (
-                              <span className="flex items-center gap-1">
-                                <input type="text" inputMode="decimal" value={draft} autoFocus
-                                  onChange={e=>setMeasDraft(prev=>({...prev,[mi]:e.target.value.replace(/[^0-9.]/g,"")}))}
-                                  onBlur={commit}
-                                  onKeyDown={e=>{ if(e.key==="Enter"){ e.currentTarget.blur(); } }}
-                                  className="w-[44px] text-[12px] text-right text-rose-700 bg-white border border-pink-300 rounded px-1 focus:outline-none focus:border-pink-500"
-                                  style={{fontFamily:'"Shippori Mincho",serif'}}/>
-                                <span className="text-[9px] text-rose-400">{m.unit}</span>
-                              </span>
-                            ) : (
-                              <button onClick={()=>{ setMeasDraft(prev=>({...prev,[mi]:String(m.cur)})); setMeasEdit(prev=>({...prev,[mi]:true})); }}
-                                className="flex items-baseline gap-0.5 active:scale-95">
-                                <span className="text-[14px] text-rose-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>{m.cur.toFixed(1)}</span>
-                                <span className="text-[9px] text-rose-400">{m.unit}</span>
-                                <span className="text-[8px] text-rose-300 ml-0.5">✎</span>
-                              </button>
-                            )}
-                          </div>
-
+                          {/* 目標 / 現在：ー ＋ で上げ下げ（押し続けると加速） */}
+                          {(() => {
+                            const startMap = {"バスト":80,"アンダーバスト":70,"ウエスト":60,"ヒップ":88,"二の腕":25,"太もも":50,"ふくらはぎ":33,"足首":20};
+                            const start0 = startMap[m.k] || 50;
+                            return (
+                              <>
+                                <div style={{marginBottom:"4px"}}>
+                                  <StepperRow label="目標" value={m.goal} unit={m.unit} bg="bg-rose-50/70" border="border-rose-100"
+                                    startValue={m.cur > 0 ? m.cur : start0}
+                                    onChange={(v)=>updateMeasurementGoal(mi, String(v))}/>
+                                </div>
+                                <StepperRow label="現在" value={m.cur} unit={m.unit} bg="bg-white/80" border="border-pink-100" strong
+                                  startValue={start0}
+                                  onChange={(v)=>updateMeasurement(mi, String(v))}/>
+                              </>
+                            );
+                          })()}
+                          {prevSnap && prevSnap.values && prevSnap.values[m.k] > 0 && m.cur > 0 && (() => {
+                            const dd = m.cur - prevSnap.values[m.k];
+                            return (
+                              <div style={{fontSize:"8px", marginTop:"4px", color:"#9d174d", textAlign:"right"}}>
+                                前回 {fmtMD(new Date(prevSnap.date+"T00:00:00"))}　{prevSnap.values[m.k].toFixed(1)}{m.unit}
+                                <span style={{marginLeft:"3px", color: dd>0 ? "#fb7185" : "#059669"}}>
+                                  （{dd>0?"+":""}{dd.toFixed(1)}）
+                                </span>
+                              </div>
+                            );
+                          })()}
                           <div className="mt-1.5 h-1 rounded-full bg-white/70 overflow-hidden">
                             <div className="h-full rounded-full bg-gradient-to-r from-pink-300 to-rose-400" style={{width:`${progress}%`}}/>
                           </div>
@@ -7663,20 +8192,75 @@
                     })}
                   </div>
 
-                  {/* トータル評価 */}
-                  <div className="mt-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border border-pink-100 p-2.5 flex items-center gap-2">
-                    <span className="text-[18px]">👑</span>
-                    <div className="flex-1">
-                      <div className="text-[9px]" style={{...wishHeading, letterSpacing:"0.15em"}}>BODY BALANCE</div>
-                      <div className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>
-                        くびれ比 <span className="text-[13px]">0.73</span> <span className="text-[9px] ml-1" style={wishHeading}>W/H ratio</span>
-                      </div>
+                  {/* 記録する／履歴 */}
+                  <div className="mt-3">
+                    <div className="text-center mt-2">
+                      <button onClick={()=>{
+                          if (window.confirm("サイズの記録（目標・現在・これまでの記録）をすべて0に戻しますか？")) {
+                            const zero = measurements.map(m=>({...m, cur:0, goal:0}));
+                            setMeasurements(zero);
+                            persistBody(null, zero, null);
+                            setMeasHistory([]);
+                          }
+                        }}
+                        style={{fontSize:"9.5px", color:"#9ca3af", background:"none", border:"none", textDecoration:"underline", cursor:"pointer", marginRight:"14px", fontFamily:'"Shippori Mincho",serif'}}>
+                        すべて0に戻す
+                      </button>
+                      <button onClick={()=>setShowMeasHistory(!showMeasHistory)}
+                        style={{fontSize:"10px", color:"#be185d", background:"none", border:"none", textDecoration:"underline", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+                        {showMeasHistory ? "これまでの記録を閉じる" : "これまでの記録を見る"}
+                      </button>
                     </div>
-                    <div className="text-right">
-                      <div className="text-[8.5px]" style={wishHeading}>理想</div>
-                      <div className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>0.68</div>
-                    </div>
+                    {showMeasHistory && (
+                      measHistory.length === 0 ? (
+                        <div className="mt-2 text-center text-[10px] text-rose-300">まだ記録がありません</div>
+                      ) : (
+                        <div className="mt-2 space-y-2">
+                          {measHistory.slice().reverse().slice(0, 12).map(s => (
+                            <div key={s.date} className="rounded-xl bg-white/75 border border-pink-100 p-2.5">
+                              <div className="text-[10px] mb-1" style={{...wishHeading, letterSpacing:"0.08em"}}>
+                                {s.date.replace(/-/g,"/")}
+                              </div>
+                              <div style={{display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:"2px 8px"}}>
+                                {measurements.map(m => (
+                                  <div key={m.k} className="text-[9.5px] text-gray-600 flex justify-between">
+                                    <span>{m.k}</span>
+                                    <span>{(s.values && s.values[m.k] > 0) ? Number(s.values[m.k]).toFixed(1) + m.unit : "ー"}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    )}
                   </div>
+
+                  {/* トータル評価：ウエスト÷ヒップを、入力された数値から自動計算 */}
+                  {(() => {
+                    const W = measurements.find(m=>m.k==="ウエスト") || {cur:0, goal:0};
+                    const H = measurements.find(m=>m.k==="ヒップ") || {cur:0, goal:0};
+                    const nowRatio  = (W.cur>0 && H.cur>0)   ? (W.cur/H.cur).toFixed(2)   : null;
+                    const goalRatio = (W.goal>0 && H.goal>0) ? (W.goal/H.goal).toFixed(2) : null;
+                    return (
+                      <div className="mt-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border border-pink-100 p-2.5 flex items-center gap-2">
+                        <span className="text-[18px]">👑</span>
+                        <div className="flex-1">
+                          <div className="text-[9px]" style={{...wishHeading, letterSpacing:"0.15em"}}>BODY BALANCE</div>
+                          <div className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>
+                            くびれ比 <span className="text-[13px]">{nowRatio || "ー"}</span> <span className="text-[9px] ml-1" style={wishHeading}>W/H ratio</span>
+                          </div>
+                          {!nowRatio && (
+                            <div className="text-[8px] text-rose-300 mt-0.5">ウエストとヒップの「現在」を入力すると自動で計算されます</div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[8.5px]" style={wishHeading}>目標</div>
+                          <div className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>{goalRatio || "ー"}</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </SectionCard>
               </section>
 
@@ -7685,7 +8269,7 @@
                 <SectionTitle icon={<Crown className="w-4 h-4 text-pink-400"/>}>プリンセスイメージ</SectionTitle>
                 <SectionCard style={careTheme(0)}>
                   <div className="mb-3">
-                    <ButlerCard message="なりたい自分を、言葉と写真で描いてみましょう ♡ 候補からぴったりの言葉を選んで、見つからなければご自分の言葉もどうぞ。理想や憧れが伝わる写真も、ムードボードに集めてみて。"/>
+                    <ButlerCard message="なりたい自分を、言葉と写真で描いてみましょう ♡ 候補からぴったりの言葉を選んで、見つからなければご自分の言葉もどうぞ。理想や憧れが伝わる写真も、ビジョンボードに集めてみて。"/>
                   </div>
                   <p className="text-[11px] mb-2" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>なりたい自分のキーワード</p>
                   <div className="flex flex-wrap gap-1.5 mb-2">
@@ -7717,38 +8301,103 @@
                       className="px-3 py-1.5 rounded-full text-[11px] bg-gradient-to-r from-pink-300 to-rose-300 text-white active:scale-95 transition"
                       style={{fontFamily:'"Shippori Mincho",serif'}}>＋ 追加</button>
                   </div>
-                  <p className="text-[11px] mb-2 mt-3" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>ムードボード（3×3）</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {moodBoard.map((photo,i)=>(
-                      photo ? (
-                        <div key={i} className="relative aspect-square rounded-2xl overflow-hidden border border-pink-200">
-                          <img src={photo} alt="" className="w-full h-full object-cover"/>
-                          <button onClick={()=>setMoodBoardSlot(i, null)}
-                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-white/90 text-rose-500 text-[11px] flex items-center justify-center active:scale-90 transition"
-                            style={{boxShadow:"0 2px 5px rgba(0,0,0,0.2)"}}>×</button>
-                        </div>
-                      ) : (
-                        <label key={i} className="aspect-square rounded-2xl border border-dashed border-pink-200 bg-pink-50/40 flex items-center justify-center text-pink-300 text-[18px] cursor-pointer active:scale-95 transition">
-                          ＋
+                  <p className="text-[11px] mb-2 mt-3" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>ビジョンボード</p>
+                  {/* ボード全体を額縁のようなフレームで囲み、ひと目で「飾るボード」と分かるように */}
+                  <div style={{padding:"10px", borderRadius:"20px", background:"linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,240,246,0.85))",
+                    border:"2px solid #f9a8d4", boxShadow:"0 4px 14px rgba(244,114,182,0.25), inset 0 0 0 3px rgba(255,255,255,0.8)"}}>
+                    <div className="text-center" style={{marginBottom:"8px"}}>
+                      <div style={{...wishHeading, fontSize:"11px", letterSpacing:"0.3em", fontFamily:'"Shippori Mincho",serif'}}>✧ MY VISION BOARD ✧</div>
+                      <div style={{...wishHeading, fontSize:"8.5px", letterSpacing:"0.12em", marginTop:"2px"}}>叶えたい未来を写真で飾ろう</div>
+                    </div>
+                  {/* 写真はすき間なくアルバム風に並べ、いちばん後ろの「＋」からいつでも追加。各写真の右上に削除、右下に差し替え */}
+                  <div style={{display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:"3px"}}>
+                    {moodBoard.map((photo,i)=> photo ? (
+                      <div key={i} className="relative aspect-square overflow-hidden" style={{cursor:"pointer", borderRadius:"8px"}}
+                        onClick={()=>setVisionView(i)}>
+                        <img src={photo} alt="" className="w-full h-full object-cover"/>
+                      </div>
+                    ) : null)}
+                    {/* 空き枠：最低6枠（3×2）はいつも見せて、ボードの形が分かるように。写真が増えたら3枠ずつ自動で足される */}
+                    {(() => {
+                      const n = moodBoard.filter(x=>x).length;
+                      const slotCount = Math.max(6, Math.ceil((n+1)/3)*3) + visionExtraRows*3;
+                      const addFiles = (e) => {
+                        const files = Array.from(e.target.files || []);
+                        e.target.value = "";
+                        if(!files.length) return;
+                        // 複数枚まとめて選んでもOK。読み込み完了した順に追加
+                        let board = moodBoard.filter(x=>x);
+                        let pending = files.length;
+                        files.forEach((f)=>{
+                          readImageDownscaled(f, (url)=>{
+                            board.push(url);
+                            pending--;
+                            if (pending === 0) setMoodBoard(board.slice());
+                          });
+                        });
+                      };
+                      // 空き枠には「何を入れるか」のヒントを薄く表示（写真が入ると消える）
+                      const hints = ["なりたい私","憧れの服・髪型","行きたい場所","理想の暮らし","叶えたい夢","ごきげんな時間"];
+                      return Array.from({length: slotCount - n}).map((_,k)=>(
+                        <label key={"empty"+k} className="aspect-square flex flex-col items-center justify-center cursor-pointer active:scale-95 transition"
+                          style={{background:"linear-gradient(135deg, rgba(255,255,255,0.75), rgba(255,228,238,0.75))", border:"1.5px dashed #f9a8d4", color:"#ec4899", borderRadius:"8px"}}>
+                          <span style={{fontSize:"20px", lineHeight:1}}>＋</span>
+                          <span style={{fontSize:"8.5px", marginTop:"4px", textAlign:"center", lineHeight:1.3, opacity:0.85, fontFamily:'"Shippori Mincho",serif', padding:"0 4px"}}>{hints[(n+k)%hints.length]}</span>
+                          <input type="file" accept="image/*" multiple className="hidden" onChange={addFiles}/>
+                        </label>
+                      ));
+                    })()}
+                  </div>
+                    {/* 枠を増やす／減らす（右下）。3枠（1行）ずつ */}
+                    <div style={{display:"flex", justifyContent:"flex-end", alignItems:"center", gap:"8px", marginTop:"8px"}}>
+                      <span style={{fontSize:"8.5px", color:"#f9a8d4", marginRight:"auto"}}>写真をタップで拡大（差し替え・削除）</span>
+                      {visionExtraRows > 0 && (
+                        <button onClick={()=>setVisionExtraRows(visionExtraRows-1)}
+                          style={{width:"28px", height:"28px", borderRadius:"9999px", border:"1.5px solid #f9a8d4", background:"#fff", color:"#ec4899",
+                            fontSize:"16px", lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer"}}>−</button>
+                      )}
+                      <button onClick={()=>setVisionExtraRows(visionExtraRows+1)}
+                        style={{width:"28px", height:"28px", borderRadius:"9999px", border:"none", color:"#fff", fontSize:"16px", lineHeight:1,
+                          display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer",
+                          background:"linear-gradient(135deg,#fb7185,#f9a8d4)", boxShadow:"0 2px 6px rgba(244,114,182,0.4)"}}>＋</button>
+                    </div>
+                  </div>
+                  {/* 写真の大きな表示（タップで開く）：差し替え・削除はここに集約して、ボードは写真だけをすっきり見せる */}
+                  {visionView !== null && moodBoard[visionView] && ReactDOM.createPortal(
+                    <div onClick={()=>setVisionView(null)}
+                      style={{position:"fixed", inset:0, zIndex:1000, background:"rgba(40,10,30,0.88)",
+                        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"20px"}}>
+                      <img src={moodBoard[visionView]} alt="" onClick={(e)=>e.stopPropagation()}
+                        style={{maxWidth:"100%", maxHeight:"70vh", borderRadius:"14px", objectFit:"contain", boxShadow:"0 8px 30px rgba(0,0,0,0.4)"}}/>
+                      <div onClick={(e)=>e.stopPropagation()} style={{display:"flex", gap:"10px", marginTop:"18px"}}>
+                        <label style={{padding:"9px 18px", borderRadius:"9999px", background:"#fff", color:"#be185d", fontSize:"12px", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+                          ✎ 差し替える
                           <input type="file" accept="image/*" className="hidden"
                             onChange={(e)=>{
                               const f = e.target.files && e.target.files[0];
                               if(!f) return;
-                              const reader = new FileReader();
-                              reader.onload = (ev) => setMoodBoardSlot(i, ev.target.result);
-                              reader.readAsDataURL(f);
+                              const idx = visionView;
+                              readImageDownscaled(f, (url)=>{ setMoodBoardSlot(idx, url); setVisionView(null); });
+                              e.target.value = "";
                             }}/>
                         </label>
-                      )
-                    ))}
-                  </div>
-                  <div className="flex justify-end mt-2">
-                    <button onClick={addMoodBoardSlots}
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-[13px] text-white active:scale-90 transition"
-                      style={{background:"linear-gradient(135deg,#fb7185,#f9a8d4)", boxShadow:"0 2px 6px rgba(244,114,182,0.4)"}}>
-                      ＋
-                    </button>
-                  </div>
+                        <button onClick={()=>{
+                            if (window.confirm("この写真をビジョンボードから削除しますか？")) {
+                              setMoodBoard(moodBoard.filter((_,j)=>j!==visionView));
+                              setVisionView(null);
+                            }
+                          }}
+                          style={{padding:"9px 18px", borderRadius:"9999px", background:"rgba(255,255,255,0.15)", color:"#fff", fontSize:"12px", border:"1px solid rgba(255,255,255,0.5)", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+                          削除
+                        </button>
+                        <button onClick={()=>setVisionView(null)}
+                          style={{padding:"9px 18px", borderRadius:"9999px", background:"rgba(255,255,255,0.15)", color:"#fff", fontSize:"12px", border:"1px solid rgba(255,255,255,0.5)", cursor:"pointer", fontFamily:'"Shippori Mincho",serif'}}>
+                          閉じる
+                        </button>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
                   <p className="text-[9px] text-center mt-2" style={{...wishHeading, letterSpacing:"0.15em"}}>
                     ※ わたしの世界 / プロフィールと連動
                   </p>
@@ -8709,7 +9358,7 @@
           <div className="relative z-10 max-w-md mx-auto min-h-screen">
             <div key={screenKey}>
               {activeTab==="home"    && <HomeScreen selectedMood={selectedMood} setSelectedMood={setSelectedMood} openAnalysis={handleOpenAnalysis} goLoop={()=>handleTabChange("loop")} goDaily={()=>handleTabChange("daily")} goCare={()=>handleTabChange("care")} goWorld={()=>handleTabChange("world")} goMonthly={()=>handleTabChange("monthly")}/>}
-              {activeTab==="daily"   && <DailyScreen/>}
+              {activeTab==="daily"   && <DailyScreen goCare={()=>handleTabChange("care")}/>}
               {activeTab==="loop"    && <LoopScreen selectedMood={selectedMood} setSelectedMood={setSelectedMood}/>}
               {activeTab==="care"    && <CareScreen/>}
               {activeTab==="world"   && <WorldScreen/>}
