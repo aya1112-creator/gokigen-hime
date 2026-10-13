@@ -6286,7 +6286,7 @@
 
       return (
         <div className="relative pb-40 anim-fade">
-          <div style={{position:"fixed", top:"14px", left:"50%", transform:"translateX(-50%)", zIndex:60, pointerEvents:"none", opacity: savedFlash ? 1 : 0, transition:"opacity .3s", background:"rgba(255,255,255,0.95)", border:"1px solid #f9a8d4", color:"#be185d", fontSize:"11px", fontWeight:700, padding:"5px 14px", borderRadius:"999px", boxShadow:"0 2px 8px rgba(236,72,153,0.25)", fontFamily:'"Shippori Mincho",serif'}}>✓ 自動で保存しました</div>
+          <SaveToast signal={JSON.stringify([changeHabit, smallStep, futureMe, gratitudeToday, morningItems, noonItems, nightItems, morningChecks, noonChecks, nightChecks, morningMemo, noonMemo, nightMemo, calendarMemos])}/>
           {/* ヘッダー（habit_hero.png バナー） */}
           <section className="px-3 pt-5">
             <div className="relative rounded-[24px] overflow-hidden border border-white/80"
@@ -8269,7 +8269,7 @@
                 <SectionTitle icon={<Crown className="w-4 h-4 text-pink-400"/>}>プリンセスイメージ</SectionTitle>
                 <SectionCard style={careTheme(0)}>
                   <div className="mb-3">
-                    <ButlerCard message="なりたい自分を、言葉と写真で描いてみましょう ♡ 候補からぴったりの言葉を選んで、見つからなければご自分の言葉もどうぞ。理想や憧れが伝わる写真も、ビジョンボードに集めてみて。"/>
+                    <ButlerCard message="なりたい自分を、言葉と写真で描いてみましょう ♡ ぴったりの言葉を選んで、憧れの写真もビジョンボードに集めてくださいませ。"/>
                   </div>
                   <p className="text-[11px] mb-2" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>なりたい自分のキーワード</p>
                   <div className="flex flex-wrap gap-1.5 mb-2">
@@ -8522,7 +8522,7 @@
      * ================================================= */
     const worldCards = [
       {key:"profile",  emoji:"👸", title:"マイプリンセス",       sub:"プロフィール",       accent:"from-pink-200/70 to-rose-100/70",   banner:"./banner_my-princess.png"},
-      {key:"sparkle",  emoji:"💎", title:"やりたいこと50",       sub:"12/50 集め中",       accent:"from-yellow-100/70 to-pink-100/70", banner:"./banner_wish-list.png"},
+      {key:"sparkle",  emoji:"💎", title:"ウィッシュリスト100",   sub:"100個の願い",       accent:"from-yellow-100/70 to-pink-100/70", banner:"./banner_wish-list.png"},
       {key:"favorites",emoji:"🌸", title:"ごきげんになれるモノ", sub:"12個のおまもり",     accent:"from-purple-200/60 to-pink-100/70", banner:"./banner_my-favorites.png"},
       {key:"heroine",  emoji:"👑", title:"今月の主人公設定",     sub:"どんな姫になりたい",  accent:"from-amber-100/70 to-pink-100/70",  banner:"./banner_monthly-princess.png?v=20261006"},
       {key:"imaging",  emoji:"✨", title:"イメージングワーク",   sub:"叶った未来を感じる",  accent:"from-purple-100/70 to-blue-100/70", banner:"./banner_visualization.png"},
@@ -8540,15 +8540,54 @@
     // 姫のお城カード専用：夕焼けグラデーション背景の上でも読める、白文字+濃い影
     const castleHeading = {color:"#fffaf5", fontWeight:700, textShadow:"0 1px 2px rgba(91,42,99,0.75), 0 -1px 2px rgba(91,42,99,0.75), 1px 0 2px rgba(91,42,99,0.75), -1px 0 2px rgba(91,42,99,0.75), 0 1px 6px rgba(91,42,99,0.5)"};
 
+    // 入力のたびに「保存しました」を一瞬表示する共通パーツ
+    const SaveToast = ({signal}) => {
+      const [show,setShow] = React.useState(false);
+      const first = React.useRef(true);
+      React.useEffect(() => {
+        if (first.current) { first.current = false; return; }
+        setShow(true);
+        const tm = setTimeout(() => setShow(false), 1600);
+        return () => clearTimeout(tm);
+      }, [signal]);
+      return ReactDOM.createPortal(<div style={{position:"fixed", top:"14px", left:"50%", transform:"translateX(-50%)", zIndex:60, pointerEvents:"none", opacity: show ? 1 : 0, transition:"opacity .3s", background:"rgba(255,255,255,0.95)", border:"1px solid #f9a8d4", color:"#be185d", fontSize:"11px", fontWeight:700, padding:"5px 14px", borderRadius:"999px", boxShadow:"0 2px 8px rgba(236,72,153,0.25)", fontFamily:'"Shippori Mincho",serif'}}>✓ 自動で保存しました</div>, document.body);
+    };
+
+    // リボン形のタイトル（両端が切れ込んだ形）
+    const RibbonTitle = ({children, fontSize=18}) => (
+      <div style={{display:"inline-flex", alignItems:"center", margin:"2px auto 0", filter:"drop-shadow(0 3px 5px rgba(190,24,93,0.3))"}}>
+        <div style={{width:22, height:34, marginRight:-4, marginTop:8, background:"linear-gradient(180deg,#db2777,#be185d)", clipPath:"polygon(0 0,100% 0,100% 100%,0 100%,38% 50%)"}}/>
+        <div style={{position:"relative", zIndex:1, padding:"7px 22px", background:"linear-gradient(180deg,#f9a8d4 0%,#ec4899 100%)", borderTop:"1px solid #fbcfe8", borderBottom:"1px solid #be185d"}}>
+          <span style={{fontFamily:'"Shippori Mincho",serif', fontWeight:800, fontSize:fontSize+"px", letterSpacing:"0.08em", color:"#ffffff", textShadow:"0 1px 2px rgba(131,24,67,0.55)", whiteSpace:"nowrap"}}>{children}</span>
+        </div>
+        <div style={{width:22, height:34, marginLeft:-4, marginTop:8, background:"linear-gradient(180deg,#db2777,#be185d)", clipPath:"polygon(0 0,100% 0,62% 50%,100% 100%,0 100%)"}}/>
+      </div>
+    );
+
     const WorldScreen = () => {
       const [open,setOpen] = useState(null);
-      // やりたいこと50の状態管理（テキスト＋達成フラグ）
+            // やりたいこと50の状態管理（テキスト＋達成フラグ）
       const [wishes50, setWishes50] = useLocal("wishes50", Array.from({length:50}, () => ({text:"", done:false})));
-      const wishesFilled = wishes50.filter(w => w.text && w.text.trim()).length;
-      const wishesDone = wishes50.filter(w => w.done).length;
+      // 100個の欄（以前の50個の内容はそのまま引き継ぎ）
+      const wishes100 = wishes50.length >= 100 ? wishes50 : [...wishes50, ...Array.from({length:100 - wishes50.length}, () => ({text:"", done:false}))];
+      const wishesFilled = wishes100.filter(w => w.text && w.text.trim()).length;
+      const wishesDone = wishes100.filter(w => w.done).length;
+      // 各ページの入力内容（すべて端末に自動保存）
+      const [profileVals, setProfileVals] = useLocal("princessProfile", ["","","","","","","","","",""]);
+      const [favVals, setFavVals] = useLocal("favoritesList", ["","","","","","","","","","","",""]);
+      const [favCustom, setFavCustom] = useLocal("favoritesCustom", []);
+      const _ym = new Date().getFullYear() + "-" + String(new Date().getMonth()+1).padStart(2,"0");
+      const [heroineVals, setHeroineVals] = useLocal("heroine_" + _ym, ["","","",""]);
+      const [imagingVals, setImagingVals] = useLocal("imagingWork", ["","",""]);
+      const imagingAll = [0,1,2,3,4].map(k => imagingVals[k] || "");
+      const [letters, setLetters] = useLocal("futureLetters", [{text:"",at:""},{text:"",at:""},{text:"",at:""}]);
+      const lettersAll = [0,1,2,3,4,5].map(k => letters[k] || {text:"", at:""});
+      const setAt = (arr, setter, i, v) => { const n = arr.slice(); n[i] = v; setter(n); };
+      const worldSignal = JSON.stringify([profileVals, favVals, heroineVals, imagingVals, letters, wishes100, favCustom]);
       const openCard = worldCards.find(c=>c.key===open);
       return (
         <div className="relative pb-40 anim-fade">
+        <SaveToast signal={worldSignal}/>
         {!open ? (
           <>
           {/* 表紙ヘッダー（hero_wish.png バナー／タイトルは画像に含まれている） */}
@@ -8561,7 +8600,7 @@
             </div>
           </section>
 
-          <div className="px-5 mt-4"><ButlerCard message="お嬢様の世界は、お嬢様の書く言葉で丁寧に育ちます。"/></div>
+          <div className="px-5 mt-4"><ButlerCard message="お嬢様の世界は、お嬢様の書く言葉で丁寧に育ちます。気になるページから、ゆっくり開いてみてくださいませ ♡"/></div>
 
           {/* 2列カードグリッド（バナー画像をそのまま／トリミングなし＋＞バッジ） */}
           <section className="px-3 mt-8">
@@ -8601,12 +8640,12 @@
             {/* 部屋ごとの執事のひとこと */}
             <div className="mb-4">
               <ButlerCard message={({
-                profile:   "お嬢様のことを、ゆっくり教えてくださいませ。",
-                sparkle:   "叶えたい願いを、ひとつずつ書き留めてまいりましょう。",
-                favorites: "お嬢様を笑顔にするものを、そっと集めておきましょう。",
-                heroine:   "今月のお嬢様は、どんな姫でいらっしゃいますか？",
-                imaging:   "叶った未来を、目を閉じてそっと感じてみましょう。",
-                letter:    "未来のお嬢様へ、心を込めてお手紙を書きましょう。",
+                profile:   "お嬢様のことを、ゆっくり教えてくださいませ。好きなことも、大切にしたいことも、思いつくままにどうぞ。いつでも書き直せます ♡",
+                sparkle:   "お嬢様、叶えたい願いを書き留めましょう。キラキラの望みを、ひとつずつ拾い集めてくださいませ。叶いましたら「叶えた?」をタップですよ ♥",
+                favorites: "お嬢様を笑顔にするものを、そっと集めておきましょう。心が疲れたときに、ここへ戻ってくれば、きっと元気が出ますよ ♡",
+                heroine:   "今月のお嬢様は、どんな姫でいらっしゃいますか？なりたい姿や、大切にしたい時間を、ご自由に書いてくださいませ ♡",
+                imaging:   "叶った未来を、目を閉じてそっと感じてみましょう。見えるもの、聞こえるもの、感じるものを、ゆっくり書き留めてくださいませ ♡",
+                letter:    "未来のお嬢様になりきって、今のお嬢様へ、励ましのお手紙を書いてくださいませ。1年後から10年後まで、きっと力になりますよ ♡",
               })[open] || "お嬢様の世界は、お嬢様の書く言葉で丁寧に育ちます。"}/>
             </div>
 
@@ -8618,8 +8657,9 @@
                       <div key={i} className="flex items-center gap-2 rounded-xl bg-white/70 border border-pink-100 px-3 py-1.5">
                         <span className="text-[10px] whitespace-nowrap" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', minWidth:"96px", letterSpacing:"0.05em"}}>{p.label}</span>
                         <span className="text-pink-200 text-[10px]">…</span>
-                        <input type="text" placeholder={p.hint}
-                          className="flex-1 bg-transparent text-[10px] text-gray-600 placeholder:text-pink-200 focus:outline-none border-b border-pink-100/60 pb-0.5"/>
+                        <AutoTA value={profileVals[i] || ""} onChange={e=>setAt(profileVals, setProfileVals, i, e.target.value)}
+                          className="flex-1 min-w-0 bg-transparent text-[11px] text-gray-700 focus:outline-none border-b border-pink-100/60 pb-0.5"
+                          style={{fontFamily:'"Shippori Mincho",serif', lineHeight:1.5, wordBreak:"break-word"}}/>
                       </div>
                     ))}
                     <div className="pt-3 mt-2 border-t border-pink-100">
@@ -8628,8 +8668,9 @@
                         {favoriteCategories.map((c,i)=>(
                           <div key={i} className="rounded-xl bg-gradient-to-br from-white/85 to-pink-50/70 border border-pink-100 p-1.5 flex flex-col" style={{minHeight:62}}>
                             <div className="text-[8.5px] text-center" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>{c.label}</div>
-                            <input type="text" placeholder={c.hint}
-                              className="mt-1 flex-1 w-full bg-transparent text-[9px] text-gray-600 placeholder:text-pink-200 focus:outline-none text-center"/>
+                            <AutoTA value={favVals[i] || ""} onChange={e=>setAt(favVals, setFavVals, i, e.target.value)}
+                              className="mt-1 flex-1 w-full bg-transparent text-[10px] text-gray-700 focus:outline-none text-center"
+                              style={{fontFamily:'"Shippori Mincho",serif', lineHeight:1.4, wordBreak:"break-word"}}/>
                           </div>
                         ))}
                       </div>
@@ -8639,48 +8680,41 @@
 
                 {open==="sparkle" && (
                   <div className="relative">
-                    {/* イントロカード（左上） */}
-                    <div className="rounded-2xl border-2 border-pink-200/80 bg-gradient-to-br from-rose-50/70 to-pink-50/70 p-3 mb-3">
-                      <p className="text-[10.5px] leading-relaxed text-center"
-                        style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.05em"}}>
-                        姫がこれからやりたいこと、叶えたいことはなんですか？♥<br/>
-                        あなたの中に潜って <span className="text-pink-600" style={{fontWeight:700}}>キラキラの粒（望み）</span> を拾い集めよう
-                      </p>
-                    </div>
-
-                    {/* 達成バッジ */}
-                    <div className="flex items-center justify-between mb-2 px-1">
-                      <span className="text-[10px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.1em"}}>50の願い</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px]" style={wishHeading}>💎 {wishesFilled} / 50 願い</span>
-                        <span className="text-[10px] text-amber-500 font-bold">🌟 {wishesDone} 叶った ✨</span>
+                    {/* リボンのタイトル・説明・達成バッジ */}
+                    <div className="mb-3 px-1 text-center">
+                      <RibbonTitle>ウィッシュリスト100</RibbonTitle>
+                      <div style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, fontSize:"11px", lineHeight:1.8, color:"#9d174d", marginTop:10}}>
+                        〜 実現したい夢や目標、欲しいものを<br/>100個書き出して、キラキラの粒を集めよう 〜
+                      </div>
+                      <div className="flex items-center justify-center gap-4" style={{marginTop:8, fontFamily:'"Shippori Mincho",serif', fontWeight:700, fontSize:"13px"}}>
+                        <span style={{color:"#831843"}}>💎 {wishesFilled} / 100 願い</span>
+                        <span style={{color:"#d97706"}}>🌟 {wishesDone} 叶った ✨</span>
                       </div>
                     </div>
 
-                    {/* 50個の願い欄 */}
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 relative">
-                      {wishes50.map((w,i)=>{
+                    {/* 100個の願い欄（左：1〜50、右：51〜100） */}
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 relative" style={{gridAutoFlow:"column", gridTemplateRows:"repeat(50, auto)"}}>
+                      {wishes100.map((w,i)=>{
                         const filled = w.text && w.text.trim();
                         const done = w.done;
                         return (
                           <div key={i} className={`flex items-center gap-1 border-b border-dashed py-0.5 ${done ? "border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-md px-1" : "border-pink-200/70"}`}>
                             <span className={`text-[11px] leading-none flex-shrink-0 ${done ? "text-amber-500" : filled ? "text-pink-400" : "text-pink-200"}`}>{done ? "🌟" : "💎"}</span>
-                            <span className={`text-[8px] w-[14px] text-right flex-shrink-0 ${done ? "text-amber-600 font-bold" : "text-rose-300"}`} style={{fontFamily:'"Shippori Mincho",serif'}}>{i+1}</span>
+                            <span className={`text-[8px] w-[16px] text-right flex-shrink-0 ${done ? "text-amber-600 font-bold" : "text-rose-300"}`} style={{fontFamily:'"Shippori Mincho",serif'}}>{i+1}</span>
                             <input type="text"
                               value={w.text}
                               onChange={e => {
-                                const newWishes = wishes50.slice();
+                                const newWishes = wishes100.slice();
                                 newWishes[i] = {...newWishes[i], text: e.target.value};
                                 setWishes50(newWishes);
                               }}
                               placeholder="願いを書く…"
                               className={`flex-1 min-w-0 bg-transparent text-[10px] focus:outline-none ${done ? "text-amber-700 font-medium" : "text-gray-700 placeholder:text-pink-200"}`}
                               style={{fontFamily:'"Shippori Mincho",serif'}}/>
-                            {done && <span className="text-[10px] flex-shrink-0">✨</span>}
                             {filled && (
                               <button
                                 onClick={() => {
-                                  const newWishes = wishes50.slice();
+                                  const newWishes = wishes100.slice();
                                   newWishes[i] = {...newWishes[i], done: !newWishes[i].done};
                                   setWishes50(newWishes);
                                 }}
@@ -8691,45 +8725,24 @@
                                 }`}
                                 style={{fontFamily:'"Shippori Mincho",serif'}}
                                 title={done ? "解除" : "叶えた!"}>
-                                {done ? "叶った ✨" : "叶えた?"}
+                                {done ? "✨" : "叶えた?"}
                               </button>
                             )}
                           </div>
                         );
                       })}
                     </div>
-
-                    {/* 右下のごきげん姫イラスト（半透明オーバーレイ） */}
-                    <div className="absolute pointer-events-none" style={{right:"-4px", bottom:"-12px", opacity:0.85}}>
-                      <img src="./princess_t.png" alt="" aria-hidden
-                        onError={(e)=>{ e.currentTarget.style.display="none"; }}
-                        style={{width:"82px", height:"auto", filter:"drop-shadow(0 2px 4px rgba(249,168,212,0.3))"}}/>
-                    </div>
-
-                    {/* 凡例 */}
-                    <div className="mt-4 pt-3 border-t border-pink-100">
-                      <p className="text-[9.5px] text-center" style={{...wishHeading, letterSpacing:"0.15em", fontFamily:'"Shippori Mincho",serif'}}>
-                        💎 願いを書く → 叶ったら「叶えた?」をタップ → 🌟 ✨
-                      </p>
-                      <p className="text-[9px] text-center mt-1" style={{...wishHeading, letterSpacing:"0.15em"}}>
-                        願いはいつでも書き直してOK
-                      </p>
-                    </div>
                   </div>
                 )}
 
                 {open==="favorites" && (
                   <div className="relative">
-                    {/* タイトル左横に姫を配置 */}
-                    <div className="flex items-center gap-2 mb-2 -mt-1">
-                      <img src="./care.png" alt="" aria-hidden
-                        className="pointer-events-none select-none flex-shrink-0"
-                        style={{width:"56px", height:"auto", filter:"drop-shadow(0 2px 4px rgba(249,168,212,0.3))"}}
-                        onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
-                      <p className="text-[9.5px]" style={{...wishHeading, letterSpacing:"0.18em", fontFamily:'"Shippori Mincho",serif'}}>
-                        <span style={{fontStyle:"italic"}}>My Favorites</span><br/>
-                        <span className="text-[9px]">12個のおまもり</span>
-                      </p>
+                    {/* リボンのタイトル */}
+                    <div className="mb-4 text-center">
+                      <RibbonTitle>My Favorites</RibbonTitle>
+                      <div style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, fontSize:"11px", lineHeight:1.8, color:"#9d174d", marginTop:10}}>
+                        〜 わたしのお守り 〜
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
@@ -8744,37 +8757,73 @@
                             </span>
                             <span className="text-[7px] text-pink-300">◦</span>
                           </div>
-                          <textarea
-                            className="flex-1 w-full bg-transparent text-[10px] text-gray-600 placeholder:text-pink-200 focus:outline-none resize-none text-center"
-                            placeholder={c.hint}
-                            rows={2}
-                            style={{lineHeight:1.4}}
+                          <AutoTA value={favVals[i] || ""} onChange={e=>setAt(favVals, setFavVals, i, e.target.value)} minH={34}
+                            className="flex-1 w-full bg-transparent text-[10.5px] text-gray-700 focus:outline-none text-center"
+                            style={{lineHeight:1.4, fontFamily:'"Shippori Mincho",serif', wordBreak:"break-word"}}
                           />
                         </div>
                       ))}
                     </div>
-                    <p className="text-[9px] text-center mt-3" style={{...wishHeading, letterSpacing:"0.15em"}}>
-                      ※ 心が疲れたとき、ここに戻ってきて
-                    </p>
+
+                    {/* 自分で追加したおまもり */}
+                    {favCustom.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2 mt-2">
+                        {favCustom.map((c,i)=>(
+                          <div key={i} className="relative rounded-2xl bg-gradient-to-br from-white/85 to-pink-50/70 border border-pink-100 p-2 flex flex-col"
+                            style={{minHeight:78, boxShadow:"0 2px 6px rgba(249,168,212,0.08)"}}>
+                            <button onClick={()=>{ if (!c.text.trim() || window.confirm("このおまもりを削除しますか？")) setFavCustom(favCustom.filter((_,k)=>k!==i)); }}
+                              aria-label="削除"
+                              style={{position:"absolute", top:3, right:5, fontSize:"11px", color:"#be185d", background:"none", border:"none", padding:0, lineHeight:1}}>×</button>
+                            <input type="text" value={c.label}
+                              onChange={e=>{ const n = favCustom.slice(); n[i] = {...n[i], label:e.target.value}; setFavCustom(n); }}
+                              placeholder="項目名"
+                              className="w-full bg-transparent text-center focus:outline-none mb-1 placeholder:text-pink-300"
+                              style={{...wishHeading, fontSize:"9px", fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.05em", paddingLeft:10, paddingRight:10}}/>
+                            <AutoTA value={c.text} minH={34}
+                              onChange={e=>{ const n = favCustom.slice(); n[i] = {...n[i], text:e.target.value}; setFavCustom(n); }}
+                              className="flex-1 w-full bg-transparent text-[10.5px] text-gray-700 focus:outline-none text-center"
+                              style={{lineHeight:1.4, fontFamily:'"Shippori Mincho",serif', wordBreak:"break-word"}}/>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button onClick={()=>setFavCustom([...favCustom, {label:"", text:""}])}
+                      className="w-full mt-3 py-2 rounded-2xl active:scale-[0.98] transition"
+                      style={{background:"rgba(255,255,255,0.7)", border:"1.5px dashed #ec4899", color:"#be185d", fontFamily:'"Shippori Mincho",serif', fontWeight:700, fontSize:"12px", letterSpacing:"0.08em"}}>
+                      ＋ おまもりを追加
+                    </button>
                   </div>
                 )}
 
                 {open==="letter" && (
-                  <div className="space-y-2">
-                    {[
-                      {when:"3ヶ月後", date:"2026-07-23"},
-                      {when:"1年後",   date:"2027-04-23"},
-                      {when:"5年後",   date:"2031-04-23"},
-                    ].map(l=>(
-                      <div key={l.when} className="rounded-xl bg-white/70 border border-pink-100 p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.1em"}}>{l.when}の姫へ</span>
-                          <span className="text-[9px]" style={wishHeading}>届く日：{l.date}</span>
-                        </div>
-                        <textarea rows={2} placeholder="未来の自分へひとこと…"
-                          className="w-full bg-transparent text-[10px] text-gray-600 placeholder:text-pink-300 focus:outline-none resize-none"/>
+                  <div>
+                    <div className="mb-4 text-center">
+                      <RibbonTitle>未来レター</RibbonTitle>
+                      <div style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, fontSize:"11px", lineHeight:1.8, color:"#9d174d", marginTop:10}}>
+                        〜 未来のわたしから今のあなたへ 〜
                       </div>
-                    ))}
+                    </div>
+                    <div className="space-y-3">
+                    {[
+                      {idx:1, when:"1年後",    months:12},
+                      {idx:4, when:"3年後",    months:36},
+                      {idx:2, when:"5年後",    months:60},
+                      {idx:5, when:"10年後",   months:120},
+                    ].map((l)=>{
+                      const cur = lettersAll[l.idx];
+                      return (
+                      <div key={l.when} className="rounded-xl bg-white/70 border border-pink-100 p-3">
+                        <div className="mb-1.5">
+                          <div className="text-[12px]" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.1em"}}>{l.when}の姫から</div>
+                          <div className="text-[9.5px] mt-0.5" style={{fontFamily:'"Shippori Mincho",serif', color:"#9d174d", fontWeight:600}}>{l.when}のあなたになりきって、今の自分に一言</div>
+                        </div>
+                        <AutoTA minH={96} value={cur.text}
+                          onChange={e=>{ const v = e.target.value; setAt(lettersAll, setLetters, l.idx, {text:v, at: cur.at || (v.trim() ? todayKey() : "")}); }}
+                          className="w-full bg-transparent text-[11px] text-gray-700 focus:outline-none"
+                          style={{fontFamily:'"Shippori Mincho",serif', lineHeight:1.7}}/>
+                      </div>
+                    );})}
+                    </div>
                   </div>
                 )}
 
@@ -8785,44 +8834,54 @@
 
                 {open==="heroine" && (
                   <div className="space-y-2">
-                    <p className="text-[10.5px] mb-2" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>
-                      〜 今月なりたい姫像を描く 〜
-                    </p>
+                    <div className="mb-4 text-center">
+                      <RibbonTitle>今月の主人公設定</RibbonTitle>
+                      <div style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, fontSize:"11px", lineHeight:1.8, color:"#9d174d", marginTop:10}}>
+                        〜 なりたい姫像を描く 〜
+                      </div>
+                    </div>
                     <p className="text-[11px] mb-1" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>♢ 今月はどんな姫？</p>
-                    <input type="text" placeholder="例：ふんわりクラシカルな姫"
-                      className="w-full bg-white/70 border border-pink-100 rounded-xl px-3 py-2 text-[11px] text-gray-800 placeholder:text-rose-400 focus:outline-none focus:border-pink-300"
-                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                    <AutoTA minH={96} value={heroineVals[0] || ""} onChange={e=>setAt(heroineVals, setHeroineVals, 0, e.target.value)}
+                      className="w-full bg-white/70 border border-pink-100 rounded-xl px-3 py-2 text-[11px] text-gray-800 focus:outline-none focus:border-pink-300"
+                      style={{fontFamily:'"Shippori Mincho",serif', lineHeight:1.5}}/>
                     <p className="text-[11px] mb-1 mt-3" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>♢ ふさわしい雰囲気・場所</p>
-                    <input type="text" placeholder="例：朝の光、静かな本棚"
-                      className="w-full bg-white/70 border border-pink-100 rounded-xl px-3 py-2 text-[11px] text-gray-800 placeholder:text-rose-400 focus:outline-none focus:border-pink-300"
-                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                    <AutoTA minH={96} value={heroineVals[1] || ""} onChange={e=>setAt(heroineVals, setHeroineVals, 1, e.target.value)}
+                      className="w-full bg-white/70 border border-pink-100 rounded-xl px-3 py-2 text-[11px] text-gray-800 focus:outline-none focus:border-pink-300"
+                      style={{fontFamily:'"Shippori Mincho",serif', lineHeight:1.5}}/>
                     <p className="text-[11px] mb-1 mt-3" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>♢ 今月叶えたいこと</p>
-                    <input type="text" placeholder="例：3kg落とす / 朝活を整える"
-                      className="w-full bg-white/70 border border-pink-100 rounded-xl px-3 py-2 text-[11px] text-gray-800 placeholder:text-rose-400 focus:outline-none focus:border-pink-300"
-                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                    <AutoTA minH={96} value={heroineVals[2] || ""} onChange={e=>setAt(heroineVals, setHeroineVals, 2, e.target.value)}
+                      className="w-full bg-white/70 border border-pink-100 rounded-xl px-3 py-2 text-[11px] text-gray-800 focus:outline-none focus:border-pink-300"
+                      style={{fontFamily:'"Shippori Mincho",serif', lineHeight:1.5}}/>
                     <p className="text-[11px] mb-1 mt-3" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>♢ 大切にする時間</p>
-                    <input type="text" placeholder="例：朝の15分 / 眠る前の10分"
-                      className="w-full bg-white/70 border border-pink-100 rounded-xl px-3 py-2 text-[11px] text-gray-800 placeholder:text-rose-400 focus:outline-none focus:border-pink-300"
-                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                    <AutoTA minH={96} value={heroineVals[3] || ""} onChange={e=>setAt(heroineVals, setHeroineVals, 3, e.target.value)}
+                      className="w-full bg-white/70 border border-pink-100 rounded-xl px-3 py-2 text-[11px] text-gray-800 focus:outline-none focus:border-pink-300"
+                      style={{fontFamily:'"Shippori Mincho",serif', lineHeight:1.5}}/>
 
                   </div>
                 )}
 
                 {open==="imaging" && (
-                  <div className="space-y-2">
-                    <p className="text-[11px] mb-2 text-center" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif'}}>叶った未来で…</p>
-                    <p className="text-[10px] mb-1" style={{...wishHeading, letterSpacing:"0.1em"}}>👁 見えるもの</p>
-                    <textarea rows={2} placeholder="例：朝の光、白いドレス、笑顔"
-                      className="w-full bg-white/70 border border-pink-100 rounded-xl p-2 text-[11px] text-gray-800 placeholder:text-rose-400 focus:outline-none focus:border-pink-300 resize-none"
-                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
-                    <p className="text-[10px] mb-1 mt-2" style={{...wishHeading, letterSpacing:"0.1em"}}>👂 聞こえるもの</p>
-                    <textarea rows={2} placeholder="例：鳥のさえずり、やさしい声"
-                      className="w-full bg-white/70 border border-pink-100 rounded-xl p-2 text-[11px] text-gray-800 placeholder:text-rose-400 focus:outline-none focus:border-pink-300 resize-none"
-                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
-                    <p className="text-[10px] mb-1 mt-2" style={{...wishHeading, letterSpacing:"0.1em"}}>💗 感じるもの</p>
-                    <textarea rows={2} placeholder="例：ふわふわ、満ちた気持ち"
-                      className="w-full bg-white/70 border border-pink-100 rounded-xl p-2 text-[11px] text-gray-800 placeholder:text-rose-400 focus:outline-none focus:border-pink-300 resize-none"
-                      style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                  <div>
+                    <div className="mb-4 text-center">
+                      <RibbonTitle>イメージングワーク</RibbonTitle>
+                      <div style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, fontSize:"11px", lineHeight:1.8, color:"#9d174d", marginTop:10}}>
+                        〜 五感で叶った未来を鮮明に想像しよう 〜
+                      </div>
+                    </div>
+                    {[
+                      {idx:0, label:"👁 見えるもの"},
+                      {idx:1, label:"👂 聞こえるもの"},
+                      {idx:3, label:"👃 香るもの"},
+                      {idx:4, label:"👅 味わうもの"},
+                      {idx:2, label:"💗 感じるもの"},
+                    ].map((f,k)=>(
+                      <div key={f.idx}>
+                        <p className={`text-[11px] mb-1.5 ${k>0 ? "mt-4" : ""}`} style={{...wishHeading, letterSpacing:"0.1em", fontFamily:'"Shippori Mincho",serif'}}>{f.label}</p>
+                        <AutoTA minH={110} value={imagingAll[f.idx]} onChange={e=>setAt(imagingAll, setImagingVals, f.idx, e.target.value)}
+                          className="w-full bg-white/70 border border-pink-100 rounded-xl p-3 text-[11px] text-gray-800 focus:outline-none focus:border-pink-300"
+                          style={{fontFamily:'"Shippori Mincho",serif', lineHeight:1.7}}/>
+                      </div>
+                    ))}
                   </div>
                 )}
 
