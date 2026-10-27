@@ -1590,6 +1590,14 @@
         {emoji:"🌿", label:"リラックスしたい", room:"care"},
         {emoji:"🍵", label:"のんびりしたい", room:"care"},
       ];
+      const honneBeauty = [
+        {emoji:"🍃", label:"痩せたい", room:"care"},
+        {emoji:"👗", label:"美ボディになりたい", room:"care"},
+        {emoji:"🥬", label:"食べすぎを防ぎたい", room:"care"},
+        {emoji:"🌷", label:"美肌になりたい", room:"care"},
+        {emoji:"💇‍♀️", label:"サラ艶髪になりたい", room:"care"},
+        {emoji:"🩺", label:"健康になりたい", room:"care"},
+      ];
       const honneSort = [
         {emoji:"🫧", label:"スッキリしたい", room:"monthly"},
         {emoji:"💭", label:"吐き出したい", room:"monthly"},
@@ -1613,6 +1621,12 @@
         {emoji:"🥗", label:"食を整えたい", room:"daily"},
         {emoji:"⏰", label:"生活リズム", room:"daily"},
         {emoji:"📖", label:"学び続けたい", room:"daily"},
+        {emoji:"🌃", label:"夜更かしをやめたい", room:"daily"},
+        {emoji:"🌅", label:"朝活したい", room:"daily"},
+        {emoji:"📅", label:"規則正しい習慣を身に付けたい", room:"daily"},
+        {emoji:"🚫", label:"悪習慣をやめたい", room:"daily"},
+        {emoji:"🍷", label:"お酒の飲み過ぎをやめたい", room:"daily"},
+        {emoji:"📱", label:"スマホ時間を減らしたい", room:"daily"},
       ];
       const honneWow = [
         {emoji:"🌠", label:"夢を叶えたい", room:"world"},
@@ -1622,7 +1636,7 @@
         {emoji:"🙏", label:"感謝を味わいたい", room:"daily"},
         {emoji:"🏅", label:"この調子で続けたい", room:"daily"},
       ];
-      const allHonneOpts = honneLove.concat(honneRest).concat(honneSort).concat(honneChange).concat(honneWow).concat(honneHabit);
+      const allHonneOpts = honneLove.concat(honneRest).concat(honneBeauty).concat(honneSort).concat(honneChange).concat(honneWow).concat(honneHabit);
 
       // ── 部屋情報 ──
       const roomInfo = {
@@ -2165,6 +2179,20 @@
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#bfdbfe,#e9d5ff)" : "#dbeafe", borderColor: selected ? "#60a5fa" : "#93c5fd", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[18px] text-center">{opt.emoji}</div>
                           <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#1e3a8a" : "#1d4ed8", fontWeight: selected ? 700 : 600}}>{opt.label}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-[10.5px] mb-2" style={{letterSpacing:"0.15em", fontWeight:700, color:"#be185d"}}>♢ キレイになりたい・整えたい ♢</p>
+                  <div className="grid grid-cols-3 gap-1.5 mb-3">
+                    {honneBeauty.map(opt => {
+                      const selected = honneVoices.includes(opt.label);
+                      return (
+                        <button key={opt.label} onClick={() => toggleHonne(opt.label)}
+                          className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#fbcfe8,#fecdd3)" : "#fce7f3", borderColor: selected ? "#ec4899" : "#f9a8d4", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
+                          <div className="text-[18px] text-center">{opt.emoji}</div>
+                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9d174d" : "#be185d", fontWeight: selected ? 700 : 600}}>{opt.label}</div>
                         </button>
                       );
                     })}
@@ -2729,6 +2757,19 @@
       const [voiceHint, setVoiceHint] = useState("");
       const recognitionRef = useRef(null);
       const [selectedCharm, setSelectedCharm] = useState(null); // モーダル用
+      // ライブラリは「2段（6枚）」がちょうど見える高さにする
+      const [libH, setLibH] = useState(0);
+      useEffect(() => {
+        const m = () => {
+          const el = document.getElementById('library-scroll');
+          const c = el && el.querySelector('button');
+          if (c) { const h = c.getBoundingClientRect().height; if (h > 0) setLibH(Math.round(h * 2 + 8 + 2)); }
+        };
+        m();
+        const t1 = setTimeout(m, 300), t2 = setTimeout(m, 1200);
+        window.addEventListener('resize', m);
+        return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener('resize', m); };
+      }, [categoryFilter]);
 
       // ─── カテゴリー ───
       const categories = ["すべて", "自分を信じる", "心を軽くする", "前向きになる", "夢に向かう", "落ち着きたいとき", "自分を大切にする"];
@@ -2752,71 +2793,226 @@
       // ─── ライブラリ言葉（60個 = 6カテゴリ × 10言葉） ───
       const libraryWords = [
         // 自分を信じる
-        {text:"わたしにはわたしのペースがある。", cat:"自分を信じる", jewel:"💗"},
-        {text:"わたしはわたしのままで十分価値がある。", cat:"自分を信じる", jewel:"⭐"},
-        {text:"わたしはわたしを信じる。", cat:"自分を信じる", jewel:"💎"},
-        {text:"わたしはできる人。", cat:"自分を信じる", jewel:"💗"},
-        {text:"わたしの選択はいつも正しい。", cat:"自分を信じる", jewel:"⭐"},
-        {text:"わたしの心が答えを知っている。", cat:"自分を信じる", jewel:"💎"},
-        {text:"わたしは自分の道を歩んでいる。", cat:"自分を信じる", jewel:"💗"},
-        {text:"誰と比べなくても、わたしは素敵。", cat:"自分を信じる", jewel:"⭐"},
-        {text:"わたしの直感を信じよう。", cat:"自分を信じる", jewel:"💎"},
-        {text:"わたしはわたしの人生の主人公。", cat:"自分を信じる", jewel:"💗"},
+        {text:"自分のペースで、歩けばいい", cat:"自分を信じる", jewel:"💗"},
+        {text:"ありのままの、自分でいい", cat:"自分を信じる", jewel:"⭐"},
+        {text:"わたしは、わたしのままで、十分価値がある。", cat:"自分を信じる", jewel:"💎"},
+        {text:"わたしは、わたしを信じる。", cat:"自分を信じる", jewel:"💎"},
+        {text:"わたしは、やればできる人", cat:"自分を信じる", jewel:"💗"},
+        {text:"自分で選んだ道を、イロドリ豊かにする。", cat:"自分を信じる", jewel:"⭐"},
+        {text:"答えはいつも、自分の中にある", cat:"自分を信じる", jewel:"💎"},
+        {text:"ピンときたら、動く！", cat:"自分を信じる", jewel:"💗"},
+        {text:"わたしの花が、咲く時期は、わたしが決める", cat:"自分を信じる", jewel:"⭐"},
+        {text:"わたしは自分の道を、歩んでいる。", cat:"自分を信じる", jewel:"💗"},
+        {text:"あの子は、あの子の配役、私は私の配役", cat:"自分を信じる", jewel:"⭐"},
+        {text:"昨日の自分とだけ、比べっこ", cat:"自分を信じる", jewel:"💎"},
+        {text:"違ってあたりまえ、違って大正解", cat:"自分を信じる", jewel:"💗"},
+        {text:"みんなちがって、みんないい", cat:"自分を信じる", jewel:"💎"},
+        {text:"選んだ道を、正解にすればいい", cat:"自分を信じる", jewel:"💗"},
+        {text:"自分は自分、人は人", cat:"自分を信じる", jewel:"⭐"},
+        {text:"足りないところも、わたしの色", cat:"自分を信じる", jewel:"💎"},
+        {text:"わたしの、ペースで、咲けばいい", cat:"自分を信じる", jewel:"💗"},
+        {text:"心の声を信じて、一歩前へ", cat:"自分を信じる", jewel:"💎"},
+        {text:"わたしは、わたしの世界の、主人公", cat:"自分を信じる", jewel:"💗"},
         // 心を軽くする
-        {text:"うまくいかない日もちゃんと意味がある。", cat:"心を軽くする", jewel:"💜"},
-        {text:"完璧じゃなくていい できることをできるだけ。", cat:"心を軽くする", jewel:"🧡"},
-        {text:"力を抜いて深呼吸。", cat:"心を軽くする", jewel:"🩷"},
-        {text:"今日はここまでで十分。", cat:"心を軽くする", jewel:"💜"},
-        {text:"手放していい 抱え込まなくていい。", cat:"心を軽くする", jewel:"🧡"},
-        {text:"なんとかなる 大丈夫。", cat:"心を軽くする", jewel:"🩷"},
-        {text:"気楽にいこう それでいい。", cat:"心を軽くする", jewel:"💜"},
-        {text:"全部やらなくていい。", cat:"心を軽くする", jewel:"🧡"},
-        {text:"まあいいか それも人生。", cat:"心を軽くする", jewel:"🩷"},
-        {text:"明日の私に任せよう。", cat:"心を軽くする", jewel:"💜"},
+        {text:"うまくいかない日も、ちゃんと意味がある。", cat:"心を軽くする", jewel:"💜"},
+        {text:"完璧じゃなくていい、できることを、できるだけ。", cat:"心を軽くする", jewel:"🧡"},
+        {text:"今日は、ここまでで十分。", cat:"心を軽くする", jewel:"💜"},
+        {text:"ひとりで、背負わなくていい", cat:"心を軽くする", jewel:"🧡"},
+        {text:"今は、休んでもいい", cat:"心を軽くする", jewel:"🩷"},
+        {text:"気楽にいこう、それでいい。", cat:"心を軽くする", jewel:"💜"},
+        {text:"全部一人で、やらなくていい", cat:"心を軽くする", jewel:"🧡"},
+        {text:"ゆるっと、生きていこう", cat:"心を軽くする", jewel:"🩷"},
+        {text:"明日の自分に、おまかせ", cat:"心を軽くする", jewel:"💜"},
         // 前向きになる
         {text:"わたしは、よく頑張ってる", cat:"前向きになる", jewel:"💎"},
-        {text:"きっといいことが待ってるよ。", cat:"前向きになる", jewel:"💛"},
-        {text:"新しい一日 新しいわたし。", cat:"前向きになる", jewel:"🌟"},
-        {text:"どんな一日も宝物になる。", cat:"前向きになる", jewel:"💎"},
-        {text:"わたしの未来は明るい。", cat:"前向きになる", jewel:"💛"},
-        {text:"今日を笑顔で始めよう。", cat:"前向きになる", jewel:"🌟"},
-        {text:"小さな幸せを集めていこう。", cat:"前向きになる", jewel:"💎"},
-        {text:"何が起きても乗り越えられる。", cat:"前向きになる", jewel:"💛"},
-        {text:"今日も輝ける日になる。", cat:"前向きになる", jewel:"🌟"},
-        {text:"わたしの心は太陽のように明るい。", cat:"前向きになる", jewel:"💎"},
+        {text:"きっといいことが、待ってるよ。", cat:"前向きになる", jewel:"💛"},
+        {text:"新しい一日、新しいわたし。", cat:"前向きになる", jewel:"🌟"},
+        {text:"どんな一日も、宝物になる。", cat:"前向きになる", jewel:"💎"},
+        {text:"わたしの未来は、明るい。", cat:"前向きになる", jewel:"💛"},
+        {text:"今日を笑顔で、始めよう。", cat:"前向きになる", jewel:"🌟"},
+        {text:"小さな幸せを、集めていこう。", cat:"前向きになる", jewel:"💎"},
+        {text:"何が起きても、乗り越えられる。", cat:"前向きになる", jewel:"💛"},
+        {text:"今日も、輝ける日になる。", cat:"前向きになる", jewel:"🌟"},
+        {text:"わたしの人生の、プロフェッショナルに、なればいい", cat:"前向きになる", jewel:"💎"},
         // 夢に向かう
-        {text:"小さな一歩が未来の大きな一歩になる。", cat:"夢に向かう", jewel:"🧡"},
-        {text:"夢はもうわたしの中で咲きはじめている。", cat:"夢に向かう", jewel:"💚"},
-        {text:"わたしの願いは必ずかなう。", cat:"夢に向かう", jewel:"⭐"},
-        {text:"一歩ずつ確実に前進している。", cat:"夢に向かう", jewel:"🧡"},
-        {text:"夢を追いかけるわたしが大好き。", cat:"夢に向かう", jewel:"💚"},
-        {text:"諦めなければ必ずかなう。", cat:"夢に向かう", jewel:"⭐"},
-        {text:"わたしの夢はわたしが叶える。", cat:"夢に向かう", jewel:"🧡"},
-        {text:"今日の努力が未来をつくる。", cat:"夢に向かう", jewel:"💚"},
-        {text:"できないことはまだ知らないだけ。", cat:"夢に向かう", jewel:"⭐"},
-        {text:"一歩踏み出す勇気が道を開く。", cat:"夢に向かう", jewel:"🧡"},
+        {text:"小さな一歩が、未来の大きな、一歩になる。", cat:"夢に向かう", jewel:"🧡"},
+        {text:"夢はもう、わたしの中で、咲きはじめている。", cat:"夢に向かう", jewel:"💚"},
+        {text:"わたしの願いは、必ずかなう。", cat:"夢に向かう", jewel:"⭐"},
+        {text:"一歩ずつ、確実に前進している。", cat:"夢に向かう", jewel:"🧡"},
+        {text:"夢を追いかける、わたしが大好き。", cat:"夢に向かう", jewel:"💚"},
+        {text:"願いが叶うまで、絶対にあきらめない", cat:"夢に向かう", jewel:"⭐"},
+        {text:"わたしの夢は、わたしが叶える。", cat:"夢に向かう", jewel:"🧡"},
+        {text:"未来の自分に、喜ばれるように、今を大切にしよう", cat:"夢に向かう", jewel:"💚"},
+        {text:"できないことは、まだ知らないだけ。", cat:"夢に向かう", jewel:"⭐"},
+        {text:"一歩踏み出す勇気が、道を開く。", cat:"夢に向かう", jewel:"🧡"},
+        {text:"できないからこそ、伸びしろしかない", cat:"夢に向かう", jewel:"💚"},
+        {text:"できなくて当たり前、初めてなんだから", cat:"心を軽くする", jewel:"💜"},
+        {text:"全部できる、必要はない、得意な人に、頼めばいい", cat:"心を軽くする", jewel:"🧡"},
+        {text:"できないのは、ただ『今』だけ", cat:"前向きになる", jewel:"🌟"},
+        {text:"向いていない、のではなく、慣れていないだけ", cat:"前向きになる", jewel:"💛"},
+        {text:"失敗ではなく、データ収集", cat:"前向きになる", jewel:"🌟"},
+        {text:"一歩進めば、景色が変わる", cat:"夢に向かう", jewel:"🧡"},
+        {text:"面白く、なってきた", cat:"前向きになる", jewel:"🌟"},
+        {text:"人生は、一度きり", cat:"前向きになる", jewel:"💎"},
+        {text:"失敗しないと、成功はない", cat:"前向きになる", jewel:"💛"},
+        {text:"失敗したって、大丈夫、最後に笑えばいい", cat:"前向きになる", jewel:"🌟"},
+        {text:"絶対に、できる！", cat:"前向きになる", jewel:"⭐"},
+        {text:"ピンチは、チャンス", cat:"前向きになる", jewel:"🌟"},
+        {text:"今あるものに、感謝", cat:"前向きになる", jewel:"💛"},
+        {text:"ありがとう、感謝します", cat:"前向きになる", jewel:"💎"},
+        {text:"私は絶対に、幸せになるし、もう幸せの途中", cat:"前向きになる", jewel:"💛"},
+        {text:"ラクに、いこうよ！", cat:"心を軽くする", jewel:"🧡"},
+        {text:"どん底なら、あとは上がるだけ", cat:"前向きになる", jewel:"🌟"},
+        {text:"辛いのは、幸せになる途中", cat:"前向きになる", jewel:"💛"},
+        {text:"今日が、一番若い日", cat:"前向きになる", jewel:"💎"},
+        {text:"明日が、くることは、幸せなこと", cat:"前向きになる", jewel:"💛"},
+        {text:"大変は、大きく、変わる時", cat:"前向きになる", jewel:"🌟"},
+        {text:"最後には、全てうまくいく", cat:"前向きになる", jewel:"💛"},
+        {text:"最後は、ハッピーエンド", cat:"前向きになる", jewel:"🌟"},
+        {text:"今までより、これからを、大切にしよう", cat:"前向きになる", jewel:"💎"},
+        {text:"失敗した分だけ、強くなれる", cat:"前向きになる", jewel:"💛"},
+        {text:"悩んだ分だけ、成長できる", cat:"前向きになる", jewel:"💎"},
+        {text:"小さな一歩でも、前に進めばいい", cat:"前向きになる", jewel:"⭐"},
+        {text:"神様は、突然、願いを、叶えてくれる", cat:"夢に向かう", jewel:"⭐"},
+        {text:"未来は、変えることができる", cat:"夢に向かう", jewel:"💚"},
+        {text:"決めれば、叶う！", cat:"夢に向かう", jewel:"🧡"},
+        {text:"信じ続ければ、夢は叶うよ", cat:"夢に向かう", jewel:"⭐"},
+        {text:"自分を、変えられるのは、自分だけ", cat:"夢に向かう", jewel:"💚"},
+        {text:"なりたかった、自分になるのに、遅すぎることはない", cat:"夢に向かう", jewel:"⭐"},
+        {text:"迷ったら、ワクワクする方へ", cat:"夢に向かう", jewel:"💚"},
+        {text:"昨日の自分より、できてる！", cat:"前向きになる", jewel:"⭐"},
+        {text:"一つずつ、確認すればいい", cat:"前向きになる", jewel:"💛"},
+        {text:"今できることから、始めよう", cat:"前向きになる", jewel:"💎"},
+        {text:"60点ぐらいで、いいや！", cat:"心を軽くする", jewel:"🧡"},
+        {text:"失敗したけど、いい経験！、次は成功するぞ！", cat:"前向きになる", jewel:"🌟"},
+        {text:"〇〇さんに、一度頼ってみよう！", cat:"心を軽くする", jewel:"🩷"},
         // 落ち着きたいとき
-        {text:"深呼吸してわたしの心を大事にしよう。", cat:"落ち着きたいとき", jewel:"💚"},
+        {text:"深呼吸して、わたしの心を、大事にしよう。", cat:"落ち着きたいとき", jewel:"💚"},
         {text:"不安は、期待の裏返し", cat:"落ち着きたいとき", jewel:"💗"},
         {text:"今のこの瞬間に、集中しよう", cat:"落ち着きたいとき", jewel:"💙"},
-        {text:"ゆっくりでいい。", cat:"落ち着きたいとき", jewel:"💚"},
-        {text:"心をふぅっと休ませよう。", cat:"落ち着きたいとき", jewel:"💗"},
-        {text:"波に身をまかせよう。", cat:"落ち着きたいとき", jewel:"💙"},
-        {text:"大丈夫 時間が教えてくれる。", cat:"落ち着きたいとき", jewel:"💚"},
-        {text:"今は静かに耳を澄まそう。", cat:"落ち着きたいとき", jewel:"💗"},
-        {text:"一息ついて心を整えて。", cat:"落ち着きたいとき", jewel:"💙"},
-        {text:"今の私をぎゅっと抱きしめて。", cat:"落ち着きたいとき", jewel:"💚"},
+        {text:"ゆっくり、考えよう", cat:"落ち着きたいとき", jewel:"💚"},
+        {text:"立ち止まると、視野が広がる", cat:"落ち着きたいとき", jewel:"💙"},
+        {text:"焦らず、整理して考えよう", cat:"落ち着きたいとき", jewel:"💗"},
+        {text:"心は、ゆっくり追いつく", cat:"落ち着きたいとき", jewel:"💗"},
+        {text:"流れに、身を任せよう", cat:"落ち着きたいとき", jewel:"💙"},
+        {text:"なるようになる、なすがままでいい", cat:"落ち着きたいとき", jewel:"💙"},
+        {text:"できることをしたら、あとは宇宙におまかせ", cat:"落ち着きたいとき", jewel:"💜"},
+        {text:"落ち着いて、ゆっくり", cat:"落ち着きたいとき", jewel:"💚"},
+        {text:"ま、いっか！", cat:"心を軽くする", jewel:"🧡"},
+        {text:"明日のわたしが、なんとかする", cat:"心を軽くする", jewel:"🧡"},
+        {text:"生きてるだけで、丸もうけ", cat:"心を軽くする", jewel:"💜"},
+        {text:"70点で、上出来！", cat:"心を軽くする", jewel:"💜"},
+        {text:"それはそれで、いい", cat:"心を軽くする", jewel:"🩷"},
+        {text:"この世に、完璧なものは、存在しない", cat:"心を軽くする", jewel:"🧡"},
+        {text:"加点方式で、いこう", cat:"心を軽くする", jewel:"💜"},
+        {text:"もう十分、やってる", cat:"心を軽くする", jewel:"🩷"},
+        {text:"死ぬわけじゃないし、いっか", cat:"心を軽くする", jewel:"🧡"},
+        {text:"ほどほど、そこそこ、ボチボチ", cat:"心を軽くする", jewel:"💜"},
+        {text:"人間だもの、こういう日もある", cat:"心を軽くする", jewel:"🩷"},
+        {text:"完璧を目指すより、まず終わらせる", cat:"心を軽くする", jewel:"🩷"},
+        {text:"ケ・セラ・セラ、（なるようになるさ）", cat:"落ち着きたいとき", jewel:"💗"},
+        {text:"波に乗っていこう", cat:"前向きになる", jewel:"💎"},
+        {text:"大丈夫、時間が教えてくれる。", cat:"落ち着きたいとき", jewel:"💚"},
+        {text:"なるようになる、すべては、ベストなタイミングで、やってくる", cat:"落ち着きたいとき", jewel:"💙"},
+        {text:"今はただ、そこにいればいい", cat:"落ち着きたいとき", jewel:"💗"},
+        {text:"一息ついて、心を整えて。", cat:"落ち着きたいとき", jewel:"💙"},
+        {text:"なんとかなる、今までも、なんとかなってきた", cat:"落ち着きたいとき", jewel:"💚"},
         // 自分を大切にする
-        {text:"わたしはわたしの一番の味方。", cat:"自分を大切にする", jewel:"💗"},
-        {text:"やさしく、自分を包んであげよう", cat:"自分を大切にする", jewel:"🩷"},
-        {text:"わたしは大切にされる存在。", cat:"自分を大切にする", jewel:"💜"},
-        {text:"わたしの心の声を聞いてあげる。", cat:"自分を大切にする", jewel:"💗"},
-        {text:"自分を丁寧に扱おう。", cat:"自分を大切にする", jewel:"🩷"},
-        {text:"「ありがとう」を自分にも言おう。", cat:"自分を大切にする", jewel:"💜"},
-        {text:"わたしは愛されるために生まれた。", cat:"自分を大切にする", jewel:"💗"},
-        {text:"自分を後回しにしない。", cat:"自分を大切にする", jewel:"🩷"},
-        {text:"わたしの体と心に優しく。", cat:"自分を大切にする", jewel:"💜"},
-        {text:"今日のわたしを褒めてあげよう。", cat:"自分を大切にする", jewel:"💗"},
+        {text:"わたしは、わたしの一番の味方。", cat:"自分を大切にする", jewel:"💗"},
+        {text:"自分を、やさしく、抱きしめよう", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"わたしは、大切にされる存在", cat:"自分を大切にする", jewel:"💜"},
+        {text:"わたしの気持ちを、一番に聞いてあげる", cat:"自分を大切にする", jewel:"💗"},
+        {text:"自分を、丁寧に扱おう。", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"やさしさは、顔に滲み出る", cat:"自分を大切にする", jewel:"💗"},
+        {text:"大切なのは、笑顔の時間", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"傷ついた分だけ、優しくなれる", cat:"自分を大切にする", jewel:"💜"},
+        {text:"幸せはいつも、あなたのそばにある", cat:"自分を大切にする", jewel:"💗"},
+        {text:"大丈夫！あなたは、一人じゃない！", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"今ここにいる自分に、「ありがとう」", cat:"自分を大切にする", jewel:"💜"},
+        {text:"頑張ってきた身体に、ありがとう", cat:"自分を大切にする", jewel:"💗"},
+        {text:"生きていてくれて、ありがとう", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"わたしは、愛されるために、生まれた。", cat:"自分を大切にする", jewel:"💗"},
+        {text:"自分を後回しに、しない", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"わたしの心と身体を、大切にしよう", cat:"自分を大切にする", jewel:"💜"},
+        {text:"今日のわたしを、褒めてあげよう。", cat:"自分を大切にする", jewel:"💗"},
+        {text:"今日まで、本当によく、頑張ってきたね", cat:"自分を大切にする", jewel:"💜"},
+        {text:"他人の機嫌は、わたしの、責任じゃない", cat:"心を軽くする", jewel:"🩷"},
+        {text:"今日もお疲れさん", cat:"自分を大切にする", jewel:"💗"},
+        {text:"疲れたでしょう", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"ゆっくり休んでね", cat:"自分を大切にする", jewel:"💜"},
+        {text:"つらかったね", cat:"自分を大切にする", jewel:"💗"},
+        {text:"しんどいね", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"なかなか、わかって、もらえないよね", cat:"自分を大切にする", jewel:"💜"},
+        {text:"よく我慢したね", cat:"自分を大切にする", jewel:"💗"},
+        {text:"十分、がんばってるよ", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"〇〇なところ、私はいいと思うよ", cat:"自分を大切にする", jewel:"💜"},
+        {text:"いるだけで、いいんだよ", cat:"自分を大切にする", jewel:"💗"},
+        {text:"居てよし！", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"みんなで、力を合わせれば、大丈夫", cat:"前向きになる", jewel:"💛"},
+        {text:"全力を、出すことが、何よりも大事", cat:"夢に向かう", jewel:"🧡"},
+        {text:"最後まで、あきらめない", cat:"夢に向かう", jewel:"💚"},
+        {text:"自分のペースで、最後まで、やり抜こう", cat:"夢に向かう", jewel:"🧡"},
+        {text:"今日できることに、全力を尽くそう", cat:"夢に向かう", jewel:"💚"},
+        {text:"挑戦している、時点で、もうすごいよ", cat:"夢に向かう", jewel:"⭐"},
+        {text:"どんな結果でも、わたしの、価値は変わらない", cat:"自分を信じる", jewel:"💎"},
+        {text:"自分を信じて、進んでいこう", cat:"自分を信じる", jewel:"💗"},
+        {text:"ここまでの努力が、わたしを、支えてくれるよ", cat:"自分を信じる", jewel:"⭐"},
+        {text:"わたしなら、きっとできる", cat:"自分を信じる", jewel:"🌟"},
+        {text:"これが終われば、楽しい時間が、待ってる", cat:"前向きになる", jewel:"💛"},
+        {text:"リラックスして、深呼吸しよう", cat:"落ち着きたいとき", jewel:"💙"},
+        {text:"一度、ぜんぶ、置いておこう", cat:"落ち着きたいとき", jewel:"💚"},
+        {text:"今は、そう思っても、いいんだよ", cat:"落ち着きたいとき", jewel:"💙"},
+        {text:"今日も一日、よく乗り切った！", cat:"自分を大切にする", jewel:"💗"},
+        {text:"ここまで、やってきたんだから、大丈夫", cat:"自分を信じる", jewel:"💎"},
+        {text:"誰でも、つまずくことは、あるよ", cat:"心を軽くする", jewel:"🧡"},
+        {text:"何があっても、味方だからね", cat:"自分を大切にする", jewel:"💗"},
+        {text:"休むことも、立派な、選択肢だよ", cat:"心を軽くする", jewel:"💜"},
+        {text:"この経験が、きっと未来に、つながる", cat:"前向きになる", jewel:"🌟"},
+        {text:"明日はきっと、いい日になる", cat:"前向きになる", jewel:"💛"},
+        {text:"無理に、笑わなくて、いいよ", cat:"心を軽くする", jewel:"🩷"},
+        {text:"泣きたい時は、泣いていい", cat:"心を軽くする", jewel:"💜"},
+        {text:"わたしの魅力は、変わらない", cat:"自分を信じる", jewel:"💗"},
+        {text:"わたしの努力は、無駄じゃない", cat:"自分を信じる", jewel:"⭐"},
+        {text:"大事なのは次に、どうするかだよ", cat:"前向きになる", jewel:"💎"},
+        {text:"その経験が、わたしを強くする", cat:"前向きになる", jewel:"💛"},
+        {text:"転んでも、きっと、立ち直れる", cat:"自分を信じる", jewel:"🌟"},
+        {text:"結果よりも、過程が大切", cat:"前向きになる", jewel:"⭐"},
+        {text:"今は準備期間、だと思おう", cat:"落ち着きたいとき", jewel:"💙"},
+        {text:"少しずつ、変化は起きてる", cat:"前向きになる", jewel:"💛"},
+        {text:"成功まで、あと一歩かも、しれないよ", cat:"夢に向かう", jewel:"🧡"},
+        {text:"努力が、無駄になる、ことはない", cat:"夢に向かう", jewel:"💚"},
+        {text:"その挑戦は、わたしを、強くしているよ", cat:"夢に向かう", jewel:"⭐"},
+        {text:"頑張りは、必ず誰かが、見ている", cat:"自分を大切にする", jewel:"💜"},
+        {text:"それだけ頑張れる、わたしがすごいよ", cat:"自分を大切にする", jewel:"💗"},
+        {text:"どんな、選択をしても、間違いじゃない", cat:"自分を信じる", jewel:"💎"},
+        {text:"迷うのは、成長している証拠", cat:"前向きになる", jewel:"💛"},
+        {text:"誰でも不安を、感じる時はある", cat:"心を軽くする", jewel:"🧡"},
+        {text:"周りのことは、気にしなくていい", cat:"心を軽くする", jewel:"🩷"},
+        {text:"無理に、全員と仲良く、しなくていい", cat:"心を軽くする", jewel:"💜"},
+        {text:"大切な人を、一人でも、見つければいい", cat:"心を軽くする", jewel:"🩷"},
+        {text:"自分を、責めすぎない、でいいよ", cat:"心を軽くする", jewel:"💜"},
+        {text:"合う人も、合わない人も、いて当然", cat:"心を軽くする", jewel:"🧡"},
+        {text:"一度距離を、取るのも、悪くない", cat:"心を軽くする", jewel:"💜"},
+        {text:"自分の気持ちを、大切にしていい", cat:"自分を大切にする", jewel:"💗"},
+        {text:"少しずつでも、相手に、伝えてみよう", cat:"前向きになる", jewel:"💎"},
+        {text:"進む道は、いつでも、変えられる", cat:"心を軽くする", jewel:"💜"},
+        {text:"最初は、誰でも戸惑うもの", cat:"心を軽くする", jewel:"🧡"},
+        {text:"少しずつ、慣れていけばいい", cat:"心を軽くする", jewel:"🩷"},
+        {text:"周りもきっと、サポート、してくれる", cat:"自分を大切にする", jewel:"💗"},
+        {text:"新しい経験は、成長のチャンス", cat:"前向きになる", jewel:"🌟"},
+        {text:"大丈夫、わたしには、明るい未来がある", cat:"前向きになる", jewel:"💛"},
+        {text:"みんなが、わたしを、信じている", cat:"自分を大切にする", jewel:"💗"},
+        {text:"応援している人が、たくさんいるよ", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"少しずつ、自分の居場所を、作っていこう", cat:"前向きになる", jewel:"🌟"},
+        {text:"今は新しい、スタートを、楽しもう", cat:"前向きになる", jewel:"💛"},
+        {text:"最初の一歩が、いちばん大変、越えれば楽になる", cat:"前向きになる", jewel:"⭐"},
+        {text:"小さな、一歩でも、大きな進歩", cat:"夢に向かう", jewel:"🧡"},
+        {text:"時間がきっと、解決してくれる", cat:"落ち着きたいとき", jewel:"💚"},
+        {text:"次はもっと、素敵な出会いが、待ってる", cat:"前向きになる", jewel:"💎"},
+        {text:"これも、人生の、大切な経験", cat:"前向きになる", jewel:"🌟"},
+        {text:"ゆっくりで、いいから、前を向こう", cat:"前向きになる", jewel:"💛"},
+        {text:"わたしは、一人じゃないよ", cat:"自分を大切にする", jewel:"💗"},
+        {text:"みんな、同じように、最初は不安なんだ", cat:"心を軽くする", jewel:"🧡"},
       ];
 
       const filteredWords = categoryFilter === "すべて"
@@ -2840,10 +3036,11 @@
       // 既にこの気持ちに魔法をかけた状態か
       const alreadyCast = todayMagicWord && innerVoice === castSnapshot;
       // 末尾の句読点を削除するヘルパー
-      const stripEndPeriod = (text) => (text || "").replace(/[。！？!?.]+$/, '');
+      const stripEndPeriod = (text) => (text || "").replace(/[。.]+$/, '');
       // お守り言葉を「、」「半角スペース」で分割して改行用の配列にする
       const splitCharmLines = (text) => {
         const clean = stripEndPeriod(text);
+        if (clean.length <= 6) return [clean]; // 「ま、いっか」など短い言葉は1行のまま
         return clean.split(/[、\s]+/).map(s => s.trim()).filter(Boolean);
       };
 
@@ -2866,7 +3063,87 @@
           {oldPatterns:["わたしは大切にされる存在","わたしは大切にされる存在。"], newText:"わたしは、大切にされる存在"},
         ];
         let needsUpdate = false;
+        // ライブラリの改行調整後も、保存済みお守りが同じ言葉として扱われるよう、句読点・空白を無視して照合
+        const normCharm = (t) => (t || "").replace(/[、。\s]/g, "");
         const updated = savedCharms.map(c => {
+          { const mergeMap = {
+              "一つずつ片付けよう！": "一つずつ、確認すればいい",
+              "一つずつ片付けよう": "一つずつ、確認すればいい",
+              "わたしにはわたしのペースがある": "自分のペースで、歩けばいい",
+              "自分のペースで進もう": "自分のペースで、歩けばいい",
+              "選んだ道を正解にする": "選んだ道を、正解にすればいい",
+              "ゆっくりでいい": "ゆっくり、考えよう",
+              "休むのも大事な仕事": "今は、休んでもいい",
+              "全部やらなくていい": "全部一人で、やらなくていい",
+              "自分を変えれるのは自分だけ": "自分を、変えられるのは、自分だけ",
+              "諦めなければ必ずかなう": "願いが叶うまで、絶対にあきらめない",
+              "まあいいかそれも人生": "ゆるっと、生きていこう",
+              "遠回りも人生の味わい": "ゆるっと、生きていこう",
+              "やさしく自分を包んであげよう": "自分を、やさしく、抱きしめよう",
+              "自分にもやさしくしていい": "自分を、やさしく、抱きしめよう",
+              "わたしの心の声を聞いてあげる": "わたしの気持ちを、一番に聞いてあげる",
+              "「ありがとう」を自分にも言おう": "今ここにいる自分に、ありがとう",
+              "今日もありがとうわたし": "今ここにいる自分に、ありがとう",
+              "頑張ってくれてありがとう": "今ここにいる自分に、ありがとう",
+              "いつも支えてくれてありがとう": "今ここにいる自分に、「ありがとう」",
+              "今ここにいる自分にありがとう": "今ここにいる自分に、「ありがとう」",
+              "わたしならきっと立ち直れる": "転んでも、きっと、立ち直れる",
+              "力を抜いて深呼吸": "リラックスして、深呼吸しよう",
+              "わたしは一人じゃない": "わたしは、一人じゃないよ",
+              "わたしはわたしの人生の主人公": "わたしは、わたしの世界の、主人公",
+              "まいっか": "ま、いっか！",
+              "わたしはできる人": "わたしは、やればできる人",
+              "自分を後回しにしない": "自分を後回しに、しない",
+              "わたしの体と心に優しく": "わたしの心と身体を、大切にしよう",
+              "今は静かに耳を澄まそう": "今はただ、そこにいればいい",
+              "窓を開けて風を感じよう": "今はただ、そこにいればいい",
+              "好きな香りに包まれよう": "心は、ゆっくり追いつく",
+              "わたしの直感を信じよう": "心の声を信じて、一歩前へ",
+              "心をふぅっと休ませよう": "好きな香りに、包まれよう",
+              "今日の努力が未来をつくる": "未来の自分に、喜ばれるように、今を大切にしよう",
+              "今は少し立ち止まっていい": "今は、休んでもいい",
+              "手放していい抱え込まなくていい": "ひとりで、背負わなくていい",
+            };
+            const k = normCharm(c.text);
+            const hit = Object.keys(mergeMap).find(x => normCharm(x) === k);
+            if (hit) { needsUpdate = true; return {...c, text: mergeMap[hit]}; } }
+          if (normCharm(c.text) === "わたしの心が答えを知っている") {
+            needsUpdate = true;
+            return {...c, text: "答えはいつも、自分の中にある"};
+          }
+          if (normCharm(c.text) === "なるようになる") {
+            needsUpdate = true;
+            return {...c, text: "なるようになる、なすがままでいい"};
+          }
+          if (normCharm(c.text) === "明日の私に任せよう") {
+            needsUpdate = true;
+            return {...c, text: "明日の自分に、おまかせ"};
+          }
+          if (normCharm(c.text) === "波に身をまかせよう") {
+            needsUpdate = true;
+            return {...c, text: "流れに、身を任せよう"};
+          }
+          if (normCharm(c.text) === "なんとかなる大丈夫") {
+            needsUpdate = true;
+            return {...c, text: "休むのも、大事な仕事"};
+          }
+          if (normCharm(c.text) === "今の私をぎゅっと抱きしめて") {
+            needsUpdate = true;
+            return {...c, text: "なんとかなる、今までも、なんとかなってきた"};
+          }
+          if (normCharm(c.text) === "わたしの心は太陽のように明るい") {
+            needsUpdate = true;
+            return {...c, text: "わたしの人生の、プロフェッショナルに、なればいい"};
+          }
+          if (normCharm(c.text) === "誰と比べなくてもわたしは素敵") {
+            needsUpdate = true;
+            return {...c, text: "あの子は、あの子の配役、私は私の配役"};
+          }
+          const lw = libraryWords.find(w => normCharm(w.text) === normCharm(c.text));
+          if (lw && stripEndPeriod(lw.text) !== stripEndPeriod(c.text)) {
+            needsUpdate = true;
+            return {...c, text: lw.text};
+          }
           for (const m of migrations) {
             if (m.oldPatterns.includes(c.text)) {
               needsUpdate = true;
@@ -2981,9 +3258,9 @@
         <div className="mb-3">
           <div className="flex items-center gap-2">
             {emoji && <span className="text-[15px]">{emoji}</span>}
-            <span className="text-[15px] text-rose-700" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.1em"}}>{title}</span>
+            <span className="text-[15px]" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, letterSpacing:"0.1em", color:"#9f1239", textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 5px rgba(255,255,255,0.95)"}}>{title}</span>
           </div>
-          {sub && <div className="text-[10px] text-rose-400 mt-0.5 pl-1" style={{fontFamily:'"Shippori Mincho",serif'}}>〜 {sub} 〜</div>}
+          {sub && <div className="text-[10.5px] mt-0.5 pl-1" style={{fontFamily:'"Shippori Mincho",serif', color:"#be185d", fontWeight:600, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>〜 {sub} 〜</div>}
         </div>
       );
 
@@ -3003,8 +3280,8 @@
 
           {/* ═══ Section 1: 執事があなたに寄り添います ═══ */}
           <section className="px-3 mt-4">
-            <div className="rounded-[22px] bg-gradient-to-br from-white/80 to-pink-50/60 border border-white p-4"
-              style={{boxShadow:"0 4px 14px rgba(249,168,212,0.18)"}}>
+            <div className="rounded-[22px] p-4"
+              style={{background:"linear-gradient(160deg,#fbcfe8 0%,#fdf2f8 100%)", border:"1.5px solid #f472b6", boxShadow:"0 4px 14px rgba(236,72,153,0.25)"}}>
               <SectionHead title="執事があなたに寄り添います" sub="心の中にあることを、少しだけ聞かせてください"/>
 
               {/* バブル1: 執事 */}
@@ -3013,8 +3290,8 @@
                   <img src="./avatar_butler.png" alt="" aria-hidden className="w-full h-full object-cover"
                     onError={(e)=>{ e.currentTarget.style.display="none"; e.currentTarget.parentElement.innerHTML='<div class="w-full h-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center text-white text-[20px]">🎩</div>'; }}/>
                 </div>
-                <div className="flex-1 rounded-2xl bg-pink-50/80 border border-pink-100 p-2.5">
-                  <div className="text-[10.5px] text-rose-700 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                <div className="flex-1 rounded-2xl p-2.5" style={{background:"linear-gradient(135deg,#ffffff,#fdf2f8)", border:"1.5px solid #f472b6", boxShadow:"0 4px 12px rgba(120,50,80,0.25), 0 1px 3px rgba(120,50,80,0.15)"}}>
+                  <div className="text-[11px] leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', color:"#6b2308", fontWeight:700, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>
                     お嬢様、今日はどんなお気持ちですか？<br/>
                     うまく言葉にできなくても大丈夫ですよ。
                   </div>
@@ -3027,16 +3304,16 @@
                   <img src="./avatar_princess.png" alt="" aria-hidden className="w-full h-full object-cover"
                     onError={(e)=>{ e.currentTarget.style.display="none"; e.currentTarget.parentElement.innerHTML='<div class="w-full h-full bg-gradient-to-br from-pink-200 to-rose-300 flex items-center justify-center text-[20px]">🌷</div>'; }}/>
                 </div>
-                <div className="flex-1 rounded-2xl bg-white border border-rose-200 p-2.5">
+                <div className="flex-1 rounded-2xl p-2.5" style={{background:"linear-gradient(135deg,#fffbeb,#fef3c7)", border:"1.5px solid #f59e0b", boxShadow:"0 4px 12px rgba(180,83,9,0.22), 0 1px 3px rgba(180,83,9,0.15)"}}>
                   <div className="flex items-center gap-1 mb-1.5">
                     <span className="text-[13px]">🪶</span>
-                    <span className="text-[9.5px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>今の気持ちを書いてみてください…</span>
+                    <span className="text-[10.5px]" style={{fontFamily:'"Shippori Mincho",serif', color:"#92400e", fontWeight:700, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>今の気持ちを書いてみてください…</span>
                   </div>
                   <AutoTA value={innerVoice} onChange={e=>setInnerVoice(e.target.value)}
                     placeholder="例：どうせ私にはできない…"
                     rows={2}
-                    className="w-full bg-pink-50/40 border border-pink-100 rounded-xl px-2 py-1.5 text-[11px] text-gray-800 placeholder:text-rose-300 focus:outline-none focus:border-rose-300 resize-none leading-relaxed"
-                    style={{fontFamily:'"Shippori Mincho",serif'}}/>
+                    className="w-full rounded-xl px-2 py-1.5 text-[11px] text-gray-800 placeholder:text-amber-600/50 focus:outline-none resize-none leading-relaxed"
+                    style={{fontFamily:'"Shippori Mincho",serif', background:"#ffffff", border:"1.5px solid #fcd34d"}}/>
                 </div>
               </div>
 
@@ -3046,8 +3323,8 @@
                   <img src="./avatar_butler.png" alt="" aria-hidden className="w-full h-full object-cover"
                     onError={(e)=>{ e.currentTarget.style.display="none"; e.currentTarget.parentElement.innerHTML='<div class="w-full h-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center text-white text-[20px]">🎩</div>'; }}/>
                 </div>
-                <div className="flex-1 rounded-2xl bg-pink-50/80 border border-pink-100 p-2.5">
-                  <div className="text-[10.5px] text-rose-700 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                <div className="flex-1 rounded-2xl p-2.5" style={{background:"linear-gradient(135deg,#ffffff,#fdf2f8)", border:"1.5px solid #f472b6", boxShadow:"0 4px 12px rgba(120,50,80,0.25), 0 1px 3px rgba(120,50,80,0.15)"}}>
+                  <div className="text-[11px] leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', color:"#6b2308", fontWeight:700, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>
                     {innerVoice.trim()
                       ? <>そう感じていらっしゃるのですね。<br/>では、その気持ちが少し軽くなるような言葉を、一緒に探してみましょう。</>
                       : <>お嬢様のお気持ち、私が伺います。<br/>安心して、思うままにお書きくださいませ。</>}
@@ -3059,8 +3336,8 @@
 
           {/* ═══ Section 2: 魔法の言葉でチェンジ！ ═══ */}
           <section className="px-3 mt-4">
-            <div className="rounded-[22px] bg-gradient-to-br from-purple-50/60 via-pink-50/70 to-white border border-white p-4"
-              style={{boxShadow:"0 4px 14px rgba(249,168,212,0.18)"}}>
+            <div className="rounded-[22px] p-4"
+              style={{background:"linear-gradient(160deg,#ddd6fe 0%,#f5f3ff 100%)", border:"1.5px solid #a78bfa", boxShadow:"0 4px 14px rgba(139,92,246,0.25)"}}>
               <SectionHead title="魔法の言葉でチェンジ！" sub="おまじないのことばをとなえてみて" emoji="✨"/>
 
               {/* 気持ちを書く（テキスト or 音声） */}
@@ -3069,8 +3346,8 @@
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[13px]">🪶</span>
-                      <span className="text-[9.5px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>今の気持ちを書いてね</span>
-                      <span className="text-[8.5px] text-rose-400" style={{fontFamily:'"Shippori Mincho",serif'}}>（音声入力もOK）</span>
+                      <span className="text-[11px]" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:700, color:"#9f1239", textShadow:"0 1px 2px rgba(255,255,255,1)"}}>今の気持ちを書いてね</span>
+                      <span className="text-[9.5px]" style={{fontFamily:'"Shippori Mincho",serif', color:"#be185d", fontWeight:600}}>（音声入力もOK）</span>
                     </div>
                     {/* 魔法をかけた印 */}
                     {todayMagicWord && innerVoice === castSnapshot && innerVoice.trim() && (
@@ -3082,8 +3359,8 @@
                   <div className="flex items-start gap-2">
                     <AutoTA value={innerVoice} onChange={e=>setInnerVoice(e.target.value)}
                       placeholder="例：どうせ私にはできない…"
-                      rows={2}
-                      className={`flex-1 border rounded-xl px-2 py-1.5 text-[11px] text-gray-800 placeholder:text-rose-300 focus:outline-none focus:border-rose-300 resize-none leading-relaxed transition-all ${
+                      rows={3} minH={96}
+                      className={`flex-1 border rounded-xl px-3 py-2 text-[12px] text-gray-800 placeholder:text-rose-300 focus:outline-none focus:border-rose-300 resize-none leading-relaxed transition-all ${
                         todayMagicWord && innerVoice === castSnapshot && innerVoice.trim()
                           ? "bg-pink-50/30 border-pink-100 opacity-70"
                           : "bg-pink-50/40 border-pink-100"
@@ -3228,22 +3505,20 @@
                 <div className="mt-3 flex items-center justify-center gap-2">
                   <button onClick={()=>saveCharm(todayMagicWord)}
                     disabled={savedCharms.find(c=>c.text===todayMagicWord)}
-                    className={`text-[10px] px-3 py-1.5 rounded-full active:scale-95 transition ${
-                      savedCharms.find(c=>c.text===todayMagicWord)
-                        ? "bg-pink-100 border border-pink-200 text-pink-400"
-                        : "bg-gradient-to-r from-rose-400 to-pink-500 text-white"
-                    }`}
-                    style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600, boxShadow: !savedCharms.find(c=>c.text===todayMagicWord)?"0 3px 8px rgba(244,114,182,0.25)":"none"}}>
+                    className="active:scale-95 transition"
+                    style={savedCharms.find(c=>c.text===todayMagicWord)
+                      ? {fontFamily:'"Shippori Mincho",serif', fontSize:12, fontWeight:800, letterSpacing:"0.1em", padding:"8px 22px", borderRadius:999, background:"linear-gradient(135deg,#f9a8d4,#fbcfe8)", color:"#9d174d", border:"none", textShadow:"0 1px 2px rgba(255,255,255,0.9)", boxShadow:"0 4px 10px rgba(236,72,153,0.25)"}
+                      : {fontFamily:'"Shippori Mincho",serif', fontSize:12, fontWeight:800, letterSpacing:"0.1em", padding:"8px 22px", borderRadius:999, background:"linear-gradient(135deg,#ec4899,#f472b6)", color:"#ffffff", border:"none", textShadow:"0 1px 3px rgba(0,0,0,0.45)", boxShadow:"0 4px 10px rgba(236,72,153,0.4)"}}>
                     {savedCharms.find(c=>c.text===todayMagicWord) ? "♥ お守りに保存済" : "♡ お守りに保存"}
                   </button>
                   <button onClick={startVoice}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center transition active:scale-95 ${
+                    className={`rounded-full flex items-center justify-center transition active:scale-95 ${
                       isListening ? "bg-red-400 text-white animate-pulse" : "bg-white border-2 border-pink-300 text-rose-500"
                     }`}
-                    style={{boxShadow:"0 2px 6px rgba(249,168,212,0.25)"}}>
-                    <span className="text-[14px]">🎤</span>
+                    style={{width:38, height:38, boxShadow:"0 4px 10px rgba(236,72,153,0.25)"}}>
+                    <span className="text-[16px]">🎤</span>
                   </button>
-                  <div className="text-[10px] text-rose-500" style={{fontFamily:'"Shippori Mincho",serif'}}>
+                  <div style={{fontFamily:'"Shippori Mincho",serif', fontSize:12, fontWeight:800, color:"#9f1239", textShadow:"0 1px 2px rgba(255,255,255,1)"}}>
                     {chantCount}回
                   </div>
                 </div>
@@ -3256,8 +3531,8 @@
 
           {/* ═══ Section 3: 王宮ライブラリー（左サイドバー+本のグリッド） ═══ */}
           <section className="px-3 mt-4">
-            <div className="relative rounded-[22px] border border-white overflow-hidden"
-              style={{boxShadow:"0 4px 14px rgba(249,168,212,0.18)"}}>
+            <div className="relative rounded-[22px] overflow-hidden"
+              style={{border:"1.5px solid #60a5fa", boxShadow:"0 4px 14px rgba(59,130,246,0.25)"}}>
               {/* 背景: 王宮図書館イラスト */}
               <img src="./library_bg.png" alt="" aria-hidden
                 className="absolute inset-0 w-full h-full object-cover pointer-events-none"
@@ -3265,7 +3540,7 @@
                 onError={(e)=>{ e.currentTarget.style.display="none"; }}/>
               {/* 白い半透明レイヤーで文字読みやすく */}
               <div className="absolute inset-0 pointer-events-none"
-                style={{background:"linear-gradient(to bottom, rgba(255,250,246,0.88), rgba(255,240,245,0.80))"}}/>
+                style={{background:"linear-gradient(to bottom, rgba(219,234,254,0.93), rgba(239,246,255,0.88))"}}/>
 
               {/* コンテンツ */}
               <div className="relative p-3">
@@ -3273,26 +3548,31 @@
 
                 {/* カテゴリフィルター（上部・横並び） */}
                 <div className="mb-3">
-                  <div className="text-[9.5px] text-rose-500 mb-1.5" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.08em", fontWeight:600}}>🎀 カテゴリーから探す</div>
-                  <div style={{display:"flex", flexWrap:"wrap", gap:6}}>
-                    {categories.map(cat=>(
-                      <button key={cat} onClick={()=>setCategoryFilter(cat)}
-                        className={`rounded-full text-[9.5px] transition active:scale-95 ${
-                          categoryFilter===cat
-                            ? "bg-gradient-to-r from-rose-300 to-pink-300 text-white"
-                            : "bg-white text-rose-500 border border-rose-100"
-                        }`}
-                        style={{fontFamily:'"Shippori Mincho",serif', fontWeight:categoryFilter===cat?600:400, padding:"4px 10px", boxShadow: categoryFilter===cat?"0 2px 6px rgba(244,114,182,0.25)":"none"}}>
-                        {cat==="すべて" ? "🌸" : categoryEmoji[cat]} {cat}
-                      </button>
-                    ))}
+                  <div className="text-[11px] mb-2" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.08em", fontWeight:700, color:"#9f1239", textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>🎀 カテゴリーから探す</div>
+                  <div style={{display:"flex", flexWrap:"wrap", gap:7}}>
+                    {categories.map(cat=>{
+                      const catCol = {"すべて":"#e11d48","自分を信じる":"#8b5cf6","心を軽くする":"#ec4899","前向きになる":"#16a34a","夢に向かう":"#d97706","落ち着きたいとき":"#0284c7","自分を大切にする":"#f43f5e"}[cat] || "#e11d48";
+                      const on = categoryFilter===cat;
+                      return (
+                        <button key={cat} onClick={()=>setCategoryFilter(cat)}
+                          className="rounded-full text-[11px] transition active:scale-95"
+                          style={{fontFamily:'"Shippori Mincho",serif', fontWeight:800, padding:"6px 12px",
+                            color: on ? "#ffffff" : catCol,
+                            background: on ? catCol : "#ffffff",
+                            border: "2px solid " + catCol,
+                            textShadow: on ? "0 1px 3px rgba(0,0,0,0.45)" : "0 1px 2px rgba(255,255,255,1)",
+                            boxShadow: on ? "0 4px 10px "+catCol+"66" : "0 2px 6px rgba(0,0,0,0.12)"}}>
+                          {cat==="すべて" ? "🌸" : categoryEmoji[cat]} {cat}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* 本のグリッド（3列・スクロール可能な固定エリア） */}
                 <div style={{position:"relative"}}>
                 <div id="library-scroll" style={{
-                  maxHeight:340,
+                  maxHeight: libH || 340,
                   overflowY:"auto",
                   paddingRight:4,
                   paddingBottom:2,
@@ -3395,32 +3675,21 @@
                   </p>
                 )}
                 </div>
-                {/* 下部フェード（もっと下にある視覚ヒント） */}
-                <div style={{
-                  position:"absolute",
-                  bottom:0,
-                  left:0,
-                  right:4,
-                  height:32,
-                  background:"linear-gradient(to bottom, rgba(255,250,246,0) 0%, rgba(255,240,245,0.9) 100%)",
-                  pointerEvents:"none",
-                  borderBottomLeftRadius:8,
-                  borderBottomRightRadius:8
-                }}/>
+                
                 </div>
                 {/* スクロールボタン（下にスクロール実行） */}
                 <div className="text-center mt-1">
                   <button onClick={()=>{
                     const el = document.getElementById('library-scroll');
-                    if(el){ el.scrollBy({top:120, behavior:'smooth'}); }
+                    if(el){ el.scrollBy({top:(libH ? libH + 8 : 240), behavior:'smooth'}); }
                   }}
-                    style={{fontSize:9, color:"#e879f9", letterSpacing:"0.1em", padding:"3px 12px", borderRadius:12, background:"rgba(255,255,255,0.6)", border:"1px solid rgba(232,121,249,0.3)", cursor:"pointer"}}
+                    style={{fontFamily:'"Shippori Mincho",serif', fontSize:12, fontWeight:800, color:"#ffffff", letterSpacing:"0.1em", padding:"8px 22px", borderRadius:999, background:"linear-gradient(135deg,#3b82f6,#60a5fa)", border:"none", textShadow:"0 1px 3px rgba(0,0,0,0.45)", boxShadow:"0 4px 10px rgba(59,130,246,0.4)", cursor:"pointer"}}
                     className="active:scale-95 transition">
                     ▼ 続きを見る
                   </button>
                 </div>
-                <div className="text-[8.5px] text-rose-400 text-center mt-2" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.05em"}}>
-                  📖 タップで今日の言葉に · ♡で お守りに保存
+                <div className="text-[10.5px] text-center mt-3" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.05em", color:"#1e3a8a", fontWeight:700, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>
+                  📖 タップで今日の言葉に！<br/>♡で お守りに保存
                 </div>
               </div>
             </div>
@@ -3428,8 +3697,8 @@
 
           {/* ═══ Section 4: わたしを支えてくれたお守りことば ═══ */}
           <section className="px-3 mt-4">
-            <div className="rounded-[22px] bg-gradient-to-br from-pink-50 to-rose-50 border border-white p-4"
-              style={{boxShadow:"0 4px 14px rgba(249,168,212,0.2)"}}>
+            <div className="rounded-[22px] p-4"
+              style={{background:"linear-gradient(160deg,#fef9c3 0%,#fffef7 100%)", border:"1.5px solid #fde68a", boxShadow:"0 4px 14px rgba(234,179,8,0.18)"}}>
               <SectionHead title="わたしを支えてくれた お守りことば" sub="宝石箱にしまわれた、わたしの魔法" emoji="💎"/>
 
               {/* 宝石箱イラスト（大きく装飾） */}
@@ -3442,7 +3711,7 @@
                 </div>
                 <div className="flex-1">
                   <p className="text-[11.5px] text-rose-600 leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
-                    集めたお守り言葉が、あなたの宝石箱にきらめいています ✨
+                    集めたお守り言葉が、あなたの<br/>宝石箱にきらめいています ✨
                   </p>
                   {savedCharms.length > 0 && (
                     <p className="text-[11px] text-rose-500 mt-1.5" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
@@ -7229,7 +7498,7 @@
     const careSectionThemes = [
       {bg:"linear-gradient(180deg,#fff1f5 0%,#fecdd3 100%)", border:"1.5px solid #fb7185", boxShadow:"0 4px 14px rgba(244,63,94,0.2)"},
       {bg:"linear-gradient(180deg,#faf5ff 0%,#ede9fe 100%)", border:"1.5px solid #a78bfa", boxShadow:"0 4px 14px rgba(139,92,246,0.2)"},
-      {bg:"linear-gradient(180deg,#eff6ff 0%,#dbeafe 100%)", border:"1.5px solid #93c5fd", boxShadow:"0 4px 14px rgba(59,130,246,0.2)"},
+      {bg:"linear-gradient(180deg,#eff6ff 0%,#dbeafe 100%)", border:"1.5px solid #60a5fa", boxShadow:"0 4px 14px rgba(59,130,246,0.25)"},
       {bg:"linear-gradient(180deg,#ecfdf5 0%,#d1fae5 100%)", border:"1.5px solid #6ee7b7", boxShadow:"0 4px 14px rgba(16,185,129,0.2)"},
       {bg:"linear-gradient(180deg,#fffbeb 0%,#fef3c7 100%)", border:"1.5px solid #fcd34d", boxShadow:"0 4px 14px rgba(217,119,6,0.2)"},
     ];
@@ -7928,9 +8197,14 @@
                         if (diff <= 0) return "ちょうどよいバランスでございます ♡";
                         const days = Math.round(diff * 7700 / 300);
                         const months = (days/30).toFixed(1);
-                        return `約 ${months}ヶ月で達成予定 ✨`;
+                        return `約 ${months}ヶ月で達成予定`;
                       })()}
                     </p>
+                    {(!bodyStats.height || !bodyStats.age) && (
+                      <p className="text-[10px] leading-relaxed mb-3" style={{...wishHeading, fontFamily:'"Shippori Mincho",serif', opacity:0.85}}>
+                        ※ 身長・年齢を入れると、より正確になります。
+                      </p>
+                    )}
                   </>
                 )}
                 <div className="text-[8.5px] mb-1.5" style={{...wishHeading, letterSpacing:"0.15em"}}>活動量</div>
