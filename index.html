@@ -156,7 +156,8 @@
       100% { transform: scale(1); filter: brightness(1); }
     }
     .jewel-glow { animation: jewelGlow 0.8s ease-out; }
-  </style>
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
   <div id="root"></div>
@@ -2926,14 +2927,18 @@
         {text:"やさしさは、顔に滲み出る", cat:"自分を大切にする", jewel:"💗"},
         {text:"大切なのは、笑顔の時間", cat:"自分を大切にする", jewel:"🩷"},
         {text:"傷ついた分だけ、優しくなれる", cat:"自分を大切にする", jewel:"💜"},
-        {text:"幸せはいつも、あなたのそばにある", cat:"自分を大切にする", jewel:"💗"},
+        {text:"幸せはいつも、自分のそばに、ある", cat:"自分を大切にする", jewel:"💗"},
+        {text:"いつも、幸せは、そばにある", cat:"自分を大切にする", jewel:"🩷"},
+        {text:"いつも、動いてくれて、ありがとう", cat:"自分を大切にする", jewel:"💗"},
+        {text:"素敵な仲間が、周りにいるのは、本当に幸せなこと", cat:"自分を大切にする", jewel:"💜"},
+        {text:"周りの人に恵まれて、助けられていて、本当にありがたい", cat:"自分を大切にする", jewel:"🩷"},
         {text:"大丈夫！あなたは、一人じゃない！", cat:"自分を大切にする", jewel:"🩷"},
-        {text:"今ここにいる自分に、「ありがとう」", cat:"自分を大切にする", jewel:"💜"},
-        {text:"頑張ってきた身体に、ありがとう", cat:"自分を大切にする", jewel:"💗"},
+        {text:"今ここにいる、自分に、「ありがとう」", cat:"自分を大切にする", jewel:"💜"},
+        {text:"がんばってきた、身体に、ありがとう", cat:"自分を大切にする", jewel:"💗"},
         {text:"生きていてくれて、ありがとう", cat:"自分を大切にする", jewel:"🩷"},
         {text:"わたしは、愛されるために、生まれた。", cat:"自分を大切にする", jewel:"💗"},
         {text:"自分を後回しに、しない", cat:"自分を大切にする", jewel:"🩷"},
-        {text:"わたしの心と身体を、大切にしよう", cat:"自分を大切にする", jewel:"💜"},
+        {text:"わたしの、心と身体を、大切にしよう", cat:"自分を大切にする", jewel:"💜"},
         {text:"今日のわたしを、褒めてあげよう。", cat:"自分を大切にする", jewel:"💗"},
         {text:"今日まで、本当によく、頑張ってきたね", cat:"自分を大切にする", jewel:"💜"},
         {text:"他人の機嫌は、わたしの、責任じゃない", cat:"心を軽くする", jewel:"🩷"},
@@ -3040,7 +3045,7 @@
       // お守り言葉を「、」「半角スペース」で分割して改行用の配列にする
       const splitCharmLines = (text) => {
         const clean = stripEndPeriod(text);
-        if (clean.length <= 6) return [clean]; // 「ま、いっか」など短い言葉は1行のまま
+        if (clean.length <= 6) return [clean.startsWith("ま、いっか") ? clean : clean.replace(/、/g, "")]; // 短い言葉は1行のまま（「ま、いっか！」だけ読点を残す）
         return clean.split(/[、\s]+/).map(s => s.trim()).filter(Boolean);
       };
 
@@ -3082,19 +3087,23 @@
               "やさしく自分を包んであげよう": "自分を、やさしく、抱きしめよう",
               "自分にもやさしくしていい": "自分を、やさしく、抱きしめよう",
               "わたしの心の声を聞いてあげる": "わたしの気持ちを、一番に聞いてあげる",
-              "「ありがとう」を自分にも言おう": "今ここにいる自分に、ありがとう",
-              "今日もありがとうわたし": "今ここにいる自分に、ありがとう",
-              "頑張ってくれてありがとう": "今ここにいる自分に、ありがとう",
-              "いつも支えてくれてありがとう": "今ここにいる自分に、「ありがとう」",
-              "今ここにいる自分にありがとう": "今ここにいる自分に、「ありがとう」",
+              "「ありがとう」を自分にも言おう": "今ここにいる、自分に、「ありがとう」",
+              "今日もありがとうわたし": "今ここにいる、自分に、「ありがとう」",
+              "頑張ってくれてありがとう": "今ここにいる、自分に、「ありがとう」",
+              "いつも支えてくれてありがとう": "今ここにいる、自分に、「ありがとう」",
+              "今ここにいる自分にありがとう": "今ここにいる、自分に、「ありがとう」",
               "わたしならきっと立ち直れる": "転んでも、きっと、立ち直れる",
               "力を抜いて深呼吸": "リラックスして、深呼吸しよう",
               "わたしは一人じゃない": "わたしは、一人じゃないよ",
               "わたしはわたしの人生の主人公": "わたしは、わたしの世界の、主人公",
               "まいっか": "ま、いっか！",
+              "今ここにいる自分に「ありがとう」": "今ここにいる、自分に、「ありがとう」",
+              "頑張ってきた身体にありがとう": "がんばってきた、身体に、ありがとう",
+              "わたしの心と身体を大切にしよう": "わたしの、心と身体を、大切にしよう",
+              "幸せはいつもあなたのそばにある": "幸せはいつも、自分のそばに、ある",
               "わたしはできる人": "わたしは、やればできる人",
               "自分を後回しにしない": "自分を後回しに、しない",
-              "わたしの体と心に優しく": "わたしの心と身体を、大切にしよう",
+              "わたしの体と心に優しく": "わたしの、心と身体を、大切にしよう",
               "今は静かに耳を澄まそう": "今はただ、そこにいればいい",
               "窓を開けて風を感じよう": "今はただ、そこにいればいい",
               "好きな香りに包まれよう": "心は、ゆっくり追いつく",
@@ -3106,7 +3115,7 @@
             };
             const k = normCharm(c.text);
             const hit = Object.keys(mergeMap).find(x => normCharm(x) === k);
-            if (hit) { needsUpdate = true; return {...c, text: mergeMap[hit]}; } }
+            if (hit && c.text !== mergeMap[hit]) { needsUpdate = true; return {...c, text: mergeMap[hit]}; } }
           if (normCharm(c.text) === "わたしの心が答えを知っている") {
             needsUpdate = true;
             return {...c, text: "答えはいつも、自分の中にある"};
@@ -3218,6 +3227,20 @@
         const jewel = jewels[savedCharms.length % jewels.length];
         setSavedCharms([{text: word, date, jewel}, ...savedCharms]);
       };
+      const [libMsg, setLibMsg] = useState("");
+      const libMsgTimer = useRef(null);
+      const toggleLibCharm = (word) => {
+        const had = savedCharms.find(c => c.text === word);
+        if (had) {
+          setSavedCharms(savedCharms.filter(c => c.text !== word));
+          setLibMsg("お守りから外しました");
+        } else {
+          saveCharm(word);
+          setLibMsg("お守りに入れました ♡ 下の宝石箱へ");
+        }
+        if (libMsgTimer.current) clearTimeout(libMsgTimer.current);
+        libMsgTimer.current = setTimeout(()=>setLibMsg(""), 2200);
+      };
       const deleteCharm = (idx) => {
         if (!confirm("このお守りを外す？")) return;
         setSavedCharms(savedCharms.filter((_,i) => i !== idx));
@@ -3290,7 +3313,9 @@
                   <img src="./avatar_butler.png" alt="" aria-hidden className="w-full h-full object-cover"
                     onError={(e)=>{ e.currentTarget.style.display="none"; e.currentTarget.parentElement.innerHTML='<div class="w-full h-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center text-white text-[20px]">🎩</div>'; }}/>
                 </div>
-                <div className="flex-1 rounded-2xl p-2.5" style={{background:"linear-gradient(135deg,#ffffff,#fdf2f8)", border:"1.5px solid #f472b6", boxShadow:"0 4px 12px rgba(120,50,80,0.25), 0 1px 3px rgba(120,50,80,0.15)"}}>
+                <div className="flex-1 rounded-2xl p-2.5" style={{position:"relative", minWidth:0, background:"linear-gradient(135deg,#ffffff,#fdf2f8)", border:"1.5px solid #f472b6", boxShadow:"0 4px 12px rgba(120,50,80,0.25), 0 1px 3px rgba(120,50,80,0.15)"}}>
+                  <div style={{position:"absolute", left:"-9px", top:"22px", width:0, height:0, borderTop:"8px solid transparent", borderBottom:"8px solid transparent", borderRight:"9px solid #f472b6"}}/>
+                  <div style={{position:"absolute", left:"-7px", top:"23px", width:0, height:0, borderTop:"7px solid transparent", borderBottom:"7px solid transparent", borderRight:"7px solid #ffffff"}}/>
                   <div className="text-[11px] leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', color:"#6b2308", fontWeight:700, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>
                     お嬢様、今日はどんなお気持ちですか？<br/>
                     うまく言葉にできなくても大丈夫ですよ。
@@ -3299,12 +3324,14 @@
               </div>
 
               {/* バブル2: 姫（入力エリア） */}
-              <div className="flex items-start gap-2 mb-3 flex-row-reverse">
+              <div className="flex items-start gap-2 mb-3" style={{flexDirection:"row-reverse"}}>
                 <div className="shrink-0 w-16 h-16 rounded-full overflow-hidden border-2 border-white" style={{boxShadow:"0 3px 10px rgba(249,168,212,0.3)"}}>
                   <img src="./avatar_princess.png" alt="" aria-hidden className="w-full h-full object-cover"
                     onError={(e)=>{ e.currentTarget.style.display="none"; e.currentTarget.parentElement.innerHTML='<div class="w-full h-full bg-gradient-to-br from-pink-200 to-rose-300 flex items-center justify-center text-[20px]">🌷</div>'; }}/>
                 </div>
-                <div className="flex-1 rounded-2xl p-2.5" style={{background:"linear-gradient(135deg,#fffbeb,#fef3c7)", border:"1.5px solid #f59e0b", boxShadow:"0 4px 12px rgba(180,83,9,0.22), 0 1px 3px rgba(180,83,9,0.15)"}}>
+                <div className="flex-1 rounded-2xl p-2.5" style={{position:"relative", minWidth:0, background:"linear-gradient(135deg,#fffbeb,#fef3c7)", border:"1.5px solid #f59e0b", boxShadow:"0 4px 12px rgba(180,83,9,0.22), 0 1px 3px rgba(180,83,9,0.15)"}}>
+                  <div style={{position:"absolute", right:"-9px", top:"22px", width:0, height:0, borderTop:"8px solid transparent", borderBottom:"8px solid transparent", borderLeft:"9px solid #f59e0b"}}/>
+                  <div style={{position:"absolute", right:"-7px", top:"23px", width:0, height:0, borderTop:"7px solid transparent", borderBottom:"7px solid transparent", borderLeft:"7px solid #fef3c7"}}/>
                   <div className="flex items-center gap-1 mb-1.5">
                     <span className="text-[13px]">🪶</span>
                     <span className="text-[10.5px]" style={{fontFamily:'"Shippori Mincho",serif', color:"#92400e", fontWeight:700, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>今の気持ちを書いてみてください…</span>
@@ -3318,19 +3345,21 @@
               </div>
 
               {/* バブル3: 執事 */}
-              <div className="flex items-start gap-2">
+              {innerVoice.trim() && (
+              <div className="flex items-start gap-2" style={{animation:"fadeInUp .5s ease-out"}}>
                 <div className="shrink-0 w-16 h-16 rounded-full overflow-hidden border-2 border-white" style={{boxShadow:"0 3px 10px rgba(249,168,212,0.3)"}}>
                   <img src="./avatar_butler.png" alt="" aria-hidden className="w-full h-full object-cover"
                     onError={(e)=>{ e.currentTarget.style.display="none"; e.currentTarget.parentElement.innerHTML='<div class="w-full h-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center text-white text-[20px]">🎩</div>'; }}/>
                 </div>
-                <div className="flex-1 rounded-2xl p-2.5" style={{background:"linear-gradient(135deg,#ffffff,#fdf2f8)", border:"1.5px solid #f472b6", boxShadow:"0 4px 12px rgba(120,50,80,0.25), 0 1px 3px rgba(120,50,80,0.15)"}}>
+                <div className="flex-1 rounded-2xl p-2.5" style={{position:"relative", minWidth:0, background:"linear-gradient(135deg,#ffffff,#fdf2f8)", border:"1.5px solid #f472b6", boxShadow:"0 4px 12px rgba(120,50,80,0.25), 0 1px 3px rgba(120,50,80,0.15)"}}>
+                  <div style={{position:"absolute", left:"-9px", top:"22px", width:0, height:0, borderTop:"8px solid transparent", borderBottom:"8px solid transparent", borderRight:"9px solid #f472b6"}}/>
+                  <div style={{position:"absolute", left:"-7px", top:"23px", width:0, height:0, borderTop:"7px solid transparent", borderBottom:"7px solid transparent", borderRight:"7px solid #ffffff"}}/>
                   <div className="text-[11px] leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', color:"#6b2308", fontWeight:700, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>
-                    {innerVoice.trim()
-                      ? <>そう感じていらっしゃるのですね。<br/>では、その気持ちが少し軽くなるような言葉を、一緒に探してみましょう。</>
-                      : <>お嬢様のお気持ち、私が伺います。<br/>安心して、思うままにお書きくださいませ。</>}
+                    そう感じていらっしゃるのですね。<br/>では、その気持ちが少し軽くなるような言葉を、一緒に探してみましょう。
                   </div>
                 </div>
               </div>
+              )}
             </div>
           </section>
 
@@ -3463,9 +3492,27 @@
                         // 魔法後: ポジティブ言葉
                         <>
                           <div className="text-[8px] text-amber-500 mb-1" style={{letterSpacing:"0.15em", fontWeight:600}}>✨ 魔法のことば ✨</div>
-                          <div className="text-[10px] text-rose-700 font-bold line-clamp-3" style={{lineHeight:"1.55"}}>
-                            {stripEndPeriod(todayMagicWord)}
-                          </div>
+                          {(()=>{
+                            // 鏡用：1行が7文字を超える場合は、均等に区切って改行（5〜7文字ずつ）
+                            const ls = splitCharmLines(todayMagicWord).flatMap(l => {
+                              const arr = Array.from(l);
+                              if (arr.length <= 7) return [l];
+                              const n = Math.ceil(arr.length / 7);
+                              const sz = Math.ceil(arr.length / n);
+                              const out = [];
+                              for (let i = 0; i < arr.length; i += sz) out.push(arr.slice(i, i + sz).join(""));
+                              return out;
+                            });
+                            const maxL = Math.max(...ls.map(l=>l.length), 1);
+                            const fs = Math.max(7.5, Math.min(10, 84/maxL, 62/(ls.length*1.5)));
+                            return (
+                              <div className="text-rose-700 font-bold" style={{fontSize:fs+"px", lineHeight:"1.5", textShadow:"0 0 3px #fff, 0 0 6px #fff, 0 1px 2px rgba(255,255,255,.95)"}}>
+                                {ls.map((line, idx)=>(
+                                  <div key={idx} style={{whiteSpace:"nowrap"}}>{line}</div>
+                                ))}
+                              </div>
+                            );
+                          })()}
                         </>
                       ) : innerVoice.trim() ? (
                         // 入力後・魔法前
@@ -3529,6 +3576,11 @@
             </div>
           </section>
 
+          {libMsg && (
+            <div style={{position:"fixed", left:0, right:0, bottom:90, display:"flex", justifyContent:"center", zIndex:60, pointerEvents:"none"}}>
+              <div style={{fontFamily:'"Shippori Mincho",serif', fontSize:12, fontWeight:800, color:"#fff", background:"rgba(219,39,119,0.92)", padding:"9px 20px", borderRadius:999, boxShadow:"0 4px 14px rgba(0,0,0,0.25)", textShadow:"0 1px 2px rgba(0,0,0,0.4)"}}>{libMsg}</div>
+            </div>
+          )}
           {/* ═══ Section 3: 王宮ライブラリー（左サイドバー+本のグリッド） ═══ */}
           <section className="px-3 mt-4">
             <div className="relative rounded-[22px] overflow-hidden"
@@ -3544,7 +3596,7 @@
 
               {/* コンテンツ */}
               <div className="relative p-3">
-                <SectionHead title="王宮ライブラリー" sub="お守り言葉を探そう" emoji="👑"/>
+                <SectionHead title="王宮ライブラリー" sub="魔法の本から、お守りをえらぼう" emoji="👑"/>
 
                 {/* カテゴリフィルター（上部・横並び） */}
                 <div className="mb-3">
@@ -3583,10 +3635,10 @@
                 <div className="grid grid-cols-3 gap-2">
                   {filteredWords.map((w, i)=>{
                     const saved = savedCharms.find(c => c.text === w.text);
-                    const isToday = todayMagicWord === w.text;
+                    const isToday = !!saved;
                     return (
                       <button key={i}
-                        onClick={()=>{setTodayMagicWord(w.text); setChantCount(0); setRewriteWord(w.text); setCastSnapshot("");}}
+                        onClick={()=>toggleLibCharm(w.text)}
                         style={{
                           position:"relative",
                           aspectRatio:"1/1.15",
@@ -3647,7 +3699,7 @@
                           </div>
                         </div>
                         {/* ハートで保存（本の右上コーナー） */}
-                        <button onClick={(e)=>{e.stopPropagation(); saveCharm(w.text);}}
+                        <button onClick={(e)=>{e.stopPropagation(); toggleLibCharm(w.text);}}
                           style={{
                             position:"absolute",
                             top:"5%",
@@ -3689,7 +3741,7 @@
                   </button>
                 </div>
                 <div className="text-[10.5px] text-center mt-3" style={{fontFamily:'"Shippori Mincho",serif', letterSpacing:"0.05em", color:"#1e3a8a", fontWeight:700, textShadow:"0 1px 2px rgba(255,255,255,1), 0 0 4px rgba(255,255,255,0.95)"}}>
-                  📖 タップで今日の言葉に！<br/>♡で お守りに保存
+                  📖 魔法の本から、お守りをえらぼう ♡<br/>タップすると、下の宝石箱にたまります
                 </div>
               </div>
             </div>
@@ -3817,7 +3869,9 @@
                 onClick={(e)=>e.stopPropagation()}>
                 <div className="text-[40px] mb-2">{selectedCharm.jewel}</div>
                 <div className="text-[12px] text-rose-700 leading-relaxed mb-3" style={{fontFamily:'"Shippori Mincho",serif', fontWeight:600}}>
-                  {stripEndPeriod(selectedCharm.text)}
+                  {splitCharmLines(selectedCharm.text).map((line, idx)=>(
+                    <div key={idx}>{line}</div>
+                  ))}
                 </div>
                 <div className="text-[10px] text-rose-500 mb-4" style={{fontFamily:'"Shippori Mincho",serif'}}>
                   {selectedCharm.date} · この日、この言葉が わたしを守ってくれました
