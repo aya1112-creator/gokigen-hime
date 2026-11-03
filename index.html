@@ -656,6 +656,126 @@
     );
 
     // 執事のアイコン＋吹き出し（小さめ・色指定できる）
+    /* ホームの選択肢の文字：短い言葉は1行、長い言葉は意味の切れ目で2行（または3行）に分ける */
+    const SMART_OVERRIDES = {
+      "身体が重い":["身体が","重い"],
+      "ぼーっとする":["ぼーっと","する"],
+      "背中の痛み・ハリ":["背中の","痛み・ハリ"],
+      "学び続けたい":["学び","続けたい"],
+      "願いをひとつ書き足す":["願いをひとつ","書き足す"],
+      "感謝日記を書く":["感謝日記を","書く"],
+      "やりたいことを予約する":["やりたいことを","予約する"],
+      "嬉しいことを誰かに話す":["嬉しいことを","誰かに話す"],
+      "新しいことにチャレンジする":["新しいことに","チャレンジする"],
+      "興味があることを学ぶ":["興味があること","を学ぶ"],
+      "趣味・好きなことに没頭する":["趣味・好きな","ことに没頭する"],
+      "気が合う仲間や友達と会う":["気が合う仲間や","友達と会う"],
+      "推しの写真・SNSを見る":["推しの写真・","SNSを見る"],
+      "家族や大切な人と過ごす":["家族や大切な人","と過ごす"],
+      "好きな人とデート":["好きな人と","デート"],
+      "ハグ・スキンシップ":["ハグ","スキンシップ"],
+      "推しの写真を見る":["推しの写真","を見る"],
+      "推しのSNSをチェックする":["推しのSNSを","チェックする"],
+      "推しのDVD動画を見る":["推しのDVD","動画を見る"],
+      "好きな人とLINE・電話":["好きな人と","LINE・電話"],
+      "家族や大切な人と一緒に過ごす":["家族や大切な人","と一緒に過ごす"],
+      "ハンドメイド・クラフト":["ハンドメイド","クラフト"],
+      "絵を描く・デザイン":["絵を描く","デザイン"],
+      "文章を書く":["文章を書く"],
+      "料理・お菓子作り":["料理","お菓子作り"],
+      "楽器を弾く・歌う":["楽器を弾く","歌う"],
+      "撮影・動画編集":["撮影","動画編集"],
+      "美術館・展覧会に行く":["美術館","展覧会に行く"],
+      "舞台・ライブを観に行く":["舞台・ライブ","を観に行く"],
+      "カメラで写真を撮る":["カメラで","写真を撮る"],
+      "季節を感じに出かける":["季節を感じに","出かける"],
+      "旅行で新しい世界にふれる":["旅行で新しい","世界にふれる"],
+      "素敵な空間を訪れる":["素敵な空間を","訪れる"],
+      "好きな言葉にふれる":["好きな言葉に","ふれる"],
+      "美味しいお茶を淹れる":["美味しいお茶","を淹れる"],
+      "美味しいドリンク":["美味しい","ドリンク"],
+      "スイーツを食べる":["スイーツを","食べる"],
+      "旬のフルーツを食べる":["旬のフルーツ","を食べる"],
+      "和菓子を食べる":["和菓子を","食べる"],
+      "好きな音楽を聴く":["好きな音楽","を聴く"],
+      "動物の癒し動画を見る":["動物の癒し","動画を見る"],
+      "ラジオ・Voicyを聴く":["ラジオ","Voicy","を聴く"],
+      "キャンドルを灯す":["キャンドルを","灯す"],
+      "お部屋を模様替えする":["お部屋を","模様替えする"],
+      "好きな服や小物を身につける":["好きな服や","小物を","身につける"],
+      "好きな香りをまとう":["好きな香りを","まとう"],
+      "スキンケアを丁寧にする":["スキンケアを","丁寧にする"],
+      "ハンドクリーム":["ハンド","クリーム"],
+      "メイクを楽しむ":["メイクを","楽しむ"],
+      "何もしない時間":["何もしない","時間"],
+      "ペットを撫でる":["ペットを","撫でる"],
+      "神社に参拝する":["神社に","参拝する"],
+      "自然の中で過ごす":["自然の中で","過ごす"],
+      "お気に入りのカフェ":["お気に入りの","カフェ"],
+      "規則正しい習慣を身につけたい":["規則正しい","習慣を","身につけたい"],
+      "暴飲暴食をやめたい":["暴飲暴食を","やめたい"],
+      "やりたいことを見つけたい":["やりたいことを","見つけたい"],
+      "嫌なことはNOと言いたい":["嫌なことは","NOと言いたい"],
+      "誰かを喜ばせて感謝されたい":["誰かを喜ばせて","感謝されたい"],
+      "コツコツ積み重ねたい":["コツコツ","積み重ねたい"],
+      "スマホ依存をやめたい":["スマホ依存を","やめたい"],
+      "大切にされたい":["大切にされたい"],
+      "わかってほしい":["わかってほしい"],
+      "お酒の飲み過ぎをやめたい":["お酒の","飲み過ぎを","やめたい"],
+    };
+    const smartLines = (label, maxOne=5, maxLine=99) => {
+      if (SMART_OVERRIDES[label]) return SMART_OVERRIDES[label];
+      const arr = Array.from(label); const n = arr.length;
+      if (n <= maxOne) return [label];
+      if (n > 12 && maxLine === 99) { const a = Math.ceil(n/3); return [arr.slice(0,a).join(""), arr.slice(a,2*a).join(""), arr.slice(2*a).join("")]; }
+      const isKata = c => /[\u30A0-\u30FF]/.test(c);
+      const ideal = n/2; let best = -1, bestScore = 1e9;
+      for (let i = 2; i <= n-2; i++) {
+        const prev = arr[i-1], next = arr[i], rest = arr.slice(i).join("");
+        if ("をにがはでともへてッャュョァィゥェォーっゃゅょ・".includes(next)) continue; // 助詞・小さい字・「・」は前の言葉につける
+        let w = null;
+        if ("をにがはでとのもてへ・".includes(prev)) w = 0;
+        else if (/^(したい|する|してほしい|ほしい|こと)/.test(rest)) w = 0.25;
+        else if (isKata(prev) !== isKata(next) && (isKata(prev) || isKata(next))) w = 0.5;
+        if (w === null) continue;
+        const sc = Math.abs(i - ideal) + w;
+        if (sc < bestScore) { bestScore = sc; best = i; }
+      }
+      if (best < 0) { if (n <= 6) return [label]; best = Math.ceil(n/2); }
+      const l1 = arr.slice(0,best).join(""), l2 = arr.slice(best).join("");
+      const out = [];
+      [l1, l2].forEach(l => { if (Array.from(l).length > maxLine) out.push(...smartLines(l, maxLine, maxLine)); else out.push(l); });
+      return out;
+    };
+
+    /* 本の中のお守り言葉：行ごとに折り返さず、枠の幅に合わせて文字サイズを自動で縮める */
+    const FitLines = ({lines, base=10, minFs=6, style={}, align="center"}) => {
+      const boxRef = useRef(null);
+      const [fs, setFs] = useState(base);
+      const key = lines.join("|");
+      const fit = () => {
+        const el = boxRef.current;
+        if (!el || !el.parentElement) return;
+        const avail = el.parentElement.clientWidth;
+        if (!avail) return;
+        let f = base, guard = 0;
+        el.style.fontSize = f + "px";
+        while (el.offsetWidth > avail && f > minFs && guard < 60) { f -= 0.25; el.style.fontSize = f + "px"; guard++; }
+        setFs(f);
+      };
+      React.useLayoutEffect(() => { fit(); }, [key, base]);
+      useEffect(() => {
+        const h = () => fit();
+        window.addEventListener("resize", h);
+        return () => window.removeEventListener("resize", h);
+      }, [key, base]);
+      return (
+        <div ref={boxRef} style={{...style, fontSize: fs, width:"max-content", flexShrink:0, textAlign:align, margin: align==="left" ? "0" : "0 auto"}}>
+          {lines.map((line, idx) => (<div key={idx} style={{whiteSpace:"nowrap"}}>{line}</div>))}
+        </div>
+      );
+    };
+
     const ButlerBubble = ({children, size=48, border="#f9a8d4", textColor="#7c2d12", className=""}) => (
       <div className={"flex items-start gap-3 "+className}>
         <div className="shrink-0"><ButlerAvatar size={size}/></div>
@@ -1594,7 +1714,7 @@
       const honneBeauty = [
         {emoji:"🍃", label:"痩せたい", room:"care"},
         {emoji:"👗", label:"美ボディになりたい", room:"care"},
-        {emoji:"🥬", label:"食べすぎを防ぎたい", room:"care"},
+        {emoji:"🥬", label:"暴飲暴食をやめたい", room:"care"},
         {emoji:"🌷", label:"美肌になりたい", room:"care"},
         {emoji:"💇‍♀️", label:"サラ艶髪になりたい", room:"care"},
         {emoji:"🩺", label:"健康になりたい", room:"care"},
@@ -1610,13 +1730,13 @@
       const honneChange = [
         {emoji:"✨", label:"変わりたい", room:"world"},
         {emoji:"🌟", label:"自信を持ちたい", room:"world"},
-        {emoji:"💎", label:"夢に向かいたい", room:"world"},
-        {emoji:"💪", label:"NOって言いたい", room:"world"},
+        {emoji:"💎", label:"やりたいことを見つけたい", room:"world"},
+        {emoji:"💪", label:"嫌なことはNOと言いたい", room:"world"},
         {emoji:"🚀", label:"挑戦したい", room:"world"},
         {emoji:"🌈", label:"前向きになりたい", room:"world"},
       ];
       const honneHabit = [
-        {emoji:"🌱", label:"コツコツ積みたい", room:"daily"},
+        {emoji:"🌱", label:"コツコツ積み重ねたい", room:"daily"},
         {emoji:"💪", label:"身体を鍛えたい", room:"daily"},
         {emoji:"🧘", label:"心を整えたい", room:"daily"},
         {emoji:"🥗", label:"食を整えたい", room:"daily"},
@@ -1624,17 +1744,17 @@
         {emoji:"📖", label:"学び続けたい", room:"daily"},
         {emoji:"🌃", label:"夜更かしをやめたい", room:"daily"},
         {emoji:"🌅", label:"朝活したい", room:"daily"},
-        {emoji:"📅", label:"規則正しい習慣を身に付けたい", room:"daily"},
+        {emoji:"📅", label:"規則正しい習慣を身につけたい", room:"daily"},
         {emoji:"🚫", label:"悪習慣をやめたい", room:"daily"},
         {emoji:"🍷", label:"お酒の飲み過ぎをやめたい", room:"daily"},
-        {emoji:"📱", label:"スマホ時間を減らしたい", room:"daily"},
+        {emoji:"📱", label:"スマホ依存をやめたい", room:"daily"},
       ];
       const honneWow = [
         {emoji:"🌠", label:"夢を叶えたい", room:"world"},
         {emoji:"🎡", label:"ワクワクしたい", room:"world"},
         {emoji:"🎈", label:"もっと楽しみたい", room:"world"},
         {emoji:"🪄", label:"新しいことを始めたい", room:"daily"},
-        {emoji:"🙏", label:"感謝を味わいたい", room:"daily"},
+        {emoji:"🙏", label:"誰かを喜ばせて感謝されたい", room:"daily"},
         {emoji:"🏅", label:"この調子で続けたい", room:"daily"},
       ];
       const allHonneOpts = honneLove.concat(honneRest).concat(honneBeauty).concat(honneSort).concat(honneChange).concat(honneWow).concat(honneHabit);
@@ -1727,7 +1847,7 @@
             "✨ アロマを焚く",
             "🕯️ キャンドルを灯す",
             "🏡 お部屋を模様替えする",
-            "👗 好きな服を着る",
+            "👗 好きな服や小物を身につける",
             "🌷 好きな香りをまとう",
           ],
         },
@@ -1736,7 +1856,7 @@
           items: [
             "💄 メイクを楽しむ",
             "💅 ネイルを塗る",
-            "🌿 スキンケア丁寧に",
+            "🌿 スキンケアを丁寧にする",
             "🧴 ハンドクリーム",
             "💇‍♀️ 美容室に行く",
             "🧖‍♀️ エステに行く",
@@ -1760,9 +1880,9 @@
         {
           key: "cafe", label: "お茶・おやつ系", color: "amber",
           items: [
-            "🍵 おいしいお茶を淹れる",
+            "🍵 美味しいお茶を淹れる",
             "☕ お気に入りのカフェ",
-            "🥤 お気に入りのドリンク",
+            "🥤 美味しいドリンク",
             "🍰 スイーツを食べる",
             "🍡 和菓子を食べる",
             "🍓 旬のフルーツを食べる",
@@ -1778,7 +1898,7 @@
             "🐶 動物の癒し動画を見る",
             "📖 漫画を読む",
             "📚 本を読む",
-            "🎧 ラジオ・ポッドキャストを聴く",
+            "🎧 ラジオ・Voicyを聴く",
           ],
         },
         {
@@ -1786,32 +1906,32 @@
           items: [
             "🖼️ 美術館・展覧会に行く",
             "🎭 舞台・ライブを観に行く",
-            "📷 素敵な景色を撮る",
-            "🌸 季節を感じに出かける",
+            "📷 カメラで写真を撮る",
             "🏛️ 素敵な空間を訪れる",
-            "✍️ 好きな言葉に触れる",
+            "✍️ 好きな言葉にふれる",
+            "✈️ 旅行で新しい世界にふれる",
           ],
         },
         {
           key: "make", label: "ものづくり・表現系", color: "sky",
           items: [
             "🧶 ハンドメイド・クラフト",
-            "🎨 絵を描く・デザインする",
+            "🎨 絵を描く・デザイン",
             "🖋️ 文章を書く",
             "🍳 料理・お菓子作り",
             "🎹 楽器を弾く・歌う",
-            "🎞️ 動画を作る・編集する",
+            "🎞️ 撮影・動画編集",
           ],
         },
         {
           key: "love", label: "推し・恋愛系", color: "pink",
           items: [
-            "💗 推しを眺める",
-            "📱 推しのSNSチェック",
-            "🎬 推しの動画を見る",
-            "💕 好きな人を想う",
-            "🤝 大切な人と話す・連絡する",
-            "🫂 ハグする",
+            "💗 推しの写真・SNSを見る",
+            "🎬 推しのDVD動画を見る",
+            "💕 好きな人とLINE・電話",
+            "💑 好きな人とデート",
+            "🤝 家族や大切な人と過ごす",
+            "🫂 ハグ・スキンシップ",
           ],
         },
         {
@@ -1824,7 +1944,7 @@
             "🚀 新しいことにチャレンジする",
             "📖 興味があることを学ぶ",
             "🎨 趣味・好きなことに没頭する",
-            "🎁 小さな贅沢",
+            "🤝 気が合う仲間や友達と会う",
           ],
         },
       ];
@@ -1958,7 +2078,8 @@
                       <div style={{position:"absolute", left:"-7px", top:"19px", width:0, height:0,
                         borderTop:"7px solid transparent", borderBottom:"7px solid transparent", borderRight:"7px solid #ffffff"}}/>
                       <div className="text-[10.5px] leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', color:"#6b2308", fontWeight:600}}>
-                        お嬢様、今のお気持ちに近いものを、<br/>
+                        お嬢様、<br/>
+                        今のお気持ちに近いものを、<br/>
                         1つ以上お選びくださいませ。<br/>
                         3つお選びいただけると、<br/>
                         お心がより正確にわかります♡
@@ -1973,7 +2094,7 @@
                         <button key={opt.label} onClick={() => toggleMind(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#fbcfe8,#fecdd3)" : "#ffe4e6", borderColor: selected ? "#f472b6" : "#fda4af", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[20px] text-center">{opt.emoji}</div>
-                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9f1239" : "#be123c", fontWeight: selected ? 700 : 500}}>{opt.label}</div>
+                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9f1239" : "#be123c", fontWeight: selected ? 700 : 500}}><FitLines lines={smartLines(opt.label)} base={10} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -1986,7 +2107,7 @@
                         <button key={opt.label} onClick={() => toggleMind(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#bfdbfe,#dbeafe)" : "#dbeafe", borderColor: selected ? "#60a5fa" : "#93c5fd", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[20px] text-center">{opt.emoji}</div>
-                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#1e3a8a" : "#1d4ed8", fontWeight: selected ? 700 : 500}}>{opt.label}</div>
+                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#1e3a8a" : "#1d4ed8", fontWeight: selected ? 700 : 500}}><FitLines lines={smartLines(opt.label)} base={10} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -1999,7 +2120,7 @@
                         <button key={opt.label} onClick={() => toggleMind(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#e9d5ff,#fbcfe8)" : "#f3e8ff", borderColor: selected ? "#a855f7" : "#c4b5fd", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[20px] text-center">{opt.emoji}</div>
-                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#6b21a8" : "#7e22ce", fontWeight: selected ? 700 : 500}}>{opt.label}</div>
+                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#6b21a8" : "#7e22ce", fontWeight: selected ? 700 : 500}}><FitLines lines={smartLines(opt.label)} base={10} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2052,7 +2173,7 @@
                         <button key={opt.label} onClick={() => toggleBody(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#bbf7d0,#a7f3d0)" : "#dcfce7", borderColor: selected ? "#4ade80" : "#86efac", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[20px] text-center">{opt.emoji}</div>
-                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#166534" : "#15803d", fontWeight: selected ? 700 : 500}}>{opt.label}</div>
+                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#166534" : "#15803d", fontWeight: selected ? 700 : 500}}><FitLines lines={smartLines(opt.label)} base={10} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2065,7 +2186,7 @@
                         <button key={opt.label} onClick={() => toggleBody(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#fde68a,#fed7aa)" : "#fef3c7", borderColor: selected ? "#f59e0b" : "#fcd34d", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[20px] text-center">{opt.emoji}</div>
-                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#92400e" : "#b45309", fontWeight: selected ? 700 : 500}}>{opt.label}</div>
+                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#92400e" : "#b45309", fontWeight: selected ? 700 : 500}}><FitLines lines={smartLines(opt.label)} base={10} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2078,7 +2199,7 @@
                         <button key={opt.label} onClick={() => toggleBody(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#e9d5ff,#fbcfe8)" : "#f3e8ff", borderColor: selected ? "#a855f7" : "#c4b5fd", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[20px] text-center">{opt.emoji}</div>
-                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#6b21a8" : "#7e22ce", fontWeight: selected ? 700 : 500}}>{opt.label}</div>
+                          <div className="text-[10px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#6b21a8" : "#7e22ce", fontWeight: selected ? 700 : 500}}><FitLines lines={smartLines(opt.label)} base={10} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2149,10 +2270,7 @@
                       <div style={{position:"absolute", left:"-7px", top:"19px", width:0, height:0,
                         borderTop:"7px solid transparent", borderBottom:"7px solid transparent", borderRight:"7px solid #ffffff"}}/>
                       <div className="text-[10.5px] leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', color:"#6b2308", fontWeight:600}}>
-                        お嬢様、今の本音に近いものを、<br/>
-                        1つ以上お選びくださいませ。<br/>
-                        3つお選びいただけると、<br/>
-                        本音がより正確にわかります♡
+                        <FitLines align="left" base={10.5} minFs={8} lines={["お嬢様、今の本音に近いもの","を1つ以上お選びくださいませ。","3つお選びいただけると、","本音がより正確にわかります♡"]}/>
                       </div>
                     </div>
                   </div>
@@ -2165,7 +2283,7 @@
                         <button key={opt.label} onClick={() => toggleHonne(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#fbcfe8,#fecdd3)" : "#ffe4e6", borderColor: selected ? "#f472b6" : "#fda4af", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[18px] text-center">{opt.emoji}</div>
-                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9f1239" : "#be123c", fontWeight: selected ? 700 : 600}}>{opt.label}</div>
+                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9f1239" : "#be123c", fontWeight: selected ? 700 : 600}}><FitLines lines={smartLines(opt.label)} base={9.5} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2179,7 +2297,7 @@
                         <button key={opt.label} onClick={() => toggleHonne(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#bfdbfe,#e9d5ff)" : "#dbeafe", borderColor: selected ? "#60a5fa" : "#93c5fd", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[18px] text-center">{opt.emoji}</div>
-                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#1e3a8a" : "#1d4ed8", fontWeight: selected ? 700 : 600}}>{opt.label}</div>
+                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#1e3a8a" : "#1d4ed8", fontWeight: selected ? 700 : 600}}><FitLines lines={smartLines(opt.label)} base={9.5} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2193,7 +2311,7 @@
                         <button key={opt.label} onClick={() => toggleHonne(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#fbcfe8,#fecdd3)" : "#fce7f3", borderColor: selected ? "#ec4899" : "#f9a8d4", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[18px] text-center">{opt.emoji}</div>
-                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9d174d" : "#be185d", fontWeight: selected ? 700 : 600}}>{opt.label}</div>
+                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9d174d" : "#be185d", fontWeight: selected ? 700 : 600}}><FitLines lines={smartLines(opt.label)} base={9.5} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2207,7 +2325,7 @@
                         <button key={opt.label} onClick={() => toggleHonne(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#e9d5ff,#fbcfe8)" : "#f3e8ff", borderColor: selected ? "#a855f7" : "#c4b5fd", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[18px] text-center">{opt.emoji}</div>
-                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#6b21a8" : "#7e22ce", fontWeight: selected ? 700 : 600}}>{opt.label}</div>
+                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#6b21a8" : "#7e22ce", fontWeight: selected ? 700 : 600}}><FitLines lines={smartLines(opt.label)} base={9.5} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2221,7 +2339,7 @@
                         <button key={opt.label} onClick={() => toggleHonne(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#fde68a,#fef08a)" : "#fef3c7", borderColor: selected ? "#f59e0b" : "#fcd34d", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[18px] text-center">{opt.emoji}</div>
-                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#92400e" : "#b45309", fontWeight: selected ? 700 : 600}}>{opt.label}</div>
+                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#92400e" : "#b45309", fontWeight: selected ? 700 : 600}}><FitLines lines={smartLines(opt.label)} base={9.5} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2235,7 +2353,7 @@
                         <button key={opt.label} onClick={() => toggleHonne(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#fed7aa,#fecdd3)" : "#ffedd5", borderColor: selected ? "#fb923c" : "#fdba74", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[18px] text-center">{opt.emoji}</div>
-                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9a3412" : "#c2410c", fontWeight: selected ? 700 : 500}}>{opt.label}</div>
+                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#9a3412" : "#c2410c", fontWeight: selected ? 700 : 500}}><FitLines lines={smartLines(opt.label)} base={9.5} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2249,7 +2367,7 @@
                         <button key={opt.label} onClick={() => toggleHonne(opt.label)}
                           className="rounded-xl p-2 border transition active:scale-95" style={{background: selected ? "linear-gradient(135deg,#bbf7d0,#a7f3d0)" : "#dcfce7", borderColor: selected ? "#4ade80" : "#86efac", boxShadow: selected ? "0 2px 8px rgba(0,0,0,0.12)" : "none"}}>
                           <div className="text-[18px] text-center">{opt.emoji}</div>
-                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#166534" : "#15803d", fontWeight: selected ? 700 : 600}}>{opt.label}</div>
+                          <div className="text-[9.5px] mt-0.5 text-center" style={{fontFamily:'"Shippori Mincho",serif', color: selected ? "#166534" : "#15803d", fontWeight: selected ? 700 : 600}}><FitLines lines={smartLines(opt.label)} base={9.5} minFs={7}/></div>
                         </button>
                       );
                     })}
@@ -2318,8 +2436,7 @@
                   <div style={{position:"absolute", left:"-7px", top:"19px", width:0, height:0,
                     borderTop:"7px solid transparent", borderBottom:"7px solid transparent", borderRight:"7px solid #ffffff"}}/>
                   <div className="text-[10.5px] leading-relaxed" style={{fontFamily:'"Shippori Mincho",serif', color:"#6b2308", fontWeight:600}}>
-                    お嬢様、自分で自分をごきげんにする、<br/>
-                    小さな1つを決めてみましょう ♡
+                    <FitLines align="left" base={10.5} minFs={8} lines={["お嬢様、","自分をごきげんにする","小さな1つを決めてみましょう♡"]}/>
                   </div>
                 </div>
               </div>
@@ -2344,7 +2461,8 @@
                             <button key={i} onClick={()=>{setGokigenAction(ex); setOpenActionCat(null);}}
                               className="text-[10.5px] rounded-xl px-2.5 py-2 active:scale-95 w-full"
                               style={{fontFamily:'"Shippori Mincho",serif', background:"#ffffff", border:"1px solid "+catTheme[cat.color].border, color:catTheme[cat.color].text, fontWeight:600, textAlign:"left", lineHeight:1.4, minHeight:38, display:"flex", alignItems:"center"}}>
-                              {ex}
+                              {(() => { const sp = ex.indexOf(" "); const em = sp > 0 ? ex.slice(0, sp) : ""; const lb = sp > 0 ? ex.slice(sp+1) : ex;
+                                return (<><span style={{marginRight:6, flexShrink:0}}>{em}</span><span style={{minWidth:0}}>{smartLines(lb, 7, 9).map((l,i)=>(<span key={i} style={{display:"block", whiteSpace:"nowrap"}}>{l}</span>))}</span></>); })()}
                             </button>
                           ))}
                         </div>
@@ -2834,7 +2952,7 @@
         {text:"小さな幸せを、集めていこう。", cat:"前向きになる", jewel:"💎"},
         {text:"何が起きても、乗り越えられる。", cat:"前向きになる", jewel:"💛"},
         {text:"今日も、輝ける日になる。", cat:"前向きになる", jewel:"🌟"},
-        {text:"わたしも人生の、プロフェッショナル、になればいい", cat:"前向きになる", jewel:"💎"},
+        {text:"わたしの人生の、プロフェッショナル、になればいい", cat:"前向きになる", jewel:"💎"},
         // 夢に向かう
         {text:"小さな一歩が、未来の大きな、一歩になる。", cat:"夢に向かう", jewel:"🧡"},
         {text:"夢はもう、わたしの中で、咲きはじめている。", cat:"夢に向かう", jewel:"💚"},
@@ -3049,9 +3167,6 @@
         return clean.split(/[、\s]+/).map(s => s.trim()).filter(Boolean);
       };
 
-      // 本の中の文字：一番長い行に合わせて文字サイズを自動調整（折り返さず1行ずつ表示）
-      const fitFs = (lines, base, budget) => Math.min(base, budget / Math.max(...lines.map(l=>Array.from(l).length), 1));
-
       // savedCharms の古いテキストを新テキストにマイグレーション（1回だけ実行）
       useEffect(() => {
         const migrations = [
@@ -3100,6 +3215,7 @@
               "わたしは一人じゃない": "わたしは、一人じゃないよ",
               "わたしはわたしの人生の主人公": "わたしは、わたしの世界の、主人公",
               "まいっか": "ま、いっか！",
+              "わたしも人生のプロフェッショナルになればいい": "わたしの人生の、プロフェッショナル、になればいい",
               "うまくいかない日もちゃんと意味がある": "うまく、いかない日も、ちゃんと、意味がある",
               "ケ・セラ・セラ（なるようになるさ）": "ケ・セラ・セラ、（なるように、なるさ）",
               "わたしの気持ちを一番に聞いてあげる": "わたしの気持ちを、一番に、聞いてあげる",
@@ -3107,7 +3223,7 @@
               "わたしは自分の道を歩んでいる": "わたしは、自分の道を、歩んでいる",
               "死ぬわけじゃないしいっか": "死ぬわけ、じゃないし、いっか",
               "なるようになるすべてはベストなタイミングでやってくる": "なるようになる、全てはベストな、タイミングで、やってくる",
-              "わたしの人生のプロフェッショナルになればいい": "わたしも人生の、プロフェッショナル、になればいい",
+              "わたしの人生のプロフェッショナルになればいい": "わたしの人生の、プロフェッショナル、になればいい",
               "できなくて当たり前初めてなんだから": "できなくて、当たり前、初めてなんだから",
               "願いが叶うまで絶対にあきらめない": "願いが叶うまで、絶対に諦めない",
               "一歩踏み出す勇気が道を開く": "一歩踏み出す、勇気が、道を拓く",
@@ -3163,7 +3279,7 @@
           }
           if (normCharm(c.text) === "わたしの心は太陽のように明るい") {
             needsUpdate = true;
-            return {...c, text: "わたしも人生の、プロフェッショナル、になればいい"};
+            return {...c, text: "わたしの人生の、プロフェッショナル、になればいい"};
           }
           if (normCharm(c.text) === "誰と比べなくてもわたしは素敵") {
             needsUpdate = true;
@@ -3705,19 +3821,7 @@
                           textAlign:"center"
                         }}>
                           <div style={{fontSize:15, marginBottom:4}}>{w.jewel}</div>
-                          <div style={{
-                            fontSize:fitFs(splitCharmLines(w.text), 9.5, 76),
-                            color:"#1a1a1a",
-                            fontFamily:'"Shippori Mincho",serif',
-                            fontWeight:700,
-                            lineHeight:1.5,
-                            letterSpacing:"0.01em"
-                          }}>
-                            {/* 「、」「空白」で分割して各行に表示 */}
-                            {splitCharmLines(w.text).map((line, idx)=>(
-                              <div key={idx} style={{whiteSpace:"nowrap"}}>{line}</div>
-                            ))}
-                          </div>
+                          <FitLines lines={splitCharmLines(w.text)} base={9.5} style={{color:"#1a1a1a", fontFamily:'"Shippori Mincho",serif', fontWeight:700, lineHeight:1.5, letterSpacing:"0.01em"}}/>
                         </div>
                         {/* ハートで保存（本の右上コーナー） */}
                         <button onClick={(e)=>{e.stopPropagation(); toggleLibCharm(w.text);}}
@@ -3843,15 +3947,7 @@
                             justifyContent:"center",
                             textAlign:"center"
                           }}>
-                            <div style={{
-                              fontSize:fitFs(splitCharmLines(c.text), 10, 82),
-                              color:"#1e293b",
-                              fontFamily:'"Shippori Mincho",serif',
-                              fontWeight:900,
-                              lineHeight:1.35,
-                              letterSpacing:"0.01em",
-                              // 強い白グロウで文字を浮かせる
-                              textShadow:[
+                            <FitLines lines={splitCharmLines(c.text)} base={10} style={{color:"#1e293b", fontFamily:'"Shippori Mincho",serif', fontWeight:900, lineHeight:1.35, letterSpacing:"0.01em", textShadow:[
                                 "0 0 3px rgba(255,255,255,1)",
                                 "0 0 6px rgba(255,255,255,1)",
                                 "0 0 10px rgba(255,255,255,0.95)",
@@ -3860,13 +3956,7 @@
                                 "1px 0 2px rgba(255,255,255,1)",
                                 "-1px 0 2px rgba(255,255,255,1)",
                                 "0 -1px 2px rgba(255,255,255,1)"
-                              ].join(", ")
-                            }}>
-                              {/* 「、」「空白」で分割して各行に表示 */}
-                              {splitCharmLines(c.text).map((line, idx)=>(
-                                <div key={idx} style={{whiteSpace:"nowrap"}}>{line}</div>
-                              ))}
-                            </div>
+                              ].join(", ")}}/>
                           </div>
                         </button>
                       );
